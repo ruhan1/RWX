@@ -9,9 +9,7 @@
   <packaging>pom</packaging>
   
   <modules>
-    <module>xmlrpc-raw</module>
-    <module>xmlrpc-render</module>
-    <module>xmlrpc-parse-events</module>
+    <module>xmlrpc-core</module>
     <module>xmlrpc-http</module>
     <module>anno-processor-xmlrpc</module>
     <module>xmlrpc-bindings</module>

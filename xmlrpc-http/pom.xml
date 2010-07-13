@@ -24,17 +24,7 @@
     </dependency>
     <dependency>
     	<groupId>com.redhat.xmlrpc</groupId>
-    	<artifactId>xmlrpc-raw</artifactId>
-    	<version>${project.version}</version>
-    </dependency>
-    <dependency>
-    	<groupId>com.redhat.xmlrpc</groupId>
-    	<artifactId>xmlrpc-render</artifactId>
-    	<version>${project.version}</version>
-    </dependency>
-    <dependency>
-    	<groupId>com.redhat.xmlrpc</groupId>
-    	<artifactId>xmlrpc-parse-events</artifactId>
+    	<artifactId>xmlrpc-core</artifactId>
     	<version>${project.version}</version>
     </dependency>
   </dependencies>
