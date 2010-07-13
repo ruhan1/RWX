@@ -22,19 +22,19 @@ import java.util.Iterator;
 import java.util.List;
 
 public class XmlRpcRequest
-    implements Iterable<XmlRpcParameter<?>>
+    implements Iterable<XmlRpcValue<?>>, XmlRpcMessage
 {
 
     private final String methodName;
 
-    private final List<XmlRpcParameter<?>> params = new ArrayList<XmlRpcParameter<?>>();
+    private final List<XmlRpcValue<?>> params = new ArrayList<XmlRpcValue<?>>();
 
     public XmlRpcRequest( final String methodName )
     {
         this.methodName = methodName;
     }
 
-    public void addParameter( final XmlRpcParameter<?> param )
+    public void addParameter( final XmlRpcValue<?> param )
     {
         params.add( param );
     }
@@ -44,18 +44,18 @@ public class XmlRpcRequest
         return methodName;
     }
 
-    public List<XmlRpcParameter<?>> getParameters()
+    public List<XmlRpcValue<?>> getParameters()
     {
         return params;
     }
 
     @Override
-    public Iterator<XmlRpcParameter<?>> iterator()
+    public Iterator<XmlRpcValue<?>> iterator()
     {
         return params.iterator();
     }
 
-    public void setParameters( final List<XmlRpcParameter<?>> params )
+    public void setParameters( final List<XmlRpcValue<?>> params )
     {
         this.params.clear();
         if ( !params.isEmpty() )

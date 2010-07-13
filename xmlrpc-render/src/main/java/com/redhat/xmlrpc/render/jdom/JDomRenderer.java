@@ -22,7 +22,7 @@ import org.jdom.Element;
 import org.jdom.output.Format;
 import org.jdom.output.XMLOutputter;
 
-import com.redhat.xmlrpc.raw.error.XmlRpcException;
+import com.redhat.xmlrpc.error.XmlRpcException;
 import com.redhat.xmlrpc.raw.model.XmlRpcFault;
 import com.redhat.xmlrpc.raw.model.XmlRpcRequest;
 import com.redhat.xmlrpc.raw.model.XmlRpcResponse;
@@ -38,6 +38,18 @@ public class JDomRenderer
 
     private static final ResponseHelper RESPONSE_HELPER = new ResponseHelper();
 
+    private final XMLOutputter outputter;
+
+    public JDomRenderer()
+    {
+        outputter = new XMLOutputter( Format.getCompactFormat() );
+    }
+
+    public JDomRenderer( final XMLOutputter outputter )
+    {
+        this.outputter = outputter;
+    }
+
     @Override
     public String render( final XmlRpcRequest request )
         throws XmlRpcException
@@ -47,7 +59,7 @@ public class JDomRenderer
 
         doc.setRootElement( root );
 
-        return new XMLOutputter( Format.getCompactFormat() ).outputString( doc );
+        return outputter.outputString( doc );
     }
 
     @Override
@@ -59,7 +71,7 @@ public class JDomRenderer
 
         doc.setRootElement( root );
 
-        return new XMLOutputter( Format.getCompactFormat() ).outputString( doc );
+        return outputter.outputString( doc );
     }
 
     @Override
@@ -67,13 +79,11 @@ public class JDomRenderer
         throws XmlRpcException
     {
         final Document doc = new Document();
-
-        final XmlRpcResponse response = new XmlRpcResponse( fault );
-        final Element root = RESPONSE_HELPER.render( response );
+        final Element root = RESPONSE_HELPER.render( new XmlRpcResponse( fault ) );
 
         doc.setRootElement( root );
 
-        return new XMLOutputter( Format.getCompactFormat() ).outputString( doc );
+        return outputter.outputString( doc );
     }
 
 }

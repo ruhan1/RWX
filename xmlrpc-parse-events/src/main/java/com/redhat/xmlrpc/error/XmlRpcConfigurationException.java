@@ -17,8 +17,6 @@
 
 package com.redhat.xmlrpc.error;
 
-import com.redhat.xmlrpc.raw.error.XmlRpcException;
-
 public class XmlRpcConfigurationException
     extends XmlRpcException
 {

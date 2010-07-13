@@ -19,10 +19,10 @@ package com.redhat.xmlrpc.render.jdom.helper;
 
 import org.jdom.Element;
 
+import com.redhat.xmlrpc.error.XmlRpcException;
 import com.redhat.xmlrpc.raw.XmlRpcConstants;
-import com.redhat.xmlrpc.raw.error.XmlRpcException;
-import com.redhat.xmlrpc.raw.model.XmlRpcParameter;
 import com.redhat.xmlrpc.raw.model.XmlRpcRequest;
+import com.redhat.xmlrpc.raw.model.XmlRpcValue;
 
 import java.util.List;
 
@@ -30,7 +30,7 @@ public class RequestHelper
     implements RendererHelper<XmlRpcRequest>
 {
 
-    private static final ParamsRenderer PARAMS_RENDERER = new ParamsRenderer();
+    private static final ParamsHelper PARAMS_RENDERER = new ParamsHelper();
 
     @Override
     public Element render( final XmlRpcRequest value )
@@ -40,7 +40,7 @@ public class RequestHelper
 
         result.addContent( new Element( XmlRpcConstants.METHOD_NAME ).setText( value.getMethodName() ) );
 
-        final List<XmlRpcParameter<?>> params = value.getParameters();
+        final List<XmlRpcValue<?>> params = value.getParameters();
         if ( params != null )
         {
             result.addContent( PARAMS_RENDERER.render( params ) );

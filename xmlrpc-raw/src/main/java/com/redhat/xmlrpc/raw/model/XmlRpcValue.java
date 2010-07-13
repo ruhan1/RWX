@@ -17,30 +17,10 @@
 
 package com.redhat.xmlrpc.raw.model;
 
-import com.redhat.xmlrpc.raw.type.ValueType;
 
-public class XmlRpcValue
-    implements XmlRpcParameter<Object>
+public interface XmlRpcValue<T>
 {
 
-    private final Object value;
-
-    private final ValueType type;
-
-    public XmlRpcValue( final Object value, final ValueType type )
-    {
-        this.value = value;
-        this.type = type;
-    }
-
-    public Object getValue()
-    {
-        return value;
-    }
-
-    public ValueType getType()
-    {
-        return type;
-    }
+    T getValue();
 
 }

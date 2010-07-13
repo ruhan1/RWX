@@ -17,19 +17,36 @@
 
 package com.redhat.xmlrpc.raw.model;
 
+import com.redhat.xmlrpc.model.ValueType;
+import com.redhat.xmlrpc.raw.XmlRpcConstants;
 import com.redhat.xmlrpc.raw.error.XmlRpcFaultException;
 
 public class XmlRpcFault
 {
 
-    private final int code;
-
     private final String message;
+
+    private final int code;
 
     public XmlRpcFault( final int code, final String message )
     {
         this.code = code;
         this.message = message;
+    }
+
+    public XmlRpcFault( final XmlRpcStruct struct )
+    {
+        XmlRpcSingleValue v = (XmlRpcSingleValue) struct.get( XmlRpcConstants.FAULT_CODE );
+        code = (Integer) v.getValue();
+
+        v = (XmlRpcSingleValue) struct.get( XmlRpcConstants.FAULT_STRING );
+        message = (String) v.getValue();
+    }
+
+    public XmlRpcStruct getStruct()
+    {
+        return new XmlRpcStruct().withSingleValue( XmlRpcConstants.FAULT_CODE, code, ValueType.INT )
+                                 .withSingleValue( XmlRpcConstants.FAULT_STRING, message, ValueType.STRING );
     }
 
     public void throwIt()

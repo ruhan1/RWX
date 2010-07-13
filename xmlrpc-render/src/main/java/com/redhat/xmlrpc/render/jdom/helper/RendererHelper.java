@@ -19,7 +19,7 @@ package com.redhat.xmlrpc.render.jdom.helper;
 
 import org.jdom.Element;
 
-import com.redhat.xmlrpc.raw.error.XmlRpcException;
+import com.redhat.xmlrpc.error.XmlRpcException;
 
 public interface RendererHelper<T>
 {

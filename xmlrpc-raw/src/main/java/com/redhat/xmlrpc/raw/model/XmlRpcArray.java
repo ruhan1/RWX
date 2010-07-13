@@ -17,7 +17,7 @@
 
 package com.redhat.xmlrpc.raw.model;
 
-import com.redhat.xmlrpc.raw.type.ValueType;
+import com.redhat.xmlrpc.model.ValueType;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -25,13 +25,11 @@ import java.util.Collections;
 import java.util.List;
 
 public class XmlRpcArray
-    extends ArrayList<XmlRpcValue>
-    implements XmlRpcParameter<List<Object>>
+    extends ArrayList<XmlRpcValue<?>>
+    implements XmlRpcValue<List<Object>>
 {
 
     private static final long serialVersionUID = 1L;
-
-    public static final ValueType VALUE_TYPE = ValueType.ARRAY;
 
     private boolean locked = false;
 
@@ -40,10 +38,28 @@ public class XmlRpcArray
         locked = true;
     }
 
+    public XmlRpcArray withSingleValue( final Object value, final ValueType type )
+    {
+        add( new XmlRpcSingleValue( value, type ) );
+        return this;
+    }
+
+    public XmlRpcArray withStruct( final XmlRpcStruct struct )
+    {
+        add( struct );
+        return this;
+    }
+
+    public XmlRpcArray withArray( final XmlRpcArray array )
+    {
+        add( array );
+        return this;
+    }
+
     public List<Object> rawValues()
     {
         final List<Object> result = new ArrayList<Object>();
-        for ( final XmlRpcValue val : this )
+        for ( final XmlRpcValue<?> val : this )
         {
             result.add( val.getValue() );
         }
@@ -52,7 +68,7 @@ public class XmlRpcArray
     }
 
     @Override
-    public void add( final int index, final XmlRpcValue element )
+    public void add( final int index, final XmlRpcValue<?> element )
     {
         if ( locked )
         {
@@ -63,7 +79,7 @@ public class XmlRpcArray
     }
 
     @Override
-    public boolean add( final XmlRpcValue o )
+    public boolean add( final XmlRpcValue<?> o )
     {
         if ( locked )
         {
@@ -74,7 +90,7 @@ public class XmlRpcArray
     }
 
     @Override
-    public boolean addAll( final Collection<? extends XmlRpcValue> c )
+    public boolean addAll( final Collection<? extends XmlRpcValue<?>> c )
     {
         if ( locked )
         {
@@ -85,7 +101,7 @@ public class XmlRpcArray
     }
 
     @Override
-    public boolean addAll( final int index, final Collection<? extends XmlRpcValue> c )
+    public boolean addAll( final int index, final Collection<? extends XmlRpcValue<?>> c )
     {
         if ( locked )
         {
@@ -107,7 +123,7 @@ public class XmlRpcArray
     }
 
     @Override
-    public XmlRpcValue remove( final int index )
+    public XmlRpcValue<?> remove( final int index )
     {
         if ( locked )
         {
@@ -129,7 +145,7 @@ public class XmlRpcArray
     }
 
     @Override
-    public XmlRpcValue set( final int index, final XmlRpcValue element )
+    public XmlRpcValue<?> set( final int index, final XmlRpcValue<?> element )
     {
         if ( locked )
         {
@@ -143,12 +159,6 @@ public class XmlRpcArray
     public List<Object> getValue()
     {
         return rawValues();
-    }
-
-    @Override
-    public ValueType getType()
-    {
-        return VALUE_TYPE;
     }
 
 }

@@ -17,7 +17,7 @@
 
 package com.redhat.xmlrpc.render;
 
-import com.redhat.xmlrpc.raw.error.XmlRpcException;
+import com.redhat.xmlrpc.error.XmlRpcException;
 import com.redhat.xmlrpc.raw.model.XmlRpcFault;
 import com.redhat.xmlrpc.raw.model.XmlRpcRequest;
 import com.redhat.xmlrpc.raw.model.XmlRpcResponse;

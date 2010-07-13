@@ -17,20 +17,18 @@
 
 package com.redhat.xmlrpc.raw.model;
 
-import com.redhat.xmlrpc.raw.type.ValueType;
+import com.redhat.xmlrpc.model.ValueType;
 
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class XmlRpcStruct
-    extends LinkedHashMap<String, XmlRpcValue>
-    implements XmlRpcParameter<Map<String, Object>>
+    extends LinkedHashMap<String, XmlRpcValue<?>>
+    implements XmlRpcValue<Map<String, Object>>
 {
 
     private static final long serialVersionUID = 1L;
-
-    public static final ValueType VALUE_TYPE = ValueType.STRUCT;
 
     private boolean locked = false;
 
@@ -39,10 +37,28 @@ public class XmlRpcStruct
         locked = true;
     }
 
+    public XmlRpcStruct withSingleValue( final String key, final Object value, final ValueType type )
+    {
+        put( key, new XmlRpcSingleValue( value, type ) );
+        return this;
+    }
+
+    public XmlRpcStruct withStruct( final String key, final XmlRpcStruct struct )
+    {
+        put( key, struct );
+        return this;
+    }
+
+    public XmlRpcStruct withArray( final String key, final XmlRpcArray array )
+    {
+        put( key, array );
+        return this;
+    }
+
     public Map<String, Object> rawStruct()
     {
         final Map<String, Object> result = new LinkedHashMap<String, Object>();
-        for ( final Map.Entry<String, XmlRpcValue> val : entrySet() )
+        for ( final Map.Entry<String, XmlRpcValue<?>> val : entrySet() )
         {
             result.put( val.getKey(), val.getValue().getValue() );
         }
@@ -62,7 +78,7 @@ public class XmlRpcStruct
     }
 
     @Override
-    public XmlRpcValue put( final String key, final XmlRpcValue value )
+    public XmlRpcValue<?> put( final String key, final XmlRpcValue<?> value )
     {
         if ( locked )
         {
@@ -73,7 +89,7 @@ public class XmlRpcStruct
     }
 
     @Override
-    public void putAll( final Map<? extends String, ? extends XmlRpcValue> m )
+    public void putAll( final Map<? extends String, ? extends XmlRpcValue<?>> m )
     {
         if ( locked )
         {
@@ -84,7 +100,7 @@ public class XmlRpcStruct
     }
 
     @Override
-    public XmlRpcValue remove( final Object key )
+    public XmlRpcValue<?> remove( final Object key )
     {
         if ( locked )
         {
@@ -98,12 +114,6 @@ public class XmlRpcStruct
     public Map<String, Object> getValue()
     {
         return rawStruct();
-    }
-
-    @Override
-    public ValueType getType()
-    {
-        return VALUE_TYPE;
     }
 
 }

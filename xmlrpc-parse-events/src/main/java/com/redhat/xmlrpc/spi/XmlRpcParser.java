@@ -17,10 +17,7 @@
 
 package com.redhat.xmlrpc.spi;
 
-import com.redhat.xmlrpc.XmlRpcHandler;
-import com.redhat.xmlrpc.raw.error.XmlRpcException;
-import com.redhat.xmlrpc.raw.model.XmlRpcRequest;
-import com.redhat.xmlrpc.raw.model.XmlRpcResponse;
+import com.redhat.xmlrpc.error.XmlRpcException;
 
 import java.io.InputStream;
 import java.io.Reader;
@@ -28,40 +25,13 @@ import java.io.Reader;
 public interface XmlRpcParser
 {
 
-    XmlRpcResponse parseResponse( InputStream stream, XmlRpcHandler handler )
+    void parse( InputStream stream, XmlRpcListener handler )
         throws XmlRpcException;
 
-    XmlRpcResponse parseResponse( Reader reader, XmlRpcHandler handler )
+    void parse( Reader reader, XmlRpcListener handler )
         throws XmlRpcException;
 
-    XmlRpcResponse parseResponse( String xml, XmlRpcHandler handler )
-        throws XmlRpcException;
-
-    XmlRpcResponse parseResponse( InputStream stream )
-        throws XmlRpcException;
-
-    XmlRpcResponse parseResponse( Reader reader )
-        throws XmlRpcException;
-
-    XmlRpcResponse parseResponse( String xml )
-        throws XmlRpcException;
-
-    XmlRpcRequest parseRequest( InputStream stream, XmlRpcHandler handler )
-        throws XmlRpcException;
-
-    XmlRpcRequest parseRequest( Reader reader, XmlRpcHandler handler )
-        throws XmlRpcException;
-
-    XmlRpcRequest parseRequest( String xml, XmlRpcHandler handler )
-        throws XmlRpcException;
-
-    XmlRpcRequest parseRequest( InputStream stream )
-        throws XmlRpcException;
-
-    XmlRpcRequest parseRequest( Reader reader )
-        throws XmlRpcException;
-
-    XmlRpcRequest parseRequest( String xml )
+    void parse( String xml, XmlRpcListener handler )
         throws XmlRpcException;
 
 }
