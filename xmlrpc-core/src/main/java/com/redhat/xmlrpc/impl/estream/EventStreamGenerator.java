@@ -18,12 +18,13 @@
 package com.redhat.xmlrpc.impl.estream;
 
 import com.redhat.xmlrpc.error.XmlRpcException;
-import com.redhat.xmlrpc.model.ArrayEvent;
-import com.redhat.xmlrpc.model.Event;
-import com.redhat.xmlrpc.model.ParameterEvent;
-import com.redhat.xmlrpc.model.RequestEvent;
-import com.redhat.xmlrpc.model.ResponseEvent;
-import com.redhat.xmlrpc.model.StructEvent;
+import com.redhat.xmlrpc.impl.estream.model.ArrayEvent;
+import com.redhat.xmlrpc.impl.estream.model.Event;
+import com.redhat.xmlrpc.impl.estream.model.ParameterEvent;
+import com.redhat.xmlrpc.impl.estream.model.RequestEvent;
+import com.redhat.xmlrpc.impl.estream.model.ResponseEvent;
+import com.redhat.xmlrpc.impl.estream.model.StructEvent;
+import com.redhat.xmlrpc.impl.estream.model.ValueEvent;
 import com.redhat.xmlrpc.spi.XmlRpcGenerator;
 import com.redhat.xmlrpc.spi.XmlRpcListener;
 
@@ -34,7 +35,7 @@ public class EventStreamGenerator
     implements XmlRpcGenerator
 {
 
-    private final LinkedList<Event> events = new LinkedList<Event>();
+    private final LinkedList<Event<?>> events = new LinkedList<Event<?>>();
 
     private boolean locked = false;
 
@@ -42,122 +43,173 @@ public class EventStreamGenerator
     {
     }
 
-    public EventStreamGenerator( final List<Event> events )
+    public EventStreamGenerator( final List<Event<?>> events )
     {
         locked = true;
         this.events.addAll( events );
     }
 
-    public EventStreamGenerator add( final Event event )
+    public List<Event<?>> getEvents()
+    {
+        return events;
+    }
+
+    public EventStreamGenerator clear()
+    {
+        checkLocked();
+        events.clear();
+
+        return this;
+    }
+
+    public EventStreamGenerator add( final Event<?> event )
+    {
+        checkLocked();
+        events.addLast( event );
+        return this;
+    }
+
+    private void checkLocked()
     {
         if ( locked )
         {
             throw new IllegalStateException( "Cannot add events once generation has begun." );
         }
-
-        events.addLast( event );
-        return this;
     }
 
     @Override
-    public void generate( final XmlRpcListener listener )
+    public EventStreamGenerator generate( final XmlRpcListener listener )
         throws XmlRpcException
     {
         locked = true;
 
-        while ( !events.isEmpty() )
+        try
         {
-            final Event e = events.removeFirst();
-            switch ( e.getEventType() )
+            for ( final Event<?> e : events )
             {
-                case START_ARRAY:
+                switch ( e.getEventType() )
                 {
-                    listener.startArray();
-                    break;
-                }
-                case ARRAY_ELEMENT:
-                {
-                    final ArrayEvent event = (ArrayEvent) e;
-                    listener.arrayElement( event.getIndex(), event.getValue(), event.getValueType() );
-                    break;
-                }
-                case END_ARRAY:
-                {
-                    listener.endArray();
-                    break;
-                }
-                case START_STRUCT:
-                {
-                    listener.startStruct();
-                    break;
-                }
-                case STRUCT_MEMBER:
-                {
-                    final StructEvent event = (StructEvent) e;
-                    listener.structMember( event.getKey(), event.getValue(), event.getValueType() );
-                    break;
-                }
-                case END_STRUCT:
-                {
-                    listener.endStruct();
-                    break;
-                }
-                case START_COMPLEX_PARAMETER:
-                {
-                    final ParameterEvent event = (ParameterEvent) e;
-                    listener.startComplexParameter( event.getIndex() );
-                    break;
-                }
-                case END_COMPLEX_PARAMETER:
-                {
-                    listener.endComplexParameter();
-                    break;
-                }
-                case PARAMETER:
-                {
-                    final ParameterEvent event = (ParameterEvent) e;
-                    listener.parameter( event.getIndex(), event.getValue(), event.getValueType() );
-                    break;
-                }
-                case START_REQUEST:
-                {
-                    listener.startRequest();
-                    break;
-                }
-                case REQUEST_METHOD:
-                {
-                    final RequestEvent event = (RequestEvent) e;
-                    listener.requestMethod( event.getMethod() );
-                    break;
-                }
-                case END_REQUEST:
-                {
-                    listener.endRequest();
-                    break;
-                }
-                case START_RESPONSE:
-                {
-                    listener.startResponse();
-                    break;
-                }
-                case FAULT:
-                {
-                    final ResponseEvent event = (ResponseEvent) e;
-                    listener.fault( event.getCode(), event.getMessage() );
-                    break;
-                }
-                case END_RESPONSE:
-                {
-                    listener.endResponse();
-                    break;
-                }
-                default:
-                {
-                    throw new XmlRpcException( "Invalid Event: " + e );
+                    case VALUE:
+                    {
+                        final ValueEvent event = (ValueEvent) e;
+                        listener.value( event.getValue(), event.getType() );
+                        break;
+                    }
+                    case START_ARRAY:
+                    {
+                        listener.startArray();
+                        break;
+                    }
+                    case START_ARRAY_ELEMENT:
+                    {
+                        final ArrayEvent event = (ArrayEvent) e;
+                        listener.startArrayElement( event.getIndex() );
+                        break;
+                    }
+                    case END_ARRAY_ELEMENT:
+                    {
+                        listener.endArrayElement();
+                        break;
+                    }
+                    case ARRAY_ELEMENT:
+                    {
+                        final ArrayEvent event = (ArrayEvent) e;
+                        listener.arrayElement( event.getIndex(), event.getValue(), event.getValueType() );
+                        break;
+                    }
+                    case END_ARRAY:
+                    {
+                        listener.endArray();
+                        break;
+                    }
+                    case START_STRUCT:
+                    {
+                        listener.startStruct();
+                        break;
+                    }
+                    case START_STRUCT_MEMBER:
+                    {
+                        final StructEvent event = (StructEvent) e;
+                        listener.startStructMember( event.getKey() );
+                        break;
+                    }
+                    case END_STRUCT_MEMBER:
+                    {
+                        listener.endStructMember();
+                        break;
+                    }
+                    case STRUCT_MEMBER:
+                    {
+                        final StructEvent event = (StructEvent) e;
+                        listener.structMember( event.getKey(), event.getValue(), event.getValueType() );
+                        break;
+                    }
+                    case END_STRUCT:
+                    {
+                        listener.endStruct();
+                        break;
+                    }
+                    case START_PARAMETER:
+                    {
+                        final ParameterEvent event = (ParameterEvent) e;
+                        listener.startParameter( event.getIndex() );
+                        break;
+                    }
+                    case END_PARAMETER:
+                    {
+                        listener.endParameter();
+                        break;
+                    }
+                    case PARAMETER:
+                    {
+                        final ParameterEvent event = (ParameterEvent) e;
+                        listener.parameter( event.getIndex(), event.getValue(), event.getValueType() );
+                        break;
+                    }
+                    case START_REQUEST:
+                    {
+                        listener.startRequest();
+                        break;
+                    }
+                    case REQUEST_METHOD:
+                    {
+                        final RequestEvent event = (RequestEvent) e;
+                        listener.requestMethod( event.getMethod() );
+                        break;
+                    }
+                    case END_REQUEST:
+                    {
+                        listener.endRequest();
+                        break;
+                    }
+                    case START_RESPONSE:
+                    {
+                        listener.startResponse();
+                        break;
+                    }
+                    case FAULT:
+                    {
+                        final ResponseEvent event = (ResponseEvent) e;
+                        listener.fault( event.getCode(), event.getMessage() );
+                        break;
+                    }
+                    case END_RESPONSE:
+                    {
+                        listener.endResponse();
+                        break;
+                    }
+                    default:
+                    {
+                        throw new XmlRpcException( "Invalid Event: " + e );
+                    }
                 }
             }
         }
+        finally
+        {
+            locked = false;
+        }
 
-        locked = false;
+        return this;
     }
 }

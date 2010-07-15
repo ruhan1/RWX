@@ -18,7 +18,6 @@
 package com.redhat.xmlrpc.http.error;
 
 import com.redhat.xmlrpc.error.XmlRpcException;
-import com.redhat.xmlrpc.raw.model.XmlRpcMessage;
 
 public class XmlRpcTransportException
     extends XmlRpcException
@@ -26,23 +25,23 @@ public class XmlRpcTransportException
 
     private static final long serialVersionUID = 1L;
 
-    private final XmlRpcMessage rpcMessage;
+    private final Object request;
 
-    public XmlRpcTransportException( final String message, final XmlRpcMessage rpcMessage, final Throwable cause )
-    {
-        super( message, cause );
-        this.rpcMessage = rpcMessage;
-    }
-
-    public XmlRpcTransportException( final String message, final XmlRpcMessage rpcMessage )
+    public XmlRpcTransportException( final String message, final Object request )
     {
         super( message );
-        this.rpcMessage = rpcMessage;
+        this.request = request;
     }
 
-    public XmlRpcMessage getXmlRpcMessage()
+    public XmlRpcTransportException( final String message, final Object request, final Throwable cause )
     {
-        return rpcMessage;
+        super( message, cause );
+        this.request = request;
+    }
+
+    public Object getRequest()
+    {
+        return request;
     }
 
 }

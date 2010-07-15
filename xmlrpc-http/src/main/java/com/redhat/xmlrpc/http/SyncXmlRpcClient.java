@@ -18,13 +18,11 @@
 package com.redhat.xmlrpc.http;
 
 import com.redhat.xmlrpc.error.XmlRpcException;
-import com.redhat.xmlrpc.raw.model.XmlRpcRequest;
-import com.redhat.xmlrpc.raw.model.XmlRpcResponse;
 
 public interface SyncXmlRpcClient
 {
 
-    XmlRpcResponse call( XmlRpcRequest request )
+    <T> T call( Object request, Class<T> responseType )
         throws XmlRpcException;
 
 }

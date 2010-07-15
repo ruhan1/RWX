@@ -21,6 +21,7 @@ import org.jdom.Document;
 import org.jdom.Element;
 
 import com.redhat.xmlrpc.error.CoercionException;
+import com.redhat.xmlrpc.error.XmlRpcException;
 import com.redhat.xmlrpc.spi.AbstractXmlRpcListener;
 import com.redhat.xmlrpc.vocab.ValueType;
 import com.redhat.xmlrpc.vocab.XmlRpcConstants;
@@ -39,14 +40,15 @@ public class JDomRenderer
     }
 
     @Override
-    public void arrayElement( final int index, final Object value, final ValueType type )
+    public JDomRenderer arrayElement( final int index, final Object value, final ValueType type )
         throws CoercionException
     {
         generateValue( currentParent, value, type );
+        return this;
     }
 
     @Override
-    public void fault( final int code, final String message )
+    public JDomRenderer fault( final int code, final String message )
         throws CoercionException
     {
         final Element fault = new Element( XmlRpcConstants.FAULT );
@@ -61,10 +63,11 @@ public class JDomRenderer
         endStruct();
 
         currentParent = last;
+        return this;
     }
 
     @Override
-    public void startComplexParameter( final int index )
+    public JDomRenderer startParameter( final int index )
     {
         verifyParamsContainer();
 
@@ -72,10 +75,11 @@ public class JDomRenderer
         currentParent.addContent( param );
 
         currentParent = param;
+        return this;
     }
 
     @Override
-    public void parameter( final int index, final Object value, final ValueType type )
+    public JDomRenderer parameter( final int index, final Object value, final ValueType type )
         throws CoercionException
     {
         verifyParamsContainer();
@@ -84,19 +88,21 @@ public class JDomRenderer
         currentParent.addContent( param );
 
         generateValue( param, value, type );
+        return this;
     }
 
     @Override
-    public void requestMethod( final String methodName )
+    public JDomRenderer requestMethod( final String methodName )
     {
         final Element mn = new Element( XmlRpcConstants.METHOD_NAME );
         mn.setText( methodName );
 
         currentParent.addContent( mn );
+        return this;
     }
 
     @Override
-    public void startArray()
+    public JDomRenderer startArray()
     {
         final Element arry = new Element( XmlRpcConstants.ARRAY );
         currentParent.addContent( arry );
@@ -105,32 +111,36 @@ public class JDomRenderer
         arry.addContent( data );
 
         currentParent = data;
+        return this;
     }
 
     @Override
-    public void startRequest()
+    public JDomRenderer startRequest()
     {
         currentParent = new Element( XmlRpcConstants.REQUEST );
         doc = new Document( currentParent );
+        return this;
     }
 
     @Override
-    public void startResponse()
+    public JDomRenderer startResponse()
     {
         currentParent = new Element( XmlRpcConstants.RESPONSE );
         doc = new Document( currentParent );
+        return this;
     }
 
     @Override
-    public void startStruct()
+    public JDomRenderer startStruct()
     {
         final Element e = new Element( XmlRpcConstants.STRUCT );
         currentParent.addContent( e );
         currentParent = e;
+        return this;
     }
 
     @Override
-    public void structMember( final String key, final Object value, final ValueType type )
+    public JDomRenderer structMember( final String key, final Object value, final ValueType type )
         throws CoercionException
     {
         final Element wrapper = new Element( XmlRpcConstants.MEMBER );
@@ -142,36 +152,72 @@ public class JDomRenderer
         wrapper.addContent( name );
 
         generateValue( wrapper, value, type );
+        return this;
     }
 
     @Override
-    public void endArray()
+    public JDomRenderer endArray()
     {
-        currentParent = currentParent.getParentElement();
+        popParent();
+        return this;
     }
 
     @Override
-    public void endComplexParameter()
+    public JDomRenderer endParameter()
     {
-        currentParent = currentParent.getParentElement();
+        popParent();
+        return this;
     }
 
     @Override
-    public void endRequest()
+    public JDomRenderer endStruct()
     {
-        // NOP
+        popParent();
+        return this;
     }
 
     @Override
-    public void endResponse()
+    public JDomRenderer endArrayElement()
+        throws XmlRpcException
     {
-        // NOP
+        popParent();
+        return this;
     }
 
     @Override
-    public void endStruct()
+    public JDomRenderer endStructMember()
+        throws XmlRpcException
     {
-        currentParent = currentParent.getParentElement();
+        popParent();
+        return this;
+    }
+
+    @Override
+    public JDomRenderer startArrayElement( final int index )
+        throws XmlRpcException
+    {
+        final Element e = new Element( XmlRpcConstants.VALUE );
+        currentParent.addContent( e );
+
+        currentParent = e;
+        return this;
+    }
+
+    @Override
+    public JDomRenderer startStructMember( final String key )
+        throws XmlRpcException
+    {
+        final Element wrapper = new Element( XmlRpcConstants.MEMBER );
+        currentParent.addContent( wrapper );
+
+        final Element name = new Element( XmlRpcConstants.NAME );
+        name.setText( key );
+
+        wrapper.addContent( name );
+        currentParent.addContent( wrapper );
+
+        currentParent = wrapper;
+        return this;
     }
 
     protected void generateValue( final Element parent, final Object value, final ValueType vt )
@@ -195,6 +241,11 @@ public class JDomRenderer
 
             currentParent = params;
         }
+    }
+
+    protected void popParent()
+    {
+        currentParent = currentParent.getParentElement();
     }
 
 }

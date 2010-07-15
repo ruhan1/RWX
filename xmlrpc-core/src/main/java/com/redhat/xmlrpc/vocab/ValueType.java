@@ -25,9 +25,45 @@ import com.redhat.xmlrpc.util.ValueCoercion;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
+import java.util.Map;
 
 public enum ValueType
 {
+    STRUCT( new ValueCoercion()
+    {
+        @Override
+        public String toString( final Object value )
+            throws CoercionException
+        {
+            throw new CoercionException( "Cannot coerce STRUCT types." );
+        }
+
+        @Override
+        public Object fromString( final String value )
+            throws CoercionException
+        {
+            throw new CoercionException( "Cannot coerce STRUCT types." );
+        }
+    }, Map.class, XmlRpcConstants.STRUCT ),
+
+    ARRAY( new ValueCoercion()
+    {
+        @Override
+        public String toString( final Object value )
+            throws CoercionException
+        {
+            throw new CoercionException( "Cannot coerce ARRAY types." );
+        }
+
+        @Override
+        public Object fromString( final String value )
+            throws CoercionException
+        {
+            throw new CoercionException( "Cannot coerce ARRAY types." );
+        }
+    }, List.class, XmlRpcConstants.ARRAY ),
+
     NIL( new ValueCoercion()
     {
         @Override
@@ -48,17 +84,32 @@ public enum ValueType
     {
         @Override
         public Object fromString( final String value )
+            throws CoercionException
         {
-            return Integer.parseInt( value );
+            try
+            {
+                return value == null ? null : Integer.parseInt( value );
+            }
+            catch ( final NumberFormatException e )
+            {
+                throw new CoercionException( e.getMessage(), e );
+            }
         }
     }, Integer.class, "i4", "int" ),
 
     BOOLEAN( new ValueCoercion()
     {
         @Override
+        public String toString( final Object value )
+            throws CoercionException
+        {
+            return value == null ? null : super.toString( Boolean.valueOf( super.toString( value ) ) );
+        }
+
+        @Override
         public Object fromString( final String value )
         {
-            return Boolean.valueOf( value );
+            return value == null ? null : Boolean.valueOf( value );
         }
     }, Boolean.class, "boolean" ),
 
@@ -75,14 +126,22 @@ public enum ValueType
     {
         @Override
         public Object fromString( final String value )
+            throws CoercionException
         {
-            return Double.parseDouble( value );
+            try
+            {
+                return value == null ? null : Double.parseDouble( value );
+            }
+            catch ( final NumberFormatException e )
+            {
+                throw new CoercionException( e.getMessage(), e );
+            }
         }
 
         @Override
         public String toString( final Object value )
         {
-            return Double.toString( ( (Number) value ).doubleValue() );
+            return value == null ? null : Double.toString( ( (Number) value ).doubleValue() );
         }
     }, Number.class, "double" ),
 
@@ -96,7 +155,7 @@ public enum ValueType
         {
             try
             {
-                return new SimpleDateFormat( FORMAT ).parse( value );
+                return value == null ? null : new SimpleDateFormat( FORMAT ).parse( value );
             }
             catch ( final ParseException e )
             {
@@ -106,8 +165,16 @@ public enum ValueType
 
         @Override
         public String toString( final Object value )
+            throws CoercionException
         {
-            return new SimpleDateFormat( FORMAT ).format( value );
+            try
+            {
+                return value == null ? null : new SimpleDateFormat( FORMAT ).format( (Date) value );
+            }
+            catch ( final ClassCastException e )
+            {
+                throw new CoercionException( "Not a java.util.Date.", e );
+            }
         }
 
     }, Date.class, "dateTime.iso8601" ),
@@ -116,14 +183,34 @@ public enum ValueType
     {
         @Override
         public Object fromString( final String value )
+            throws CoercionException
         {
-            return Base64.decodeBase64( value );
+            if ( value == null )
+            {
+                return null;
+            }
+
+            final byte[] result = Base64.decodeBase64( value );
+            if ( result.length < 1 && value.length() > 0 && !value.equals( "==" ) && !value.equals( "=" ) )
+            {
+                throw new CoercionException( "Invalid Base64 input: " + value );
+            }
+
+            return result;
         }
 
         @Override
         public String toString( final Object value )
+            throws CoercionException
         {
-            return new String( Base64.encodeBase64( (byte[]) value ) );
+            try
+            {
+                return value == null ? null : new String( Base64.encodeBase64( (byte[]) value ) );
+            }
+            catch ( final ClassCastException e )
+            {
+                throw new CoercionException( "Not a byte array.", e );
+            }
         }
 
     }, byte[].class, "base64" ), ;

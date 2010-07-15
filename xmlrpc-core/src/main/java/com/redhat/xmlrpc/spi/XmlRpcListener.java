@@ -23,49 +23,64 @@ import com.redhat.xmlrpc.vocab.ValueType;
 public interface XmlRpcListener
 {
 
-    void fault( int code, String message )
+    XmlRpcListener value( Object value, ValueType type )
         throws XmlRpcException;
 
-    void startRequest()
+    XmlRpcListener fault( int code, String message )
         throws XmlRpcException;
 
-    void requestMethod( String methodName )
+    XmlRpcListener startRequest()
         throws XmlRpcException;
 
-    void endRequest()
+    XmlRpcListener requestMethod( String methodName )
         throws XmlRpcException;
 
-    void startResponse()
+    XmlRpcListener endRequest()
         throws XmlRpcException;
 
-    void endResponse()
+    XmlRpcListener startResponse()
         throws XmlRpcException;
 
-    void startComplexParameter( int index )
+    XmlRpcListener endResponse()
         throws XmlRpcException;
 
-    void endComplexParameter()
+    XmlRpcListener startParameter( int index )
         throws XmlRpcException;
 
-    void parameter( int index, Object value, ValueType type )
+    XmlRpcListener endParameter()
         throws XmlRpcException;
 
-    void startArray()
+    XmlRpcListener parameter( int index, Object value, ValueType type )
         throws XmlRpcException;
 
-    void arrayElement( int index, Object value, ValueType type )
+    XmlRpcListener startArray()
         throws XmlRpcException;
 
-    void endArray()
+    XmlRpcListener startArrayElement( int index )
         throws XmlRpcException;
 
-    void startStruct()
+    XmlRpcListener endArrayElement()
         throws XmlRpcException;
 
-    void structMember( String key, Object value, ValueType type )
+    XmlRpcListener arrayElement( int index, Object value, ValueType type )
         throws XmlRpcException;
 
-    void endStruct()
+    XmlRpcListener endArray()
+        throws XmlRpcException;
+
+    XmlRpcListener startStruct()
+        throws XmlRpcException;
+
+    XmlRpcListener startStructMember( String key )
+        throws XmlRpcException;
+
+    XmlRpcListener endStructMember()
+        throws XmlRpcException;
+
+    XmlRpcListener structMember( String key, Object value, ValueType type )
+        throws XmlRpcException;
+
+    XmlRpcListener endStruct()
         throws XmlRpcException;
 
 }

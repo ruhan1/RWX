@@ -17,7 +17,6 @@
 
 package com.redhat.xmlrpc.impl.stax;
 
-import com.redhat.xmlrpc.error.XmlRpcConfigurationException;
 import com.redhat.xmlrpc.error.XmlRpcException;
 import com.redhat.xmlrpc.impl.stax.helper.RequestHelper;
 import com.redhat.xmlrpc.impl.stax.helper.ResponseHelper;
@@ -39,12 +38,51 @@ public class StaxParser
 
     private final XMLInputFactory factory;
 
-    public StaxParser()
+    private XMLStreamReader reader;
+
+    public StaxParser( final InputStream in )
+        throws XmlRpcException
     {
         factory = XMLInputFactory.newInstance();
+        try
+        {
+            reader = factory.createXMLStreamReader( in );
+        }
+        catch ( final XMLStreamException e )
+        {
+            throw new XmlRpcException( "Failed to initialize stream reader: " + e.getMessage(), e );
+        }
     }
 
-    public void parse( final XMLStreamReader reader, final XmlRpcListener listener )
+    public StaxParser( final Reader in )
+        throws XmlRpcException
+    {
+        factory = XMLInputFactory.newInstance();
+        try
+        {
+            reader = factory.createXMLStreamReader( in );
+        }
+        catch ( final XMLStreamException e )
+        {
+            throw new XmlRpcException( "Failed to initialize stream reader: " + e.getMessage(), e );
+        }
+    }
+
+    public StaxParser( final String in )
+        throws XmlRpcException
+    {
+        factory = XMLInputFactory.newInstance();
+        try
+        {
+            reader = factory.createXMLStreamReader( new StringReader( in ) );
+        }
+        catch ( final XMLStreamException e )
+        {
+            throw new XmlRpcException( "Failed to initialize stream reader: " + e.getMessage(), e );
+        }
+    }
+
+    public void parse( final XmlRpcListener listener )
         throws XmlRpcException
     {
         try
@@ -71,44 +109,4 @@ public class StaxParser
             throw new XmlRpcException( "Failed to parse input: " + e.getMessage(), e );
         }
     }
-
-    public void parse( final InputStream in, final XmlRpcListener listener )
-        throws XmlRpcException
-    {
-        try
-        {
-            parse( factory.createXMLStreamReader( in ), listener );
-        }
-        catch ( final XMLStreamException e )
-        {
-            throw new XmlRpcConfigurationException( "Failed to create new STaX parser: " + e.getMessage(), e );
-        }
-    }
-
-    public void parse( final Reader in, final XmlRpcListener listener )
-        throws XmlRpcException
-    {
-        try
-        {
-            parse( factory.createXMLStreamReader( in ), listener );
-        }
-        catch ( final XMLStreamException e )
-        {
-            throw new XmlRpcConfigurationException( "Failed to create new STaX parser: " + e.getMessage(), e );
-        }
-    }
-
-    public void parse( final String in, final XmlRpcListener listener )
-        throws XmlRpcException
-    {
-        try
-        {
-            parse( factory.createXMLStreamReader( new StringReader( in ) ), listener );
-        }
-        catch ( final XMLStreamException e )
-        {
-            throw new XmlRpcConfigurationException( "Failed to create new STaX parser: " + e.getMessage(), e );
-        }
-    }
-
 }

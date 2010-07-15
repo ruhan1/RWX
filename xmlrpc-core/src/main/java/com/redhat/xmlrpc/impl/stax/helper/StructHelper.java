@@ -25,17 +25,20 @@ import com.redhat.xmlrpc.vocab.XmlRpcConstants;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 public class StructHelper
-    implements StaxHelper
 {
 
     private static final ValueHelper VALUE_PARSER = new ValueHelper();
 
-    @Override
-    public void parse( final XMLStreamReader reader, final XmlRpcListener handler )
+    public Map<String, Object> parse( final XMLStreamReader reader, final XmlRpcListener handler )
         throws XMLStreamException, XmlRpcException
     {
         handler.startStruct();
+
+        final Map<String, Object> values = new LinkedHashMap<String, Object>();
 
         int level = 1;
         while ( reader.hasNext() && level > 0 )
@@ -47,7 +50,7 @@ public class StructHelper
 
                 if ( !XmlRpcConstants.MEMBER.equals( reader.getName().getLocalPart() ) )
                 {
-                    parseMember( reader, handler );
+                    parseMember( reader, handler, values );
                 }
             }
             else if ( type == XMLStreamReader.END_ELEMENT )
@@ -57,9 +60,12 @@ public class StructHelper
         }
 
         handler.endStruct();
+
+        return values;
     }
 
-    private void parseMember( final XMLStreamReader reader, final XmlRpcListener handler )
+    private void parseMember( final XMLStreamReader reader, final XmlRpcListener handler,
+                              final Map<String, Object> values )
         throws XMLStreamException, XmlRpcException
     {
         String name = null;
@@ -77,11 +83,16 @@ public class StructHelper
                 if ( XmlRpcConstants.NAME.equals( reader.getName().getLocalPart() ) )
                 {
                     name = reader.getElementText().trim();
+                    handler.startStructMember( name );
                 }
                 else if ( XmlRpcConstants.VALUE.equals( reader.getName().getLocalPart() ) )
                 {
                     vt = VALUE_PARSER.typeOf( reader );
-                    value = VALUE_PARSER.valueOf( reader, vt );
+                    value = VALUE_PARSER.valueOf( reader, vt, handler );
+
+                    values.put( name, value );
+                    handler.structMember( name, value, vt );
+                    handler.endStructMember();
                 }
                 else
                 {
@@ -103,8 +114,6 @@ public class StructHelper
         {
             throw new XmlRpcException( "Invalid struct member. Value is missing." );
         }
-
-        handler.structMember( name, value, vt );
     }
 
 }

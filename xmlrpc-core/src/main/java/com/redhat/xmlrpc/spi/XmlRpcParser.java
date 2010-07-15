@@ -19,19 +19,10 @@ package com.redhat.xmlrpc.spi;
 
 import com.redhat.xmlrpc.error.XmlRpcException;
 
-import java.io.InputStream;
-import java.io.Reader;
-
 public interface XmlRpcParser
 {
 
-    void parse( InputStream stream, XmlRpcListener handler )
-        throws XmlRpcException;
-
-    void parse( Reader reader, XmlRpcListener handler )
-        throws XmlRpcException;
-
-    void parse( String xml, XmlRpcListener handler )
+    void parse( XmlRpcListener handler )
         throws XmlRpcException;
 
 }

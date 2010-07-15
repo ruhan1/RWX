@@ -20,7 +20,6 @@ package com.redhat.xmlrpc.impl.stax.helper;
 import com.redhat.xmlrpc.error.XmlRpcException;
 import com.redhat.xmlrpc.spi.XmlRpcListener;
 import com.redhat.xmlrpc.vocab.ValueType;
-import com.redhat.xmlrpc.vocab.XmlRpcConstants;
 
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
@@ -28,10 +27,6 @@ import javax.xml.stream.XMLStreamReader;
 public class ParamHelper
     implements StaxHelper
 {
-
-    private static final StructHelper STRUCT_PARSER = new StructHelper();
-
-    private static final ArrayHelper ARRAY_PARSER = new ArrayHelper();
 
     private static final ValueHelper VALUE_PARSER = new ValueHelper();
 
@@ -47,26 +42,12 @@ public class ParamHelper
             {
                 level++;
 
-                final String tag = reader.getName().getLocalPart();
-                if ( XmlRpcConstants.STRUCT.equals( tag ) )
-                {
-                    listener.startComplexParameter( count );
-                    STRUCT_PARSER.parse( reader, listener );
-                    listener.endComplexParameter();
-                }
-                else if ( XmlRpcConstants.ARRAY.equals( tag ) )
-                {
-                    listener.startComplexParameter( count );
-                    ARRAY_PARSER.parse( reader, listener );
-                    listener.endComplexParameter();
-                }
-                else if ( XmlRpcConstants.VALUE.equals( tag ) )
-                {
-                    final ValueType vt = VALUE_PARSER.typeOf( reader );
-                    final Object value = VALUE_PARSER.valueOf( reader, vt );
+                listener.startParameter( count );
+                final ValueType vt = VALUE_PARSER.typeOf( reader );
+                final Object value = VALUE_PARSER.valueOf( reader, vt, listener );
 
-                    listener.parameter( count++, value, vt );
-                }
+                listener.parameter( count++, value, vt );
+                listener.endParameter();
 
                 count++;
             }

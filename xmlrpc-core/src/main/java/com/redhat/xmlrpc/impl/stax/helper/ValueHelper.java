@@ -18,7 +18,9 @@
 package com.redhat.xmlrpc.impl.stax.helper;
 
 import com.redhat.xmlrpc.error.XmlRpcException;
+import com.redhat.xmlrpc.spi.XmlRpcListener;
 import com.redhat.xmlrpc.vocab.ValueType;
+import com.redhat.xmlrpc.vocab.XmlRpcConstants;
 
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
@@ -26,18 +28,43 @@ import javax.xml.stream.XMLStreamReader;
 public class ValueHelper
 {
 
+    private static final StructHelper STRUCT_PARSER = new StructHelper();
+
+    private static final ArrayHelper ARRAY_PARSER = new ArrayHelper();
+
     public ValueType typeOf( final XMLStreamReader reader )
     {
         final String tag = reader.getName().getLocalPart();
         return ValueType.typeOf( tag );
     }
 
-    public Object valueOf( final XMLStreamReader reader, final ValueType type )
+    public Object valueOf( final XMLStreamReader reader, final ValueType type, final XmlRpcListener listener )
         throws XMLStreamException, XmlRpcException
     {
-        final String value = reader.getElementText().trim();
+        Object value = null;
 
-        return type.coercion().fromString( value );
+        final String tag = reader.getName().getLocalPart();
+        if ( XmlRpcConstants.STRUCT.equals( tag ) )
+        {
+            value = STRUCT_PARSER.parse( reader, listener );
+        }
+        else if ( XmlRpcConstants.ARRAY.equals( tag ) )
+        {
+            value = ARRAY_PARSER.parse( reader, listener );
+        }
+        else if ( XmlRpcConstants.VALUE.equals( tag ) )
+        {
+            final String src = reader.getElementText().trim();
+
+            value = type.coercion().fromString( src );
+        }
+        else
+        {
+            throw new XmlRpcException( "Invalid value type: " + tag );
+        }
+
+        listener.value( value, type );
+        return value;
     }
 
 }

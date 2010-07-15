@@ -84,7 +84,7 @@ public class FaultHelper
         }
 
         @Override
-        public void structMember( final String key, final Object value, final ValueType type )
+        public FaultListener structMember( final String key, final Object value, final ValueType type )
         {
             if ( XmlRpcConstants.FAULT_CODE.equals( key ) )
             {
@@ -94,6 +94,8 @@ public class FaultHelper
             {
                 message = (String) value;
             }
+
+            return this;
         }
 
     }

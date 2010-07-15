@@ -17,32 +17,40 @@
 
 package com.redhat.xmlrpc.binding;
 
-import com.redhat.xmlrpc.binding.error.BindException;
-import com.redhat.xmlrpc.binding.recipe.ClassRecipe;
-import com.redhat.xmlrpc.raw.model.XmlRpcMessage;
+import com.redhat.xmlrpc.error.XmlRpcException;
+import com.redhat.xmlrpc.spi.XmlRpcGenerator;
+import com.redhat.xmlrpc.spi.XmlRpcListener;
 
-import java.util.Map;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.Reader;
+import java.io.Writer;
 
-public final class Bindery
+public interface Bindery
 {
 
-    private final Map<String, ClassRecipe> recipes;
+    <T> T parse( final InputStream in, final Class<T> type )
+        throws XmlRpcException;
 
-    public Bindery( final Map<String, ClassRecipe> recipes )
-    {
-        this.recipes = recipes;
-    }
+    <T> T parse( final Reader in, final Class<T> type )
+        throws XmlRpcException;
 
-    public <T> T parseMessage( final XmlRpcMessage message, final Class<T> messageType )
-        throws BindException
-    {
-        return null;
-    }
+    <T> T parse( final String in, final Class<T> type )
+        throws XmlRpcException;
 
-    public <T extends XmlRpcMessage> T renderMessage( final Object message, final Class<T> messageType )
-        throws BindException
-    {
-        return null;
-    }
+    <T> T parse( final XmlRpcGenerator in, final Class<T> type )
+        throws XmlRpcException;
+
+    void render( final OutputStream out, final Object value )
+        throws XmlRpcException;
+
+    void render( final Writer out, final Object value )
+        throws XmlRpcException;
+
+    void render( final XmlRpcListener out, final Object value )
+        throws XmlRpcException;
+
+    String renderString( final Object value )
+        throws XmlRpcException;
 
 }

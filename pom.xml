@@ -10,9 +10,8 @@
   
   <modules>
     <module>xmlrpc-core</module>
-    <module>xmlrpc-http</module>
-    <module>anno-processor-xmlrpc</module>
     <module>xmlrpc-bindings</module>
+    <module>xmlrpc-http</module>
   </modules>
   
   <dependencyManagement>
@@ -63,6 +62,15 @@
           <configuration>
             <source>1.6</source>
             <target>1.6</target>
+          </configuration>
+        </plugin>
+        <plugin>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <version>2.5</version>
+          <configuration>
+            <excludes>
+              <exclude>**/testutil</exclude>
+            </excludes>
           </configuration>
         </plugin>
       </plugins>

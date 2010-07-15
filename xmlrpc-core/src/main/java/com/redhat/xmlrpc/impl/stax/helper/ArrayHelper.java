@@ -25,17 +25,20 @@ import com.redhat.xmlrpc.vocab.XmlRpcConstants;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class ArrayHelper
-    implements StaxHelper
 {
 
     private static final ValueHelper VALUE_PARSER = new ValueHelper();
 
-    @Override
-    public void parse( final XMLStreamReader reader, final XmlRpcListener listener )
+    public List<Object> parse( final XMLStreamReader reader, final XmlRpcListener listener )
         throws XMLStreamException, XmlRpcException
     {
         listener.startArray();
+
+        final List<Object> values = new ArrayList<Object>();
 
         int level = 1;
         int count = 0;
@@ -48,10 +51,14 @@ public class ArrayHelper
 
                 if ( XmlRpcConstants.VALUE.equals( reader.getName().getLocalPart() ) )
                 {
-                    final ValueType vt = VALUE_PARSER.typeOf( reader );
-                    final Object value = VALUE_PARSER.valueOf( reader, vt );
+                    listener.startArrayElement( count );
 
+                    final ValueType vt = VALUE_PARSER.typeOf( reader );
+                    final Object value = VALUE_PARSER.valueOf( reader, vt, listener );
+
+                    values.add( value );
                     listener.arrayElement( count, value, vt );
+                    listener.endArrayElement();
                 }
 
                 count++;
@@ -63,6 +70,8 @@ public class ArrayHelper
         }
 
         listener.endArray();
+
+        return values;
     }
 
 }

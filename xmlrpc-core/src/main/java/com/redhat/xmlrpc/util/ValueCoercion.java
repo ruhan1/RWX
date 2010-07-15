@@ -28,7 +28,7 @@ public abstract class ValueCoercion
     public String toString( final Object value )
         throws CoercionException
     {
-        return String.valueOf( value );
+        return value == null ? null : String.valueOf( value );
     }
 
 }

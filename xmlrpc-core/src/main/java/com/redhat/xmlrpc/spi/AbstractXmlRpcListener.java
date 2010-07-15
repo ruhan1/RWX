@@ -29,93 +29,143 @@ public abstract class AbstractXmlRpcListener
     }
 
     @Override
-    public void arrayElement( final int index, final Object value, final ValueType type )
+    public AbstractXmlRpcListener arrayElement( final int index, final Object value, final ValueType type )
         throws XmlRpcException
     {
+        return this;
     }
 
     @Override
-    public void endArray()
+    public AbstractXmlRpcListener endArray()
         throws XmlRpcException
     {
+        return this;
     }
 
     @Override
-    public void endRequest()
+    public AbstractXmlRpcListener endRequest()
         throws XmlRpcException
     {
+        return this;
     }
 
     @Override
-    public void endResponse()
+    public AbstractXmlRpcListener endResponse()
         throws XmlRpcException
     {
+        return this;
     }
 
     @Override
-    public void endStruct()
+    public AbstractXmlRpcListener endStruct()
         throws XmlRpcException
     {
+        return this;
     }
 
     @Override
-    public void fault( final int code, final String message )
+    public AbstractXmlRpcListener fault( final int code, final String message )
         throws XmlRpcException
     {
+        return this;
     }
 
     @Override
-    public void startComplexParameter( final int index )
+    public AbstractXmlRpcListener startParameter( final int index )
         throws XmlRpcException
     {
+        return this;
     }
 
     @Override
-    public void endComplexParameter()
+    public AbstractXmlRpcListener endParameter()
         throws XmlRpcException
     {
+        return this;
     }
 
     @Override
-    public void parameter( final int index, final Object value, final ValueType type )
+    public AbstractXmlRpcListener parameter( final int index, final Object value, final ValueType type )
         throws XmlRpcException
     {
+        return this;
     }
 
     @Override
-    public void requestMethod( final String methodName )
+    public AbstractXmlRpcListener requestMethod( final String methodName )
         throws XmlRpcException
     {
+        return this;
     }
 
     @Override
-    public void startArray()
+    public AbstractXmlRpcListener startArray()
         throws XmlRpcException
     {
+        return this;
     }
 
     @Override
-    public void startRequest()
+    public AbstractXmlRpcListener startRequest()
         throws XmlRpcException
     {
+        return this;
     }
 
     @Override
-    public void startResponse()
+    public AbstractXmlRpcListener startResponse()
         throws XmlRpcException
     {
+        return this;
     }
 
     @Override
-    public void startStruct()
+    public AbstractXmlRpcListener startStruct()
         throws XmlRpcException
     {
+        return this;
     }
 
     @Override
-    public void structMember( final String key, final Object value, final ValueType type )
+    public AbstractXmlRpcListener structMember( final String key, final Object value, final ValueType type )
         throws XmlRpcException
     {
+        return this;
+    }
+
+    @Override
+    public AbstractXmlRpcListener endArrayElement()
+        throws XmlRpcException
+    {
+        return this;
+    }
+
+    @Override
+    public AbstractXmlRpcListener endStructMember()
+        throws XmlRpcException
+    {
+        return this;
+    }
+
+    @Override
+    public AbstractXmlRpcListener startArrayElement( final int index )
+        throws XmlRpcException
+    {
+        return this;
+    }
+
+    @Override
+    public AbstractXmlRpcListener startStructMember( final String key )
+        throws XmlRpcException
+    {
+        return this;
+    }
+
+    @Override
+    public AbstractXmlRpcListener value( final Object value, final ValueType type )
+        throws XmlRpcException
+    {
+        return this;
     }
 
 }

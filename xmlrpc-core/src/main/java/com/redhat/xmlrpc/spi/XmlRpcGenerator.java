@@ -22,7 +22,7 @@ import com.redhat.xmlrpc.error.XmlRpcException;
 public interface XmlRpcGenerator
 {
 
-    void generate( XmlRpcListener listener )
+    XmlRpcGenerator generate( XmlRpcListener listener )
         throws XmlRpcException;
 
 }
