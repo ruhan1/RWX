@@ -17,54 +17,106 @@
 
 package com.redhat.xmlrpc.impl.stax.helper;
 
+import com.redhat.xmlrpc.error.CoercionException;
 import com.redhat.xmlrpc.error.XmlRpcException;
 import com.redhat.xmlrpc.spi.XmlRpcListener;
 import com.redhat.xmlrpc.vocab.ValueType;
 import com.redhat.xmlrpc.vocab.XmlRpcConstants;
 
+import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
+/**
+ * NOTE: This is a STATEFUL helper. It is NOT threadsafe!
+ */
 public class ValueHelper
+    implements XMLStreamConstants
 {
 
-    private static final StructHelper STRUCT_PARSER = new StructHelper();
+    private Object value;
 
-    private static final ArrayHelper ARRAY_PARSER = new ArrayHelper();
+    private ValueType type;
 
-    public ValueType typeOf( final XMLStreamReader reader )
+    private final boolean enableEvents;
+
+    public ValueHelper()
     {
-        final String tag = reader.getName().getLocalPart();
-        return ValueType.typeOf( tag );
+        enableEvents = true;
     }
 
-    public Object valueOf( final XMLStreamReader reader, final ValueType type, final XmlRpcListener listener )
+    public ValueHelper( final boolean enableEvents )
+    {
+        this.enableEvents = enableEvents;
+    }
+
+    public Object getValue()
+    {
+        return value;
+    }
+
+    public ValueType getValueType()
+    {
+        return type;
+    }
+
+    public Object parse( final XMLStreamReader reader, final XmlRpcListener listener )
         throws XMLStreamException, XmlRpcException
     {
-        Object value = null;
+        int evt = -1;
+        do
+        {
+            evt = reader.nextTag();
+            if ( evt == START_ELEMENT )
+            {
+                final String tag = reader.getName().getLocalPart();
+                if ( XmlRpcConstants.VALUE.equals( tag ) )
+                {
+                    throw new XmlRpcException( "Nested " + XmlRpcConstants.VALUE + " elements detected." );
+                }
+                else if ( XmlRpcConstants.STRUCT.equals( tag ) )
+                {
+                    value = StructHelper.parse( reader, listener, enableEvents );
+                    type = ValueType.STRUCT;
+                }
+                else if ( XmlRpcConstants.ARRAY.equals( tag ) )
+                {
+                    value = ArrayHelper.parse( reader, listener, enableEvents );
+                    type = ValueType.ARRAY;
+                }
+                else
+                {
+                    parseSimpleValue( reader, listener );
+                }
+            }
+            else if ( evt == XMLStreamReader.END_ELEMENT
+                && XmlRpcConstants.VALUE.equals( reader.getName().getLocalPart() ) )
+            {
+                break;
+            }
+        }
+        while ( evt != END_DOCUMENT );
 
-        final String tag = reader.getName().getLocalPart();
-        if ( XmlRpcConstants.STRUCT.equals( tag ) )
+        if ( enableEvents )
         {
-            value = STRUCT_PARSER.parse( reader, listener );
+            listener.value( value, type );
         }
-        else if ( XmlRpcConstants.ARRAY.equals( tag ) )
-        {
-            value = ARRAY_PARSER.parse( reader, listener );
-        }
-        else if ( XmlRpcConstants.VALUE.equals( tag ) )
-        {
-            final String src = reader.getElementText().trim();
-
-            value = type.coercion().fromString( src );
-        }
-        else
-        {
-            throw new XmlRpcException( "Invalid value type: " + tag );
-        }
-
-        listener.value( value, type );
         return value;
+    }
+
+    private void parseSimpleValue( final XMLStreamReader reader, final XmlRpcListener listener )
+        throws XMLStreamException, CoercionException
+    {
+        //        while ( reader.hasNext() && reader.next() != XMLStreamReader.START_ELEMENT )
+        //        {
+        //            // NOP
+        //        }
+
+        type = ValueType.typeOf( reader.getName().getLocalPart() );
+
+        final String src = reader.getElementText().trim();
+
+        value = type == null ? src : type.coercion().fromString( src );
     }
 
 }

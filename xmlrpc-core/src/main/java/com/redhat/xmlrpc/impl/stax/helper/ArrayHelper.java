@@ -22,6 +22,7 @@ import com.redhat.xmlrpc.spi.XmlRpcListener;
 import com.redhat.xmlrpc.vocab.ValueType;
 import com.redhat.xmlrpc.vocab.XmlRpcConstants;
 
+import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
@@ -29,47 +30,69 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ArrayHelper
+    implements XMLStreamConstants
 {
 
-    private static final ValueHelper VALUE_PARSER = new ValueHelper();
-
-    public List<Object> parse( final XMLStreamReader reader, final XmlRpcListener listener )
+    public static List<Object> parse( final XMLStreamReader reader, final XmlRpcListener listener )
         throws XMLStreamException, XmlRpcException
     {
-        listener.startArray();
+        return parse( reader, listener, true );
+    }
+
+    public static List<Object> parse( final XMLStreamReader reader, final XmlRpcListener listener,
+                                      final boolean enableEvents )
+        throws XMLStreamException, XmlRpcException
+    {
+        if ( enableEvents )
+        {
+            listener.startArray();
+        }
 
         final List<Object> values = new ArrayList<Object>();
 
-        int level = 1;
         int count = 0;
-        while ( reader.hasNext() && level > 0 )
+        int type = -1;
+        do
         {
-            final int type = reader.next();
-            if ( type == XMLStreamReader.START_ELEMENT )
+            type = reader.nextTag();
+            if ( type == START_ELEMENT )
             {
-                level++;
-
                 if ( XmlRpcConstants.VALUE.equals( reader.getName().getLocalPart() ) )
                 {
-                    listener.startArrayElement( count );
+                    if ( enableEvents )
+                    {
+                        listener.startArrayElement( count );
+                    }
 
-                    final ValueType vt = VALUE_PARSER.typeOf( reader );
-                    final Object value = VALUE_PARSER.valueOf( reader, vt, listener );
+                    final ValueHelper vh = new ValueHelper();
+                    vh.parse( reader, listener );
+
+                    final Object value = vh.getValue();
+                    final ValueType vt = vh.getValueType();
 
                     values.add( value );
-                    listener.arrayElement( count, value, vt );
-                    listener.endArrayElement();
-                }
 
-                count++;
+                    if ( enableEvents )
+                    {
+                        listener.arrayElement( count, value, vt );
+                        listener.endArrayElement();
+                    }
+
+                    count++;
+                }
             }
-            else if ( type == XMLStreamReader.END_ELEMENT )
+            else if ( type == XMLStreamReader.END_ELEMENT
+                && XmlRpcConstants.ARRAY.equals( reader.getName().getLocalPart() ) )
             {
-                level--;
+                break;
             }
         }
+        while ( type != END_DOCUMENT );
 
-        listener.endArray();
+        if ( enableEvents )
+        {
+            listener.endArray();
+        }
 
         return values;
     }

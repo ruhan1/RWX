@@ -19,30 +19,27 @@ package com.redhat.xmlrpc.impl.estream.testutil;
 
 import java.util.ArrayList;
 
-public class ExtList<T>
-    extends ArrayList<T>
+public class ExtListOfArrays<T>
+    extends ArrayList<T[]>
 {
 
     private static final long serialVersionUID = 1L;
 
-    public ExtList()
+    private final int arraySz;
+
+    public ExtListOfArrays( final int arraySz )
     {
+        this.arraySz = arraySz;
     }
 
-    public ExtList( final T... values )
+    public ExtListOfArrays<T> with( final T... values )
     {
-        if ( values != null )
+        if ( values == null || values.length != arraySz )
         {
-            for ( final T value : values )
-            {
-                add( value );
-            }
+            throw new IllegalArgumentException( "Array input must be of size: " + arraySz );
         }
-    }
 
-    public ExtList<T> with( final T value )
-    {
-        add( value );
+        add( values );
         return this;
     }
 

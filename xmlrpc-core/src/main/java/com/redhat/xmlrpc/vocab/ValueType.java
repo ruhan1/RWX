@@ -95,7 +95,7 @@ public enum ValueType
                 throw new CoercionException( e.getMessage(), e );
             }
         }
-    }, Integer.class, "i4", "int" ),
+    }, Integer.class, "int", "i4" ),
 
     BOOLEAN( new ValueCoercion()
     {

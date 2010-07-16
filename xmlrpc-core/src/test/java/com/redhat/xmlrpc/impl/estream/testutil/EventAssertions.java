@@ -72,7 +72,13 @@ public final class EventAssertions
             sb.append( "The following indexes in the event-list did not match the recorded values:" );
             for ( final Integer idx : failures )
             {
-                sb.append( "\n\t" ).append( idx ).append( ". " ).append( check.get( idx ) );
+                sb.append( "\n[" )
+                  .append( idx )
+                  .append( "]\n\tReal: " )
+                  .append( check.get( idx ) )
+                  .append( "\n\tSimulated: " )
+                  .append( recorded.get( idx ) )
+                  .append( "\n" );
             }
 
             fail( sb.toString() );
@@ -86,7 +92,7 @@ public final class EventAssertions
         if ( check.size() != recorded.size() )
         {
             final StringBuilder sb = new StringBuilder();
-            sb.append( "Event-list sizes differ. Real events: " ).append( check.size() ).append( ":\n" );
+            sb.append( "Event-list sizes differ. Expected events: " ).append( check.size() ).append( ":\n" );
 
             for ( int i = 0; i < check.size(); i++ )
             {
@@ -94,7 +100,7 @@ public final class EventAssertions
                 sb.append( "\n\t" ).append( i ).append( ". " ).append( e );
             }
 
-            sb.append( "\n\nSimulated events: " ).append( recorded.size() ).append( ":\n" );
+            sb.append( "\n\nRecorded events: " ).append( recorded.size() ).append( ":\n" );
             for ( int i = 0; i < recorded.size(); i++ )
             {
                 final RecordedEvent e = recorded.get( i );
@@ -121,7 +127,13 @@ public final class EventAssertions
             sb.append( "The following indexes in the event-list did not match the recorded values:" );
             for ( final Integer idx : failures )
             {
-                sb.append( "\n\t" ).append( idx ).append( ". " ).append( check.get( idx ) );
+                sb.append( "\n[" )
+                  .append( idx )
+                  .append( "]\n\tExpected: " )
+                  .append( check.get( idx ) )
+                  .append( "\n\tActual: " )
+                  .append( recorded.get( idx ) )
+                  .append( "\n" );
             }
 
             fail( sb.toString() );

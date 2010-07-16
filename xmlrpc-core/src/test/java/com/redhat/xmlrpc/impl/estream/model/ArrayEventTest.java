@@ -21,8 +21,11 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
+import com.redhat.xmlrpc.impl.estream.testutil.ExtListOfArrays;
 import com.redhat.xmlrpc.vocab.EventType;
 import com.redhat.xmlrpc.vocab.ValueType;
+
+import java.util.List;
 
 public class ArrayEventTest
     extends AbstractEventTest<Integer>
@@ -140,6 +143,39 @@ public class ArrayEventTest
     public void errorOnArrayElementStartEventType()
     {
         new ArrayEvent( EventType.START_ARRAY_ELEMENT );
+    }
+
+    @SuppressWarnings( "unchecked" )
+    @Override
+    protected List<Event<Integer>[]> constructEqualInstanceSets()
+    {
+        return new ExtListOfArrays<Event<Integer>>( 2 ).with( new ArrayEvent( EventType.START_ARRAY ),
+                                                              new ArrayEvent( EventType.START_ARRAY ) )
+                                                       .with( new ArrayEvent( 0 ), new ArrayEvent( 0 ) )
+                                                       .with( new ArrayEvent( 0, "foo", ValueType.STRING ),
+                                                              new ArrayEvent( 0, "foo", ValueType.STRING ) )
+                                                       .with( new ArrayEvent( EventType.END_ARRAY_ELEMENT ),
+                                                              new ArrayEvent( EventType.END_ARRAY_ELEMENT ) )
+                                                       .with( new ArrayEvent( EventType.END_ARRAY ),
+                                                              new ArrayEvent( EventType.END_ARRAY ) );
+    }
+
+    @SuppressWarnings( "unchecked" )
+    @Override
+    protected List<Event<Integer>[]> constructUnequalInstanceSets()
+    {
+        return new ExtListOfArrays<Event<Integer>>( 2 ).with( new ArrayEvent( EventType.START_ARRAY ),
+                                                              new ArrayEvent( EventType.END_ARRAY ) )
+                                                       .with( new ArrayEvent( 0 ), new ArrayEvent( 1 ) )
+                                                       .with( new ArrayEvent( 0, "foo", ValueType.STRING ),
+                                                              new ArrayEvent( 0, "foo2", ValueType.STRING ) )
+                                                       .with( new ArrayEvent( EventType.END_ARRAY_ELEMENT ),
+                                                              new ArrayEvent( EventType.END_ARRAY ) )
+                                                       .with( new ArrayEvent( EventType.END_ARRAY ), new ArrayEvent( 0 ) )
+                                                       .with( new ArrayEvent( EventType.END_ARRAY_ELEMENT ),
+                                                              new ArrayEvent( EventType.START_ARRAY ) )
+                                                       .with( new ArrayEvent( EventType.START_ARRAY ),
+                                                              new ArrayEvent( 0 ) );
     }
 
 }

@@ -95,11 +95,11 @@ public class StaxParser
                     final String tagName = reader.getName().getLocalPart();
                     if ( XmlRpcConstants.REQUEST.equals( tagName ) )
                     {
-                        new RequestHelper().parse( reader, listener );
+                        RequestHelper.parse( reader, listener );
                     }
                     else if ( XmlRpcConstants.RESPONSE.equals( tagName ) )
                     {
-                        new ResponseHelper().parse( reader, listener );
+                        ResponseHelper.parse( reader, listener );
                     }
                 }
             }

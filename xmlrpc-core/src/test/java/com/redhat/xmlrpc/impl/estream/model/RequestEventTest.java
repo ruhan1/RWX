@@ -21,8 +21,11 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
+import com.redhat.xmlrpc.impl.estream.testutil.ExtListOfArrays;
 import com.redhat.xmlrpc.vocab.EventType;
 import com.redhat.xmlrpc.vocab.ValueType;
+
+import java.util.List;
 
 public class RequestEventTest
     extends AbstractEventTest<Void>
@@ -103,6 +106,24 @@ public class RequestEventTest
 
         assertEvent( event, EventType.END_REQUEST, null, null, null, false );
         assertEvent( event, EventType.REQUEST_METHOD, null, "bar", null, false );
+    }
+
+    @SuppressWarnings( "unchecked" )
+    @Override
+    protected List<Event<Void>[]> constructEqualInstanceSets()
+    {
+        return new ExtListOfArrays<Event<Void>>( 2 ).with( new RequestEvent( true ), new RequestEvent( true ) )
+                                                    .with( new RequestEvent( "foo" ), new RequestEvent( "foo" ) )
+                                                    .with( new RequestEvent( false ), new RequestEvent( false ) );
+    }
+
+    @SuppressWarnings( "unchecked" )
+    @Override
+    protected List<Event<Void>[]> constructUnequalInstanceSets()
+    {
+        return new ExtListOfArrays<Event<Void>>( 2 ).with( new RequestEvent( true ), new RequestEvent( false ) )
+                                                    .with( new RequestEvent( "foo" ), new RequestEvent( "bar" ) )
+                                                    .with( new RequestEvent( true ), new RequestEvent( "foo" ) );
     }
 
 }

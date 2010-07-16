@@ -21,43 +21,53 @@ import com.redhat.xmlrpc.error.XmlRpcException;
 import com.redhat.xmlrpc.spi.XmlRpcListener;
 import com.redhat.xmlrpc.vocab.XmlRpcConstants;
 
+import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
 public class RequestHelper
-    implements StaxHelper
+    implements XMLStreamConstants
 {
 
-    private static final ParamHelper PARAM_HELPER = new ParamHelper();
-
-    @Override
-    public void parse( final XMLStreamReader reader, final XmlRpcListener listener )
+    public static void parse( final XMLStreamReader reader, final XmlRpcListener listener )
         throws XMLStreamException, XmlRpcException
     {
         listener.startRequest();
 
-        int level = 1;
-        while ( reader.hasNext() && level > 0 )
+        boolean methodGiven = false;
+        int type = -1;
+        do
         {
-            final int type = reader.next();
-            if ( type == XMLStreamReader.START_ELEMENT )
+            type = reader.nextTag();
+            if ( type == START_ELEMENT )
             {
-                level++;
-
                 final String tag = reader.getName().getLocalPart();
                 if ( XmlRpcConstants.METHOD_NAME.equals( tag ) )
                 {
+                    if ( methodGiven )
+                    {
+                        throw new XmlRpcException( "Invalid request. Multiple methodName parameters." );
+                    }
+
                     listener.requestMethod( reader.getElementText().trim() );
+                    methodGiven = true;
                 }
-                else if ( XmlRpcConstants.PARAM.equals( tag ) )
+                else if ( XmlRpcConstants.PARAMS.equals( tag ) )
                 {
-                    PARAM_HELPER.parse( reader, listener );
+                    ParamHelper.parse( reader, listener );
                 }
             }
-            else if ( type == XMLStreamReader.END_ELEMENT )
+            else if ( type == XMLStreamReader.END_ELEMENT
+                && XmlRpcConstants.REQUEST.equals( reader.getName().getLocalPart() ) )
             {
-                level--;
+                break;
             }
+        }
+        while ( type != END_DOCUMENT );
+
+        if ( !methodGiven )
+        {
+            throw new XmlRpcException( "methodName must be specified!" );
         }
 
         listener.endRequest();

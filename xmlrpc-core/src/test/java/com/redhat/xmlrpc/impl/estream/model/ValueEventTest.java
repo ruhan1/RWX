@@ -21,8 +21,11 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
+import com.redhat.xmlrpc.impl.estream.testutil.ExtListOfArrays;
 import com.redhat.xmlrpc.vocab.EventType;
 import com.redhat.xmlrpc.vocab.ValueType;
+
+import java.util.List;
 
 public class ValueEventTest
     extends AbstractEventTest<Void>
@@ -92,6 +95,22 @@ public class ValueEventTest
     public void typeMismatch_IntForString()
     {
         assertEvent( new ValueEvent( "foo", ValueType.STRING ), EventType.VALUE, null, 1, ValueType.INT, false );
+    }
+
+    @SuppressWarnings( "unchecked" )
+    @Override
+    protected List<Event<Void>[]> constructEqualInstanceSets()
+    {
+        return new ExtListOfArrays<Event<Void>>( 2 ).with( new ValueEvent( "foo", ValueType.STRING ),
+                                                           new ValueEvent( "foo", ValueType.STRING ) );
+    }
+
+    @SuppressWarnings( "unchecked" )
+    @Override
+    protected List<Event<Void>[]> constructUnequalInstanceSets()
+    {
+        return new ExtListOfArrays<Event<Void>>( 2 ).with( new ValueEvent( "foo", ValueType.STRING ),
+                                                           new ValueEvent( "bar", ValueType.STRING ) );
     }
 
 }

@@ -25,6 +25,15 @@ public class ExtMap<K, V>
 
     private static final long serialVersionUID = 1L;
 
+    public ExtMap( final K key, final V val )
+    {
+        put( key, val );
+    }
+
+    public ExtMap()
+    {
+    }
+
     public ExtMap<K, V> with( final K key, final V value )
     {
         put( key, value );

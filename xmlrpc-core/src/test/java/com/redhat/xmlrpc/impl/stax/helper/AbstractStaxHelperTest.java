@@ -17,15 +17,15 @@
 
 package com.redhat.xmlrpc.impl.stax.helper;
 
-import com.redhat.xmlrpc.error.XmlRpcException;
-import com.redhat.xmlrpc.spi.XmlRpcListener;
+import com.redhat.xmlrpc.impl.stax.AbstractStaxTest;
 
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamReader;
-
-public interface StaxHelper
+public class AbstractStaxHelperTest
+    extends AbstractStaxTest
 {
+    @Override
+    protected String getXmlPathPrefix()
+    {
+        return super.getXmlPathPrefix() + "fragment/";
+    }
 
-    void parse( XMLStreamReader reader, XmlRpcListener listener )
-        throws XMLStreamException, XmlRpcException;
 }

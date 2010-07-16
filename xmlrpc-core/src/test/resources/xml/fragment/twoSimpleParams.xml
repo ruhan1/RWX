@@ -1,0 +1,12 @@
+<params>
+	<param>
+		<value>
+			<string>foo</string>
+		</value>
+	</param>
+	<param>
+		<value>
+			<string>foo2</string>
+		</value>
+	</param>
+</params>

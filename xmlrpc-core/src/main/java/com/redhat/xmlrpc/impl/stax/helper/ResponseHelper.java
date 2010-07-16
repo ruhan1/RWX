@@ -21,45 +21,52 @@ import com.redhat.xmlrpc.error.XmlRpcException;
 import com.redhat.xmlrpc.spi.XmlRpcListener;
 import com.redhat.xmlrpc.vocab.XmlRpcConstants;
 
+import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
 public class ResponseHelper
-    implements StaxHelper
+    implements XMLStreamConstants
 {
 
-    private static final FaultHelper FAULT_HELPER = new FaultHelper();
-
-    private static final ParamHelper PARAM_PARSER = new ParamHelper();
-
-    @Override
-    public void parse( final XMLStreamReader reader, final XmlRpcListener listener )
+    public static void parse( final XMLStreamReader reader, final XmlRpcListener listener )
         throws XMLStreamException, XmlRpcException
     {
         listener.startResponse();
 
-        int level = 1;
-        while ( reader.hasNext() && level > 0 )
-        {
-            final int type = reader.next();
-            if ( type == XMLStreamReader.START_ELEMENT )
-            {
-                level++;
+        boolean paramDetected = false;
+        boolean faultDetected = false;
 
+        int type = -1;
+        do
+        {
+            type = reader.nextTag();
+            if ( type == START_ELEMENT )
+            {
                 final String tag = reader.getName().getLocalPart();
                 if ( XmlRpcConstants.FAULT.equals( tag ) )
                 {
-                    FAULT_HELPER.parse( reader, listener );
+                    faultDetected = true;
+                    FaultHelper.parse( reader, listener );
+                    break;
                 }
-                else if ( XmlRpcConstants.PARAM.equals( tag ) )
+                else if ( XmlRpcConstants.PARAMS.equals( tag ) )
                 {
-                    PARAM_PARSER.parse( reader, listener );
+                    paramDetected = true;
+                    ParamHelper.parse( reader, listener );
                 }
             }
-            else if ( type == XMLStreamReader.END_ELEMENT )
+            else if ( type == XMLStreamReader.END_ELEMENT
+                && XmlRpcConstants.RESPONSE.equals( reader.getName().getLocalPart() ) )
             {
-                level--;
+                break;
             }
+        }
+        while ( type != END_DOCUMENT );
+
+        if ( paramDetected && faultDetected )
+        {
+            throw new XmlRpcException( "Cannot specify both fault and parameters in XML-RPC response." );
         }
 
         listener.endResponse();

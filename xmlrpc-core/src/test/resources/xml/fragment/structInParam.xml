@@ -1,0 +1,14 @@
+<params>
+	<param>
+		<value>
+			<struct>
+				<member>
+					<name>key</name>
+					<value>
+						<string>foo</string>
+					</value>
+				</member>
+			</struct>
+		</value>
+	</param>
+</params>

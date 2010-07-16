@@ -18,86 +18,62 @@
 package com.redhat.xmlrpc.impl.stax.helper;
 
 import com.redhat.xmlrpc.error.XmlRpcException;
-import com.redhat.xmlrpc.spi.AbstractXmlRpcListener;
 import com.redhat.xmlrpc.spi.XmlRpcListener;
-import com.redhat.xmlrpc.vocab.ValueType;
 import com.redhat.xmlrpc.vocab.XmlRpcConstants;
 
+import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
+import java.util.Map;
+
 public class FaultHelper
-    implements StaxHelper
+    implements XMLStreamConstants
 {
 
-    private static final StructHelper STRUCT_HELPER = new StructHelper();
-
-    @Override
-    public void parse( final XMLStreamReader reader, final XmlRpcListener handler )
+    @SuppressWarnings( "unchecked" )
+    public static void parse( final XMLStreamReader reader, final XmlRpcListener handler )
         throws XMLStreamException, XmlRpcException
     {
-        boolean fired = false;
+        Map<String, Object> values = null;
 
-        int level = 1;
-        while ( reader.hasNext() && level > 0 )
+        int type = -1;
+        do
         {
-            final int type = reader.next();
-            if ( type == XMLStreamReader.START_ELEMENT )
+            type = reader.nextTag();
+            if ( type == START_ELEMENT )
             {
-                level++;
-
-                if ( !fired )
+                final String tag = reader.getName().getLocalPart();
+                if ( XmlRpcConstants.VALUE.equals( tag ) )
                 {
-                    final String tag = reader.getName().getLocalPart();
-                    if ( XmlRpcConstants.STRUCT.equals( tag ) )
+                    if ( values != null )
                     {
-                        final FaultListener fl = new FaultListener();
-                        STRUCT_HELPER.parse( reader, fl );
-
-                        handler.fault( fl.getCode(), fl.getMessage() );
+                        throw new XmlRpcException( "Fault can only contain ONE value." );
                     }
-                    fired = true;
+
+                    values = (Map<String, Object>) new ValueHelper( false ).parse( reader, handler );
+                    break;
+                }
+                else
+                {
+                    throw new XmlRpcException( "Invalid nested element within fault: " + tag );
                 }
             }
-            else if ( type == XMLStreamReader.END_ELEMENT )
+            else if ( type == XMLStreamReader.END_ELEMENT
+                && XmlRpcConstants.REQUEST.equals( reader.getName().getLocalPart() ) )
             {
-                level--;
+                break;
             }
         }
-    }
+        while ( type != END_DOCUMENT );
 
-    private static final class FaultListener
-        extends AbstractXmlRpcListener
-    {
-        private int code;
-
-        private String message;
-
-        int getCode()
+        if ( values == null )
         {
-            return code;
+            throw new XmlRpcException( "Invalid fault. No code or string information provided!" );
         }
 
-        String getMessage()
-        {
-            return message;
-        }
-
-        @Override
-        public FaultListener structMember( final String key, final Object value, final ValueType type )
-        {
-            if ( XmlRpcConstants.FAULT_CODE.equals( key ) )
-            {
-                code = (Integer) value;
-            }
-            else if ( XmlRpcConstants.FAULT_STRING.equals( key ) )
-            {
-                message = (String) value;
-            }
-
-            return this;
-        }
-
+        handler.fault( (Integer) values.get( XmlRpcConstants.FAULT_CODE ),
+                       (String) values.get( XmlRpcConstants.FAULT_STRING ) );
     }
 
 }

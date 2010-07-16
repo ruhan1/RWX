@@ -21,8 +21,11 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
+import com.redhat.xmlrpc.impl.estream.testutil.ExtListOfArrays;
 import com.redhat.xmlrpc.vocab.EventType;
 import com.redhat.xmlrpc.vocab.ValueType;
+
+import java.util.List;
 
 public class ParameterEventTest
     extends AbstractEventTest<Integer>
@@ -92,6 +95,30 @@ public class ParameterEventTest
     {
         assertEvent( new ParameterEvent( 0, "foo", ValueType.STRING ), EventType.PARAMETER, 0, "bar", ValueType.BASE64,
                      false );
+    }
+
+    @SuppressWarnings( "unchecked" )
+    @Override
+    protected List<Event<Integer>[]> constructEqualInstanceSets()
+    {
+        return new ExtListOfArrays<Event<Integer>>( 2 ).with( new ParameterEvent(), new ParameterEvent() )
+                                                       .with( new ParameterEvent( 0 ), new ParameterEvent( 0 ) )
+                                                       .with( new ParameterEvent( 0, "foo", ValueType.STRING ),
+                                                              new ParameterEvent( 0, "foo", ValueType.STRING ) );
+    }
+
+    @SuppressWarnings( "unchecked" )
+    @Override
+    protected List<Event<Integer>[]> constructUnequalInstanceSets()
+    {
+        return new ExtListOfArrays<Event<Integer>>( 2 ).with( new ParameterEvent(), new ParameterEvent( 0 ) )
+                                                       .with( new ParameterEvent( 0 ), new ParameterEvent( 1 ) )
+                                                       .with( new ParameterEvent( 0, "foo", ValueType.STRING ),
+                                                              new ParameterEvent( 0, "foo1", ValueType.STRING ) )
+                                                       .with( new ParameterEvent(),
+                                                              new ParameterEvent( 0, "foo", ValueType.STRING ) )
+                                                       .with( new ParameterEvent( 0 ),
+                                                              new ParameterEvent( 0, "foo", ValueType.STRING ) );
     }
 
 }

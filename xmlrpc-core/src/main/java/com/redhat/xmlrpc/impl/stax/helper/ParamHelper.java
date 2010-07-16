@@ -20,42 +20,49 @@ package com.redhat.xmlrpc.impl.stax.helper;
 import com.redhat.xmlrpc.error.XmlRpcException;
 import com.redhat.xmlrpc.spi.XmlRpcListener;
 import com.redhat.xmlrpc.vocab.ValueType;
+import com.redhat.xmlrpc.vocab.XmlRpcConstants;
 
+import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
 public class ParamHelper
-    implements StaxHelper
+    implements XMLStreamConstants
 {
 
-    private static final ValueHelper VALUE_PARSER = new ValueHelper();
-
-    public void parse( final XMLStreamReader reader, final XmlRpcListener listener )
+    public static void parse( final XMLStreamReader reader, final XmlRpcListener listener )
         throws XMLStreamException, XmlRpcException
     {
-        int level = 1;
         int count = 0;
-        while ( reader.hasNext() && level > 0 )
+        int type = -1;
+        do
         {
-            final int type = reader.next();
-            if ( type == XMLStreamReader.START_ELEMENT )
+            type = reader.nextTag();
+            if ( type == START_ELEMENT )
             {
-                level++;
+                if ( XmlRpcConstants.VALUE.equals( reader.getName().getLocalPart() ) )
+                {
+                    listener.startParameter( count );
 
-                listener.startParameter( count );
-                final ValueType vt = VALUE_PARSER.typeOf( reader );
-                final Object value = VALUE_PARSER.valueOf( reader, vt, listener );
+                    final ValueHelper vh = new ValueHelper();
+                    vh.parse( reader, listener );
 
-                listener.parameter( count++, value, vt );
-                listener.endParameter();
+                    final Object value = vh.getValue();
+                    final ValueType vt = vh.getValueType();
 
-                count++;
+                    listener.parameter( count, value, vt );
+                    listener.endParameter();
+
+                    count++;
+                }
             }
-            else if ( type == XMLStreamReader.END_ELEMENT )
+            else if ( type == XMLStreamReader.END_ELEMENT
+                && XmlRpcConstants.PARAMS.equals( reader.getName().getLocalPart() ) )
             {
-                level--;
+                break;
             }
         }
+        while ( type != END_DOCUMENT );
     }
 
 }

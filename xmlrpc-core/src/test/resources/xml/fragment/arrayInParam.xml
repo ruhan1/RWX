@@ -1,0 +1,13 @@
+<params>
+	<param>
+		<value>
+			<array>
+				<data>
+					<value>
+						<string>foo</string>
+					</value>
+				</data>
+			</array>
+		</value>
+	</param>
+</params>

@@ -21,8 +21,11 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
+import com.redhat.xmlrpc.impl.estream.testutil.ExtListOfArrays;
 import com.redhat.xmlrpc.vocab.EventType;
 import com.redhat.xmlrpc.vocab.ValueType;
+
+import java.util.List;
 
 public class ResponseEventTest
     extends AbstractEventTest<Integer>
@@ -74,6 +77,26 @@ public class ResponseEventTest
         assertEvent( event, EventType.ARRAY_ELEMENT, 999, "Test message", ValueType.STRING, false );
         assertEvent( event, EventType.FAULT, 998, "Test message", ValueType.STRING, false );
         assertEvent( event, EventType.FAULT, 999, "Other message", ValueType.STRING, false );
+    }
+
+    @SuppressWarnings( "unchecked" )
+    @Override
+    protected List<Event<Integer>[]> constructEqualInstanceSets()
+    {
+        return new ExtListOfArrays<Event<Integer>>( 2 ).with( new ResponseEvent( true ), new ResponseEvent( true ) )
+                                                       .with( new ResponseEvent( 100, "Test fault" ),
+                                                              new ResponseEvent( 100, "Test fault" ) );
+    }
+
+    @SuppressWarnings( "unchecked" )
+    @Override
+    protected List<Event<Integer>[]> constructUnequalInstanceSets()
+    {
+        return new ExtListOfArrays<Event<Integer>>( 2 ).with( new ResponseEvent( true ), new ResponseEvent( false ) )
+                                                       .with( new ResponseEvent( 100, "Test fault" ),
+                                                              new ResponseEvent( 101, "Test fault" ) )
+                                                       .with( new ResponseEvent( 100, "Test fault" ),
+                                                              new ResponseEvent( 100, "Test fault2" ) );
     }
 
 }

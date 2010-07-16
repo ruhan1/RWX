@@ -21,8 +21,11 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
+import com.redhat.xmlrpc.impl.estream.testutil.ExtListOfArrays;
 import com.redhat.xmlrpc.vocab.EventType;
 import com.redhat.xmlrpc.vocab.ValueType;
+
+import java.util.List;
 
 public class StructEventTest
     extends AbstractEventTest<String>
@@ -141,6 +144,36 @@ public class StructEventTest
     public void errorOnStructMemberStartEventType()
     {
         new StructEvent( EventType.START_STRUCT_MEMBER );
+    }
+
+    @SuppressWarnings( "unchecked" )
+    @Override
+    protected List<Event<String>[]> constructEqualInstanceSets()
+    {
+        return new ExtListOfArrays<Event<String>>( 2 ).with( new StructEvent( EventType.START_STRUCT ),
+                                                             new StructEvent( EventType.START_STRUCT ) )
+                                                      .with( new StructEvent( "key" ), new StructEvent( "key" ) )
+                                                      .with( new StructEvent( EventType.END_STRUCT_MEMBER ),
+                                                             new StructEvent( EventType.END_STRUCT_MEMBER ) )
+                                                      .with( new StructEvent( "key", "foo", ValueType.STRING ),
+                                                             new StructEvent( "key", "foo", ValueType.STRING ) )
+                                                      .with( new StructEvent( EventType.END_STRUCT ),
+                                                             new StructEvent( EventType.END_STRUCT ) );
+    }
+
+    @SuppressWarnings( "unchecked" )
+    @Override
+    protected List<Event<String>[]> constructUnequalInstanceSets()
+    {
+        return new ExtListOfArrays<Event<String>>( 2 ).with( new StructEvent( EventType.START_STRUCT ),
+                                                             new StructEvent( EventType.END_STRUCT ) )
+                                                      .with( new StructEvent( "key" ), new StructEvent( "key2" ) )
+                                                      .with( new StructEvent( EventType.END_STRUCT_MEMBER ),
+                                                             new StructEvent( EventType.END_STRUCT ) )
+                                                      .with( new StructEvent( "key", "foo", ValueType.STRING ),
+                                                             new StructEvent( "key", "foo2", ValueType.STRING ) )
+                                                      .with( new StructEvent( "key" ),
+                                                             new StructEvent( EventType.END_STRUCT ) );
     }
 
 }
