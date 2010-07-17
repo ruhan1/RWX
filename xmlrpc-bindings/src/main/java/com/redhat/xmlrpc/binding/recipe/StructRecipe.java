@@ -21,12 +21,12 @@ public class StructRecipe
     extends AbstractRecipe<String>
 {
 
-    public StructRecipe( final String name, final String objectType, final String... constructorKeys )
+    public StructRecipe( final Class<?> objectType, final String... constructorKeys )
     {
-        super( name, objectType, constructorKeys );
+        super( objectType, constructorKeys );
     }
 
-    public final StructRecipe addFieldBinding( final String key, final String fieldName, final String fieldType )
+    public final StructRecipe addFieldBinding( final String key, final String fieldName, final Class<?> fieldType )
     {
         putBinding( key, new FieldBinding( fieldName, fieldType ) );
         return this;

@@ -44,7 +44,7 @@ public class XBRBinder
 
     private final Repository repository = new DefaultRepository();
 
-    private final Map<String, Recipe<?>> recipes = new HashMap<String, Recipe<?>>();
+    private final Map<Class<?>, Recipe<?>> recipes = new HashMap<Class<?>, Recipe<?>>();
 
     private final Stack<ObjectRecipe> builderStack = new Stack<ObjectRecipe>();
 
@@ -62,14 +62,22 @@ public class XBRBinder
         current = entryPoint;
         for ( final Recipe<?> recipe : recipes )
         {
-            this.recipes.put( recipe.getName(), recipe );
-            repository.add( recipe.getName(), new ObjectRecipe( recipe.getObjectType(),
-                                                                toStringArray( recipe.getConstructorKeys() ) ) );
+            final ObjectRecipe builder =
+                new ObjectRecipe( recipe.getObjectType(), toStringArray( recipe.getConstructorKeys() ) );
+
+            if ( entryPoint == recipe )
+            {
+                currentBuilder = builder;
+            }
+
+            this.recipes.put( recipe.getObjectType(), recipe );
+
+            repository.add( recipe.getObjectType().getName(), builder );
         }
 
         for ( final Recipe<?> recipe : recipes )
         {
-            final ObjectRecipe r = (ObjectRecipe) repository.get( recipe.getName() );
+            final ObjectRecipe r = (ObjectRecipe) repository.get( recipe.getObjectType().getName() );
 
             final Map<? extends Object, FieldBinding> bindings = recipe.getFieldBindings();
 
@@ -86,9 +94,9 @@ public class XBRBinder
             for ( final Map.Entry<? extends Object, FieldBinding> entry : bindings.entrySet() )
             {
                 final FieldBinding binding = entry.getValue();
-                if ( binding.isRecipeReference() )
+                if ( isRecipeReference( binding ) )
                 {
-                    final ObjectRecipe ref = (ObjectRecipe) repository.get( binding.getFieldType() );
+                    final ObjectRecipe ref = (ObjectRecipe) repository.get( binding.getFieldType().getName() );
                     if ( ref == null )
                     {
                         throw new BindException( "Cannot find recipe: " + binding.getFieldType() + " for field: "
@@ -98,10 +106,12 @@ public class XBRBinder
                     r.setProperty( binding.getFieldName(), ref );
                 }
             }
-
         }
+    }
 
-        currentBuilder = (ObjectRecipe) repository.get( entryPoint.getName() );
+    private boolean isRecipeReference( final FieldBinding binding )
+    {
+        return recipes.containsKey( binding.getFieldType() );
     }
 
     public Object create()
@@ -181,7 +191,7 @@ public class XBRBinder
         if ( currentFieldBinding == null )
         {
             throw new BindException( "Cannot find field for value: " + value + " (type: " + type
-                + ")\nCurrent recipe: " + current.getName() );
+                + ")\nCurrent recipe: " + current.getObjectType().getName() );
         }
 
         currentBuilder.setProperty( currentFieldBinding.getFieldName(), value );
@@ -192,7 +202,7 @@ public class XBRBinder
     {
         final String key = String.valueOf( k );
         final FieldBinding binding = ( (StructRecipe) current ).getFieldBinding( key );
-        if ( binding.isRecipeReference() )
+        if ( isRecipeReference( binding ) )
         {
             pushCurrent( key );
         }
@@ -223,7 +233,7 @@ public class XBRBinder
     private void pushCurrent( final String key )
     {
         final FieldBinding binding = current.getFieldBindings().get( key );
-        final ObjectRecipe r = (ObjectRecipe) repository.get( binding.getFieldType() );
+        final ObjectRecipe r = (ObjectRecipe) repository.get( binding.getFieldType().getName() );
         final Recipe<?> recipe = recipes.get( binding.getFieldType() );
 
         recipeStack.push( current );

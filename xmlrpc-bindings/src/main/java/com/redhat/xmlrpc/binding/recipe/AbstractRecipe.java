@@ -29,19 +29,16 @@ public abstract class AbstractRecipe<T>
 
     private static final long serialVersionUID = 1L;
 
-    private String name;
-
-    private String objectType;
+    private Class<?> objectType;
 
     private T[] constructorKeys;
 
     private Map<T, FieldBinding> bindings = new HashMap<T, FieldBinding>();
 
-    protected AbstractRecipe( final String name, final String objectType, final T... constructorKeys )
+    protected AbstractRecipe( final Class<?> objectType, final T... constructorKeys )
     {
         this.objectType = objectType;
         this.constructorKeys = constructorKeys;
-        this.name = name.startsWith( "recipe:" ) ? name : "recipe:" + name;
     }
 
     protected void putBinding( final T key, final FieldBinding binding )
@@ -66,12 +63,7 @@ public abstract class AbstractRecipe<T>
         return bindings.get( key );
     }
 
-    public final String getName()
-    {
-        return name;
-    }
-
-    public final String getObjectType()
+    public final Class<?> getObjectType()
     {
         return objectType;
     }
@@ -81,8 +73,7 @@ public abstract class AbstractRecipe<T>
     public void readExternal( final ObjectInput in )
         throws IOException, ClassNotFoundException
     {
-        name = (String) in.readObject();
-        objectType = (String) in.readObject();
+        objectType = Class.forName( (String) in.readObject() );
         constructorKeys = (T[]) in.readObject();
 
         final int bindingCount = in.readInt();
@@ -99,8 +90,7 @@ public abstract class AbstractRecipe<T>
     public void writeExternal( final ObjectOutput out )
         throws IOException
     {
-        out.writeObject( name );
-        out.writeObject( objectType );
+        out.writeObject( objectType.getName() );
         out.writeObject( constructorKeys );
 
         out.writeInt( bindings.size() );

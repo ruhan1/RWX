@@ -18,7 +18,6 @@
 package com.redhat.xmlrpc.binding.internal.reflect;
 
 import static com.redhat.xmlrpc.binding.recipe.RecipeUtils.mapRecipesByClass;
-import static com.redhat.xmlrpc.binding.recipe.RecipeUtils.mapRecipesByName;
 
 import com.redhat.xmlrpc.binding.anno.Request;
 import com.redhat.xmlrpc.binding.anno.Response;
@@ -50,8 +49,6 @@ public class ReflectionUnbinder
 
     private final Map<Class<?>, Recipe<?>> recipesByClass;
 
-    private final Map<String, Recipe<?>> recipesByName;
-
     private final Object message;
 
     public ReflectionUnbinder( final Object message, final Collection<Recipe<?>> recipes )
@@ -59,7 +56,6 @@ public class ReflectionUnbinder
     {
         this.message = message;
         recipesByClass = mapRecipesByClass( recipes );
-        recipesByName = mapRecipesByName( recipes );
     }
 
     @Override
@@ -134,14 +130,14 @@ public class ReflectionUnbinder
     }
 
     @SuppressWarnings( "unchecked" )
-    private List<Object> fireArrayEvents( final String recipeName, final Object part, final XmlRpcListener listener )
+    private List<Object> fireArrayEvents( final Class<?> type, final Object part, final XmlRpcListener listener )
         throws XmlRpcException
     {
-        final Recipe<Integer> recipe = (Recipe<Integer>) recipesByName.get( recipeName );
+        final Recipe<Integer> recipe = (Recipe<Integer>) recipesByClass.get( type );
 
         if ( recipe == null )
         {
-            throw new BindException( "Cannot find recipe for array value: " + recipeName );
+            throw new BindException( "Cannot find recipe for array value: " + type );
         }
 
         final Map<Integer, FieldBinding> bindings = new TreeMap<Integer, FieldBinding>( recipe.getFieldBindings() );
@@ -168,15 +164,14 @@ public class ReflectionUnbinder
     }
 
     @SuppressWarnings( "unchecked" )
-    private Map<String, Object> fireStructEvents( final String recipeName, final Object part,
-                                                  final XmlRpcListener listener )
+    private Map<String, Object> fireStructEvents( final Class<?> type, final Object part, final XmlRpcListener listener )
         throws XmlRpcException
     {
-        final Recipe<String> recipe = (Recipe<String>) recipesByName.get( recipeName );
+        final Recipe<String> recipe = (Recipe<String>) recipesByClass.get( type );
 
         if ( recipe == null )
         {
-            throw new BindException( "Cannot find recipe for array value: " + recipeName );
+            throw new BindException( "Cannot find recipe for array value: " + type );
         }
 
         final Map<String, Object> result = new LinkedHashMap<String, Object>();
@@ -208,7 +203,7 @@ public class ReflectionUnbinder
         ValueType type = typeCache.get( cls );
         if ( type == null )
         {
-            if ( binding == null || binding.isRecipeReference() )
+            if ( binding == null || recipesByClass.containsKey( binding.getFieldType() ) )
             {
                 final Recipe<?> recipe = recipesByClass.get( cls );
 
@@ -252,7 +247,7 @@ public class ReflectionUnbinder
             Object value = field.get( parent );
             final ValueType type = typeOf( value, binding );
 
-            if ( binding.isRecipeReference() )
+            if ( recipesByClass.containsKey( binding.getFieldType() ) )
             {
                 if ( type == ValueType.ARRAY )
                 {

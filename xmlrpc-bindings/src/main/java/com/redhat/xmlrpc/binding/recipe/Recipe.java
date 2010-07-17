@@ -30,9 +30,7 @@ public interface Recipe<T>
 
     Map<T, FieldBinding> getFieldBindings();
 
-    String getName();
-
-    String getObjectType();
+    Class<?> getObjectType();
 
     FieldBinding getFieldBinding( T key );
 

@@ -33,9 +33,9 @@ public class FieldBinding
 
     private String fieldName;
 
-    private String fieldType;
+    private Class<?> fieldType;
 
-    public FieldBinding( final String fieldName, final String fieldType )
+    public FieldBinding( final String fieldName, final Class<?> fieldType )
     {
         this.fieldName = fieldName;
         this.fieldType = fieldType;
@@ -46,12 +46,7 @@ public class FieldBinding
         return fieldName;
     }
 
-    public boolean isRecipeReference()
-    {
-        return fieldType.startsWith( "recipe:" );
-    }
-
-    public String getFieldType()
+    public Class<?> getFieldType()
     {
         return fieldType;
     }
@@ -61,7 +56,7 @@ public class FieldBinding
         throws IOException, ClassNotFoundException
     {
         fieldName = (String) in.readObject();
-        fieldType = (String) in.readObject();
+        fieldType = Class.forName( (String) in.readObject() );
     }
 
     @Override
@@ -69,7 +64,7 @@ public class FieldBinding
         throws IOException
     {
         out.writeObject( fieldName );
-        out.writeObject( fieldType );
+        out.writeObject( fieldType.getName() );
     }
 
 }

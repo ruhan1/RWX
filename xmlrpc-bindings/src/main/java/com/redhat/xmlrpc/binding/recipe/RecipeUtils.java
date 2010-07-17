@@ -52,32 +52,13 @@ public final class RecipeUtils
         return result;
     }
 
-    public static Map<String, Recipe<?>> mapRecipesByName( final Collection<Recipe<?>> recipes )
-    {
-        final Map<String, Recipe<?>> result = new HashMap<String, Recipe<?>>();
-        for ( final Recipe<?> recipe : recipes )
-        {
-            result.put( recipe.getName(), recipe );
-        }
-
-        return result;
-    }
-
     public static Map<Class<?>, Recipe<?>> mapRecipesByClass( final Collection<Recipe<?>> recipes )
         throws BindException
     {
         final Map<Class<?>, Recipe<?>> result = new HashMap<Class<?>, Recipe<?>>();
         for ( final Recipe<?> recipe : recipes )
         {
-            try
-            {
-                result.put( Class.forName( recipe.getObjectType() ), recipe );
-            }
-            catch ( final ClassNotFoundException e )
-            {
-                throw new BindException( "Failed to load class: " + recipe.getObjectType() + "\nRecipe: "
-                    + recipe.getName(), e );
-            }
+            result.put( recipe.getObjectType(), recipe );
         }
 
         return result;

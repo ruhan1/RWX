@@ -21,12 +21,12 @@ public class ArrayRecipe
     extends AbstractRecipe<Integer>
 {
 
-    public ArrayRecipe( final String name, final String objectType, final Integer... constructorIndices )
+    public ArrayRecipe( final Class<?> objectType, final Integer... constructorIndices )
     {
-        super( name, objectType, constructorIndices );
+        super( objectType, constructorIndices );
     }
 
-    public final ArrayRecipe addFieldBinding( final int index, final String fieldName, final String fieldType )
+    public final ArrayRecipe addFieldBinding( final int index, final String fieldName, final Class<?> fieldType )
     {
         putBinding( index, new FieldBinding( fieldName, fieldType ) );
         return this;

@@ -19,7 +19,6 @@ package com.redhat.xmlrpc.binding.internal.reflect;
 
 import static com.redhat.xmlrpc.binding.recipe.RecipeUtils.toIntegerArray;
 
-import com.redhat.xmlrpc.binding.anno.ArrayPart;
 import com.redhat.xmlrpc.binding.anno.DataIndex;
 import com.redhat.xmlrpc.binding.anno.DataKey;
 import com.redhat.xmlrpc.binding.anno.Ignored;
@@ -27,7 +26,6 @@ import com.redhat.xmlrpc.binding.anno.IndexRefs;
 import com.redhat.xmlrpc.binding.anno.KeyRefs;
 import com.redhat.xmlrpc.binding.anno.Request;
 import com.redhat.xmlrpc.binding.anno.Response;
-import com.redhat.xmlrpc.binding.anno.StructPart;
 import com.redhat.xmlrpc.binding.error.BindException;
 import com.redhat.xmlrpc.binding.recipe.ArrayRecipe;
 import com.redhat.xmlrpc.binding.recipe.Recipe;
@@ -106,7 +104,7 @@ public class ReflectionLoader
             }
         }
 
-        final ArrayRecipe recipe = new ArrayRecipe( typeName, typeName, toIntegerArray( ctorIndices ) );
+        final ArrayRecipe recipe = new ArrayRecipe( type, toIntegerArray( ctorIndices ) );
         recipes.add( recipe );
 
         final SortedSet<Integer> taken = new TreeSet<Integer>();
@@ -124,7 +122,7 @@ public class ReflectionLoader
                             + typeName );
                     }
 
-                    recipe.addFieldBinding( di.value(), field.getName(), typeOf( field, recipes ) );
+                    recipe.addFieldBinding( di.value(), field.getName(), field.getType() );
                     taken.add( di.value() );
                 }
                 else
@@ -142,7 +140,7 @@ public class ReflectionLoader
                 counter++;
             }
 
-            recipe.addFieldBinding( counter, field.getName(), typeOf( field, recipes ) );
+            recipe.addFieldBinding( counter, field.getName(), field.getType() );
             taken.add( counter );
         }
     }
@@ -163,7 +161,7 @@ public class ReflectionLoader
             }
         }
 
-        final StructRecipe recipe = new StructRecipe( typeName, typeName, ctorKeys );
+        final StructRecipe recipe = new StructRecipe( type, ctorKeys );
         recipes.add( recipe );
 
         final Set<String> takenKeys = new HashSet<String>();
@@ -181,7 +179,7 @@ public class ReflectionLoader
                             + typeName );
                     }
 
-                    recipe.addFieldBinding( dk.value(), field.getName(), typeOf( field, recipes ) );
+                    recipe.addFieldBinding( dk.value(), field.getName(), field.getType() );
                     takenKeys.add( dk.value() );
                 }
                 else
@@ -199,27 +197,8 @@ public class ReflectionLoader
                 throw new BindException( "More than one field declares data-key: " + name + " in: " + typeName );
             }
 
-            recipe.addFieldBinding( name, field.getName(), typeOf( field, recipes ) );
+            recipe.addFieldBinding( name, field.getName(), field.getType() );
         }
-    }
-
-    protected String typeOf( final Field field, final Set<Recipe<?>> recipes )
-        throws BindException
-    {
-        final Class<?> type = field.getType();
-        String result = type.getName();
-        if ( type.getAnnotation( ArrayPart.class ) != null )
-        {
-            processArrayRecipe( type, recipes );
-            result = "recipe:" + result;
-        }
-        else if ( type.getAnnotation( StructPart.class ) != null )
-        {
-            processStructRecipe( type, recipes );
-            result = "recipe:" + result;
-        }
-
-        return result;
     }
 
 }
