@@ -26,9 +26,9 @@ public class StructRecipe
         super( objectType, constructorKeys );
     }
 
-    public final StructRecipe addFieldBinding( final String key, final String fieldName, final Class<?> fieldType )
+    public final StructRecipe addFieldBinding( final String key, final FieldBinding binding )
     {
-        putBinding( key, new FieldBinding( fieldName, fieldType ) );
+        putBinding( key, binding );
         return this;
     }
 

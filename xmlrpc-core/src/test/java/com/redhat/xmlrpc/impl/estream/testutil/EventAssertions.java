@@ -22,7 +22,9 @@ import static org.junit.Assert.fail;
 import com.redhat.xmlrpc.impl.estream.model.Event;
 
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 public final class EventAssertions
 {
@@ -116,6 +118,92 @@ public final class EventAssertions
             final Event<Object> evt = (Event<Object>) check.get( i );
             final RecordedEvent re = recorded.get( i );
             if ( !evt.eventEquals( re.getEventType(), re.getKey(), re.getValue(), re.getValueType() ) )
+            {
+                failures.add( i );
+            }
+        }
+
+        if ( !failures.isEmpty() )
+        {
+            final StringBuilder sb = new StringBuilder();
+            sb.append( "The following indexes in the event-list did not match the recorded values:" );
+            for ( final Integer idx : failures )
+            {
+                sb.append( "\n[" )
+                  .append( idx )
+                  .append( "]\n\tExpected: " )
+                  .append( check.get( idx ) )
+                  .append( "\n\tActual: " )
+                  .append( recorded.get( idx ) )
+                  .append( "\n" );
+            }
+
+            fail( sb.toString() );
+        }
+    }
+
+    public static void assertRecordedToRecorded( final List<RecordedEvent> check, final List<RecordedEvent> recorded )
+    {
+        if ( check == null && recorded == null )
+        {
+            return;
+        }
+        else if ( check == null && recorded != null )
+        {
+            fail( "Expected events were null, but Actual events were NOT null." );
+        }
+        else if ( check != null && recorded == null )
+        {
+            fail( "Expected events were null, but Actual events were NOT null." );
+        }
+
+        if ( check.size() != recorded.size() )
+        {
+            final StringBuilder sb = new StringBuilder();
+            sb.append( "Event-list sizes differ. Expected events: " ).append( check.size() ).append( ":\n" );
+
+            for ( int i = 0; i < check.size(); i++ )
+            {
+                final RecordedEvent e = check.get( i );
+                sb.append( "\n\t" ).append( i ).append( ". " ).append( e );
+            }
+
+            sb.append( "\n\nRecorded events: " ).append( recorded.size() ).append( ":\n" );
+            for ( int i = 0; i < recorded.size(); i++ )
+            {
+                final RecordedEvent e = recorded.get( i );
+                sb.append( "\n\t" ).append( i ).append( ". " ).append( e );
+            }
+
+            sb.append( "\n\nLeftover events: " );
+
+            Set<RecordedEvent> leftover;
+            if ( check.size() > recorded.size() )
+            {
+                leftover = new LinkedHashSet<RecordedEvent>( check );
+                leftover.removeAll( recorded );
+            }
+            else
+            {
+                leftover = new LinkedHashSet<RecordedEvent>( recorded );
+                leftover.removeAll( check );
+            }
+
+            int i = 0;
+            for ( final RecordedEvent e : leftover )
+            {
+                sb.append( "\n\t" ).append( i++ ).append( ". " ).append( e );
+            }
+
+            fail( sb.toString() );
+        }
+
+        final List<Integer> failures = new ArrayList<Integer>();
+        for ( int i = 0; i < check.size(); i++ )
+        {
+            final RecordedEvent evt = check.get( i );
+            final RecordedEvent re = recorded.get( i );
+            if ( !evt.equals( re ) )
             {
                 failures.add( i );
             }

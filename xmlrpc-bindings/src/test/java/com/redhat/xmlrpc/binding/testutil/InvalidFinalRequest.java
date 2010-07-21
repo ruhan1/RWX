@@ -15,15 +15,21 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.redhat.xmlrpc.binding.anno;
+package com.redhat.xmlrpc.binding.testutil;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import com.redhat.xmlrpc.binding.anno.DataIndex;
+import com.redhat.xmlrpc.binding.anno.Request;
 
-@Retention( RetentionPolicy.RUNTIME )
-@Target( ElementType.FIELD )
-public @interface LiteralValue
+@Request( method = "foo" )
+public class InvalidFinalRequest
 {
+
+    @DataIndex( 0 )
+    private final String id = "bar";
+
+    public String getId()
+    {
+        return id;
+    }
+
 }

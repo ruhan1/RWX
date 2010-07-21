@@ -17,8 +17,6 @@
 
 package com.redhat.xmlrpc.binding.internal.xbr;
 
-import static com.redhat.xmlrpc.binding.recipe.RecipeUtils.mapRecipesByClass;
-
 import com.redhat.xmlrpc.binding.error.BindException;
 import com.redhat.xmlrpc.binding.internal.ParsingBinderyDelegate;
 import com.redhat.xmlrpc.binding.recipe.Recipe;
@@ -29,66 +27,58 @@ import com.redhat.xmlrpc.spi.XmlRpcParser;
 
 import java.io.InputStream;
 import java.io.Reader;
-import java.util.Collection;
 import java.util.Map;
 
 public class XBeanRenderingBindery
     extends ParsingBinderyDelegate
 {
 
-    private final Collection<Recipe<?>> recipes;
+    private final Map<Class<?>, Recipe<?>> recipes;
 
-    private final Map<Class<?>, Recipe<?>> recipesByClass;
-
-    public XBeanRenderingBindery( final Collection<Recipe<?>> recipes )
+    public XBeanRenderingBindery( final Map<Class<?>, Recipe<?>> recipes )
         throws BindException
     {
         this.recipes = recipes;
-        recipesByClass = mapRecipesByClass( recipes );
     }
 
     public <T> T parse( final InputStream in, final Class<T> type )
         throws XmlRpcException
     {
-        final Recipe<?> recipe = recipesByClass.get( type );
-        final XBRBinder binder = new XBRBinder( recipe, recipes );
+        final XBRBinder<T> binder = new XBRBinder<T>( type, recipes );
 
         createParser( in ).parse( binder );
 
-        return type.cast( binder.create() );
+        return binder.create();
     }
 
     public <T> T parse( final Reader in, final Class<T> type )
         throws XmlRpcException
     {
-        final Recipe<?> recipe = recipesByClass.get( type );
-        final XBRBinder binder = new XBRBinder( recipe, recipes );
+        final XBRBinder<T> binder = new XBRBinder<T>( type, recipes );
 
         createParser( in ).parse( binder );
 
-        return type.cast( binder.create() );
+        return binder.create();
     }
 
     public <T> T parse( final String in, final Class<T> type )
         throws XmlRpcException
     {
-        final Recipe<?> recipe = recipesByClass.get( type );
-        final XBRBinder binder = new XBRBinder( recipe, recipes );
+        final XBRBinder<T> binder = new XBRBinder<T>( type, recipes );
 
         createParser( in ).parse( binder );
 
-        return type.cast( binder.create() );
+        return binder.create();
     }
 
     public <T> T parse( final XmlRpcGenerator in, final Class<T> type )
         throws XmlRpcException
     {
-        final Recipe<?> recipe = recipesByClass.get( type );
-        final XBRBinder binder = new XBRBinder( recipe, recipes );
+        final XBRBinder<T> binder = new XBRBinder<T>( type, recipes );
 
         in.generate( binder );
 
-        return type.cast( binder.create() );
+        return binder.create();
     }
 
     protected XmlRpcParser createParser( final InputStream in )

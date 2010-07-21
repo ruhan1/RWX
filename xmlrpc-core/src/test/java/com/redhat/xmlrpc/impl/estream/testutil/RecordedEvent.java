@@ -66,4 +66,79 @@ public final class RecordedEvent
             + valueType + "]";
     }
 
+    @Override
+    public int hashCode()
+    {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ( ( eventType == null ) ? 0 : eventType.hashCode() );
+        result = prime * result + ( ( key == null ) ? 0 : key.hashCode() );
+        result = prime * result + ( ( value == null ) ? 0 : value.hashCode() );
+        result = prime * result + ( ( valueType == null ) ? 0 : valueType.hashCode() );
+        return result;
+    }
+
+    @Override
+    public boolean equals( final Object obj )
+    {
+        if ( this == obj )
+        {
+            return true;
+        }
+        if ( obj == null )
+        {
+            return false;
+        }
+        if ( getClass() != obj.getClass() )
+        {
+            return false;
+        }
+        final RecordedEvent other = (RecordedEvent) obj;
+        if ( eventType == null )
+        {
+            if ( other.eventType != null )
+            {
+                return false;
+            }
+        }
+        else if ( !eventType.equals( other.eventType ) )
+        {
+            return false;
+        }
+        if ( key == null )
+        {
+            if ( other.key != null )
+            {
+                return false;
+            }
+        }
+        else if ( !key.equals( other.key ) )
+        {
+            return false;
+        }
+        if ( value == null )
+        {
+            if ( other.value != null )
+            {
+                return false;
+            }
+        }
+        else if ( !value.equals( other.value ) )
+        {
+            return false;
+        }
+        if ( valueType == null )
+        {
+            if ( other.valueType != null )
+            {
+                return false;
+            }
+        }
+        else if ( !valueType.equals( other.valueType ) )
+        {
+            return false;
+        }
+        return true;
+    }
+
 }

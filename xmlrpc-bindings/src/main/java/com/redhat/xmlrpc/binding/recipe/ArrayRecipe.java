@@ -26,9 +26,9 @@ public class ArrayRecipe
         super( objectType, constructorIndices );
     }
 
-    public final ArrayRecipe addFieldBinding( final int index, final String fieldName, final Class<?> fieldType )
+    public final ArrayRecipe addFieldBinding( final int index, final FieldBinding binding )
     {
-        putBinding( index, new FieldBinding( fieldName, fieldType ) );
+        putBinding( index, binding );
         return this;
     }
 

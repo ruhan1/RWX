@@ -19,15 +19,19 @@ package com.redhat.xmlrpc.binding.internal.reflect;
 
 import static com.redhat.xmlrpc.binding.recipe.RecipeUtils.toIntegerArray;
 
+import com.redhat.xmlrpc.binding.anno.ArrayPart;
 import com.redhat.xmlrpc.binding.anno.DataIndex;
 import com.redhat.xmlrpc.binding.anno.DataKey;
 import com.redhat.xmlrpc.binding.anno.Ignored;
 import com.redhat.xmlrpc.binding.anno.IndexRefs;
 import com.redhat.xmlrpc.binding.anno.KeyRefs;
+import com.redhat.xmlrpc.binding.anno.Raw;
 import com.redhat.xmlrpc.binding.anno.Request;
 import com.redhat.xmlrpc.binding.anno.Response;
+import com.redhat.xmlrpc.binding.anno.StructPart;
 import com.redhat.xmlrpc.binding.error.BindException;
 import com.redhat.xmlrpc.binding.recipe.ArrayRecipe;
+import com.redhat.xmlrpc.binding.recipe.FieldBinding;
 import com.redhat.xmlrpc.binding.recipe.Recipe;
 import com.redhat.xmlrpc.binding.recipe.StructRecipe;
 import com.redhat.xmlrpc.binding.recipe.discovery.RecipeLoader;
@@ -35,7 +39,7 @@ import com.redhat.xmlrpc.binding.recipe.discovery.RecipeLoader;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
-import java.util.Collection;
+import java.lang.reflect.Modifier;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -47,27 +51,27 @@ public class ReflectionLoader
     implements RecipeLoader
 {
 
-    private static final Map<String, WeakReference<Set<Recipe<?>>>> ROOT_CACHE =
-        new HashMap<String, WeakReference<Set<Recipe<?>>>>();
+    private static final Map<String, WeakReference<Map<Class<?>, Recipe<?>>>> ROOT_CACHE =
+        new HashMap<String, WeakReference<Map<Class<?>, Recipe<?>>>>();
 
-    public synchronized Collection<Recipe<?>> loadRecipes( final Class<?>... roots )
+    public synchronized Map<Class<?>, Recipe<?>> loadRecipes( final Class<?>... roots )
         throws BindException
     {
-        final Set<Recipe<?>> recipes = new HashSet<Recipe<?>>();
+        final Map<Class<?>, Recipe<?>> recipes = new HashMap<Class<?>, Recipe<?>>();
 
         for ( final Class<?> root : roots )
         {
-            Set<Recipe<?>> current;
+            Map<Class<?>, Recipe<?>> current;
 
             final String rootType = root.getName();
-            final WeakReference<Set<Recipe<?>>> ref = ROOT_CACHE.get( rootType );
+            final WeakReference<Map<Class<?>, Recipe<?>>> ref = ROOT_CACHE.get( rootType );
             if ( ref != null && ref.get() != null )
             {
                 current = ref.get();
             }
             else
             {
-                current = new HashSet<Recipe<?>>();
+                current = new HashMap<Class<?>, Recipe<?>>();
 
                 if ( root.getAnnotation( Request.class ) != null || root.getAnnotation( Response.class ) != null )
                 {
@@ -79,16 +83,16 @@ public class ReflectionLoader
                                              "Invalid message root. Class must be annotated with either @Request or @Response." );
                 }
 
-                ROOT_CACHE.put( rootType, new WeakReference<Set<Recipe<?>>>( current ) );
+                ROOT_CACHE.put( rootType, new WeakReference<Map<Class<?>, Recipe<?>>>( current ) );
             }
 
-            recipes.addAll( current );
+            recipes.putAll( current );
         }
 
         return recipes;
     }
 
-    protected void processArrayRecipe( final Class<?> type, final Set<Recipe<?>> recipes )
+    protected ArrayRecipe processArrayRecipe( final Class<?> type, final Map<Class<?>, Recipe<?>> recipes )
         throws BindException
     {
         final String typeName = type.getName();
@@ -105,7 +109,7 @@ public class ReflectionLoader
         }
 
         final ArrayRecipe recipe = new ArrayRecipe( type, toIntegerArray( ctorIndices ) );
-        recipes.add( recipe );
+        recipes.put( type, recipe );
 
         final SortedSet<Integer> taken = new TreeSet<Integer>();
         final Set<Field> noDecl = new HashSet<Field>();
@@ -122,8 +126,15 @@ public class ReflectionLoader
                             + typeName );
                     }
 
-                    recipe.addFieldBinding( di.value(), field.getName(), field.getType() );
-                    taken.add( di.value() );
+                    if ( Modifier.isTransient( field.getModifiers() ) )
+                    {
+                        throw new BindException( "Fields annotated with @DataIndex cannot be marked as transient!" );
+                    }
+                    else
+                    {
+                        addFieldBinding( recipe, di.value(), field, ctorIndices, recipes );
+                        taken.add( di.value() );
+                    }
                 }
                 else
                 {
@@ -132,20 +143,120 @@ public class ReflectionLoader
             }
         }
 
-        int counter = 0;
-        for ( final Field field : noDecl )
+        // FIXME: Add logged warnings!!
+        // TODO: Validate @IndexRefs against acutal discovered @DataIndex annotation values.
+        // TODO: Warn about @DataKey in ArrayRecipe types...
+        // TODO: Warn about unbound fields, or types with NO bound fields.
+        // TODO: Validate ctor keys against field bindings.
+        //        int counter = 0;
+        //        for ( final Field field : noDecl )
+        //        {
+        //            while ( taken.contains( counter ) )
+        //            {
+        //                counter++;
+        //            }
+        //
+        //            addFieldBinding( recipe, counter, field.getName(), field.getType(), recipes );
+        //            taken.add( counter );
+        //        }
+
+        return recipe;
+    }
+
+    protected void addFieldBinding( final ArrayRecipe recipe, final int index, final Field field,
+                                    final int[] ctorIndices, final Map<Class<?>, Recipe<?>> recipes )
+        throws BindException
+    {
+        if ( Modifier.isFinal( field.getModifiers() ) )
         {
-            while ( taken.contains( counter ) )
+            boolean found = false;
+            for ( final int i : ctorIndices )
             {
-                counter++;
+                if ( index == i )
+                {
+                    found = true;
+                    break;
+                }
             }
 
-            recipe.addFieldBinding( counter, field.getName(), field.getType() );
-            taken.add( counter );
+            if ( !found )
+            {
+                throw new BindException(
+                                         "Fields annotated with @DataIndex cannot be marked as final unless they're included in the @IndexRefs constructor annotation!" );
+            }
+        }
+
+        final Class<?> type = field.getType();
+        final String name = field.getName();
+
+        if ( field.getAnnotation( Raw.class ) != null )
+        {
+            recipe.addFieldBinding( index, new FieldBinding( name, type, true ) );
+        }
+        else
+        {
+            processBindingTarget( type, recipes );
+            recipe.addFieldBinding( index, new FieldBinding( name, type ) );
         }
     }
 
-    protected void processStructRecipe( final Class<?> type, final Set<Recipe<?>> recipes )
+    protected void addFieldBinding( final StructRecipe recipe, final String key, final Field field,
+                                    final String[] ctorKeys, final Map<Class<?>, Recipe<?>> recipes )
+        throws BindException
+    {
+        if ( Modifier.isTransient( field.getModifiers() ) )
+        {
+            throw new BindException( "Fields annotated with @DataKey cannot be marked as transient!" );
+        }
+        else if ( Modifier.isFinal( field.getModifiers() ) )
+        {
+            boolean found = false;
+            for ( final String k : ctorKeys )
+            {
+                if ( key.equals( k ) )
+                {
+                    found = true;
+                    break;
+                }
+            }
+
+            if ( !found )
+            {
+                throw new BindException(
+                                         "Fields annotated with @DataKey cannot be marked as final unless they're included in the @KeyRefs constructor annotation!" );
+            }
+        }
+
+        final Class<?> type = field.getType();
+        final String name = field.getName();
+
+        if ( field.getAnnotation( Raw.class ) != null )
+        {
+            recipe.addFieldBinding( key, new FieldBinding( name, type, true ) );
+        }
+        else
+        {
+            processBindingTarget( type, recipes );
+            recipe.addFieldBinding( key, new FieldBinding( name, type ) );
+        }
+    }
+
+    protected Recipe<?> processBindingTarget( final Class<?> type, final Map<Class<?>, Recipe<?>> recipes )
+        throws BindException
+    {
+        if ( type.getAnnotation( ArrayPart.class ) != null )
+        {
+            return processArrayRecipe( type, recipes );
+        }
+        else if ( type.getAnnotation( StructPart.class ) != null )
+        {
+            return processStructRecipe( type, recipes );
+        }
+
+        return null;
+    }
+
+    protected StructRecipe processStructRecipe( final Class<?> type, final Map<Class<?>, Recipe<?>> recipes )
         throws BindException
     {
         final String typeName = type.getName();
@@ -162,7 +273,7 @@ public class ReflectionLoader
         }
 
         final StructRecipe recipe = new StructRecipe( type, ctorKeys );
-        recipes.add( recipe );
+        recipes.put( type, recipe );
 
         final Set<String> takenKeys = new HashSet<String>();
         final Set<Field> noDecl = new HashSet<Field>();
@@ -179,7 +290,7 @@ public class ReflectionLoader
                             + typeName );
                     }
 
-                    recipe.addFieldBinding( dk.value(), field.getName(), field.getType() );
+                    addFieldBinding( recipe, dk.value(), field, ctorKeys, recipes );
                     takenKeys.add( dk.value() );
                 }
                 else
@@ -189,6 +300,12 @@ public class ReflectionLoader
             }
         }
 
+        // FIXME: Add logged warnings!!
+        // TODO: Validate @KeyRefs against acutal discovered @DataKey annotation values.
+        // TODO: Warn about @DataIndex in StructRecipe types...
+        // TODO: Warn about implicitly fields
+        // TODO: Warn about types having NO explicitly bound fields.
+        // TODO: Validate ctor keys against field bindings.
         for ( final Field field : noDecl )
         {
             final String name = field.getName();
@@ -197,8 +314,13 @@ public class ReflectionLoader
                 throw new BindException( "More than one field declares data-key: " + name + " in: " + typeName );
             }
 
-            recipe.addFieldBinding( name, field.getName(), field.getType() );
+            if ( !Modifier.isTransient( field.getModifiers() ) )
+            {
+                addFieldBinding( recipe, name, field, ctorKeys, recipes );
+            }
         }
+
+        return recipe;
     }
 
 }

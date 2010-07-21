@@ -11,6 +11,11 @@
   <artifactId>xmlrpc-bindings</artifactId>
   <dependencies>
   	<dependency>
+  		<groupId>com.redhat.xmlrpc</groupId>
+  		<artifactId>xmlrpc-core</artifactId>
+  		<classifier>tests</classifier>
+  	</dependency>
+  	<dependency>
       <groupId>com.redhat.xmlrpc</groupId>
       <artifactId>xmlrpc-core</artifactId>
       <version>${project.version}</version>

@@ -29,23 +29,23 @@ import com.redhat.xmlrpc.spi.XmlRpcListener;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Writer;
-import java.util.Collection;
+import java.util.Map;
 
 public class ReflectionUnbindery
     extends RenderingBinderyDelegate
 {
 
-    private final Collection<Recipe<?>> recipes;
+    private final Map<Class<?>, Recipe<?>> recipes;
 
     private final XMLOutputter outputter;
 
-    public ReflectionUnbindery( final Collection<Recipe<?>> recipes )
+    public ReflectionUnbindery( final Map<Class<?>, Recipe<?>> recipes )
     {
         this.recipes = recipes;
         outputter = new XMLOutputter( Format.getCompactFormat() );
     }
 
-    public ReflectionUnbindery( final Collection<Recipe<?>> recipes, final XMLOutputter outputter )
+    public ReflectionUnbindery( final Map<Class<?>, Recipe<?>> recipes, final XMLOutputter outputter )
     {
         this.recipes = recipes;
         this.outputter = outputter == null ? new XMLOutputter( Format.getCompactFormat() ) : outputter;

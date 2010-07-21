@@ -18,6 +18,7 @@
 package com.redhat.xmlrpc.impl.estream.testutil;
 
 import java.util.ArrayList;
+import java.util.Collection;
 
 public class ExtList<T>
     extends ArrayList<T>
@@ -43,6 +44,28 @@ public class ExtList<T>
     public ExtList<T> with( final T value )
     {
         add( value );
+        return this;
+    }
+
+    public ExtList<T> withAll( final Collection<T> values )
+    {
+        if ( values != null && !values.isEmpty() )
+        {
+            addAll( values );
+        }
+        return this;
+    }
+
+    public ExtList<T> withAll( final T... values )
+    {
+        if ( values != null && values.length > 0 )
+        {
+            for ( final T t : values )
+            {
+                add( t );
+            }
+        }
+
         return this;
     }
 

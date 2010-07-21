@@ -15,17 +15,28 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.redhat.xmlrpc.binding.recipe.discovery;
+package com.redhat.xmlrpc.binding.testutil;
 
-import com.redhat.xmlrpc.binding.error.BindException;
-import com.redhat.xmlrpc.binding.recipe.Recipe;
+import com.redhat.xmlrpc.binding.anno.DataIndex;
+import com.redhat.xmlrpc.binding.anno.IndexRefs;
+import com.redhat.xmlrpc.binding.anno.Request;
 
-import java.util.Map;
-
-public interface RecipeLoader
+@Request( method = "getPerson" )
+public class ConstructedPersonRequest
 {
 
-    Map<Class<?>, Recipe<?>> loadRecipes( final Class<?>... roots )
-        throws BindException;
+    @DataIndex( 0 )
+    private final String userId;
+
+    @IndexRefs( 0 )
+    public ConstructedPersonRequest( final String userId )
+    {
+        this.userId = userId;
+    }
+
+    public String getUserId()
+    {
+        return userId;
+    }
 
 }

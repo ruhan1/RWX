@@ -24,7 +24,10 @@ import org.apache.xbean.recipe.DefaultRepository;
 import org.apache.xbean.recipe.ObjectRecipe;
 import org.apache.xbean.recipe.Repository;
 
+import com.redhat.xmlrpc.binding.anno.Request;
+import com.redhat.xmlrpc.binding.anno.Response;
 import com.redhat.xmlrpc.binding.error.BindException;
+import com.redhat.xmlrpc.binding.recipe.ArrayRecipe;
 import com.redhat.xmlrpc.binding.recipe.FieldBinding;
 import com.redhat.xmlrpc.binding.recipe.Recipe;
 import com.redhat.xmlrpc.binding.recipe.StructRecipe;
@@ -33,18 +36,16 @@ import com.redhat.xmlrpc.error.XmlRpcFaultException;
 import com.redhat.xmlrpc.spi.AbstractXmlRpcListener;
 import com.redhat.xmlrpc.vocab.ValueType;
 
-import java.util.Collection;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Stack;
 
-public class XBRBinder
+public class XBRBinder<T>
     extends AbstractXmlRpcListener
 {
 
     private final Repository repository = new DefaultRepository();
 
-    private final Map<Class<?>, Recipe<?>> recipes = new HashMap<Class<?>, Recipe<?>>();
+    private final Map<Class<?>, Recipe<?>> recipes;
 
     private final Stack<ObjectRecipe> builderStack = new Stack<ObjectRecipe>();
 
@@ -56,26 +57,42 @@ public class XBRBinder
 
     private FieldBinding currentFieldBinding;
 
-    public XBRBinder( final Recipe<?> entryPoint, final Collection<Recipe<?>> recipes )
+    private final Class<T> messageType;
+
+    public XBRBinder( final Class<T> entryPoint, final Map<Class<?>, Recipe<?>> recipes )
         throws BindException
     {
-        current = entryPoint;
-        for ( final Recipe<?> recipe : recipes )
+        this.messageType = entryPoint;
+
+        current = recipes.get( entryPoint );
+        if ( current == null )
+        {
+            throw new BindException( "Recipe mapping doesn't contain recipe for entry-point class: "
+                + entryPoint.getName() );
+        }
+
+        if ( entryPoint.getAnnotation( Request.class ) == null && entryPoint.getAnnotation( Response.class ) == null )
+        {
+            throw new BindException( "Invalid entry-point for binding. Class: " + entryPoint.getName()
+                + " must be annotated with either @Request or @Response." );
+        }
+
+        this.recipes = recipes;
+
+        for ( final Recipe<?> recipe : recipes.values() )
         {
             final ObjectRecipe builder =
                 new ObjectRecipe( recipe.getObjectType(), toStringArray( recipe.getConstructorKeys() ) );
 
-            if ( entryPoint == recipe )
+            if ( current == recipe )
             {
                 currentBuilder = builder;
             }
 
-            this.recipes.put( recipe.getObjectType(), recipe );
-
             repository.add( recipe.getObjectType().getName(), builder );
         }
 
-        for ( final Recipe<?> recipe : recipes )
+        for ( final Recipe<?> recipe : recipes.values() )
         {
             final ObjectRecipe r = (ObjectRecipe) repository.get( recipe.getObjectType().getName() );
 
@@ -114,7 +131,7 @@ public class XBRBinder
         return recipes.containsKey( binding.getFieldType() );
     }
 
-    public Object create()
+    public T create()
         throws BindException
     {
         while ( builderStack.size() > 1 )
@@ -122,10 +139,11 @@ public class XBRBinder
             builderStack.pop();
         }
 
-        final ObjectRecipe builder = builderStack.pop();
+        // handle the case where the message is completely flat, with only simple parameters.
+        final ObjectRecipe builder = builderStack.isEmpty() ? currentBuilder : builderStack.pop();
         try
         {
-            return builder.create();
+            return messageType.cast( builder.create() );
         }
         catch ( final ConstructionException e )
         {
@@ -134,58 +152,56 @@ public class XBRBinder
     }
 
     @Override
-    public XBRBinder endParameter()
+    public XBRBinder<T> endParameter()
     {
         popField();
         return this;
     }
 
     @Override
-    public XBRBinder fault( final int code, final String message )
+    public XBRBinder<T> fault( final int code, final String message )
         throws XmlRpcException
     {
         throw new XmlRpcFaultException( code, message );
     }
 
     @Override
-    public XBRBinder startArrayElement( final int index )
+    public XBRBinder<T> startArrayElement( final int index )
     {
-        final String key = Integer.toString( index );
-        findField( key );
+        findField( index );
         return this;
     }
 
     @Override
-    public XBRBinder endArrayElement()
+    public XBRBinder<T> endArrayElement()
     {
         popField();
         return this;
     }
 
     @Override
-    public XBRBinder startParameter( final int index )
+    public XBRBinder<T> startParameter( final int index )
     {
-        final String key = Integer.toString( index );
-        findField( key );
+        findField( index );
         return this;
     }
 
     @Override
-    public XBRBinder startStructMember( final String key )
+    public XBRBinder<T> startStructMember( final String key )
     {
         pushCurrent( key );
         return this;
     }
 
     @Override
-    public XBRBinder endStructMember()
+    public XBRBinder<T> endStructMember()
     {
         popField();
         return this;
     }
 
     @Override
-    public XBRBinder value( final Object value, final ValueType type )
+    public XBRBinder<T> value( final Object value, final ValueType type )
         throws XmlRpcException
     {
         if ( currentFieldBinding == null )
@@ -198,10 +214,19 @@ public class XBRBinder
         return this;
     }
 
-    private void findField( final Object k )
+    private void findField( final Object key )
     {
-        final String key = String.valueOf( k );
-        final FieldBinding binding = ( (StructRecipe) current ).getFieldBinding( key );
+        final FieldBinding binding;
+
+        if ( key instanceof Integer )
+        {
+            binding = ( (ArrayRecipe) current ).getFieldBinding( (Integer) key );
+        }
+        else
+        {
+            binding = ( (StructRecipe) current ).getFieldBinding( (String) key );
+        }
+
         if ( isRecipeReference( binding ) )
         {
             pushCurrent( key );
@@ -230,7 +255,7 @@ public class XBRBinder
         currentBuilder = builderStack.pop();
     }
 
-    private void pushCurrent( final String key )
+    private void pushCurrent( final Object key )
     {
         final FieldBinding binding = current.getFieldBindings().get( key );
         final ObjectRecipe r = (ObjectRecipe) repository.get( binding.getFieldType().getName() );

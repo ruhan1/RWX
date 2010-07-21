@@ -15,17 +15,15 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.redhat.xmlrpc.binding.recipe.discovery;
+package com.redhat.xmlrpc.binding.anno;
 
-import com.redhat.xmlrpc.binding.error.BindException;
-import com.redhat.xmlrpc.binding.recipe.Recipe;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-import java.util.Map;
-
-public interface RecipeLoader
+@Retention( RetentionPolicy.RUNTIME )
+@Target( ElementType.FIELD )
+public @interface Raw
 {
-
-    Map<Class<?>, Recipe<?>> loadRecipes( final Class<?>... roots )
-        throws BindException;
-
 }

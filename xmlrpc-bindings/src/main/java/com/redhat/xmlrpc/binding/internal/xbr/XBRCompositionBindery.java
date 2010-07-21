@@ -25,7 +25,7 @@ import com.redhat.xmlrpc.binding.internal.reflect.ReflectionLoader;
 import com.redhat.xmlrpc.binding.internal.reflect.ReflectionUnbindery;
 import com.redhat.xmlrpc.binding.recipe.Recipe;
 
-import java.util.Collection;
+import java.util.Map;
 
 public final class XBRCompositionBindery
     extends CompositionBindery
@@ -40,17 +40,17 @@ public final class XBRCompositionBindery
     public static XBRCompositionBindery binderyFor( final XMLOutputter outputter, final Class<?>... roots )
         throws BindException
     {
-        final Collection<Recipe<?>> recipes = new ReflectionLoader().loadRecipes( roots );
+        final Map<Class<?>, Recipe<?>> recipes = new ReflectionLoader().loadRecipes( roots );
         return new XBRCompositionBindery( recipes, outputter );
     }
 
-    public XBRCompositionBindery( final Collection<Recipe<?>> recipes )
+    public XBRCompositionBindery( final Map<Class<?>, Recipe<?>> recipes )
         throws BindException
     {
         this( recipes, null );
     }
 
-    public XBRCompositionBindery( final Collection<Recipe<?>> recipes, final XMLOutputter outputter )
+    public XBRCompositionBindery( final Map<Class<?>, Recipe<?>> recipes, final XMLOutputter outputter )
         throws BindException
     {
         super( new ReflectionUnbindery( recipes, outputter ), new XBeanRenderingBindery( recipes ) );

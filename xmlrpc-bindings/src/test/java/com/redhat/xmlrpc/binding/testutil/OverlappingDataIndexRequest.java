@@ -15,17 +15,39 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.redhat.xmlrpc.binding.recipe.discovery;
+package com.redhat.xmlrpc.binding.testutil;
 
-import com.redhat.xmlrpc.binding.error.BindException;
-import com.redhat.xmlrpc.binding.recipe.Recipe;
+import com.redhat.xmlrpc.binding.anno.DataIndex;
+import com.redhat.xmlrpc.binding.anno.Request;
 
-import java.util.Map;
-
-public interface RecipeLoader
+@Request( method = "foo" )
+public class OverlappingDataIndexRequest
 {
 
-    Map<Class<?>, Recipe<?>> loadRecipes( final Class<?>... roots )
-        throws BindException;
+    @DataIndex( 0 )
+    private String id;
+
+    @DataIndex( 0 )
+    private String name;
+
+    public String getId()
+    {
+        return id;
+    }
+
+    public void setId( final String id )
+    {
+        this.id = id;
+    }
+
+    public String getName()
+    {
+        return name;
+    }
+
+    public void setName( final String name )
+    {
+        this.name = name;
+    }
 
 }

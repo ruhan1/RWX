@@ -31,40 +31,53 @@ public class FieldBinding
 
     private static final long serialVersionUID = 1L;
 
-    private String fieldName;
+    private String name;
 
-    private Class<?> fieldType;
+    private Class<?> type;
 
-    public FieldBinding( final String fieldName, final Class<?> fieldType )
+    private final boolean raw;
+
+    public FieldBinding( final String name, final Class<?> type )
     {
-        this.fieldName = fieldName;
-        this.fieldType = fieldType;
+        this( name, type, false );
+    }
+
+    public FieldBinding( final String name, final Class<?> type, final boolean raw )
+    {
+        this.name = name;
+        this.type = type;
+        this.raw = raw;
+    }
+
+    public boolean isRaw()
+    {
+        return raw;
     }
 
     public String getFieldName()
     {
-        return fieldName;
+        return name;
     }
 
     public Class<?> getFieldType()
     {
-        return fieldType;
+        return type;
     }
 
     @Override
     public void readExternal( final ObjectInput in )
         throws IOException, ClassNotFoundException
     {
-        fieldName = (String) in.readObject();
-        fieldType = Class.forName( (String) in.readObject() );
+        name = (String) in.readObject();
+        type = Class.forName( (String) in.readObject() );
     }
 
     @Override
     public void writeExternal( final ObjectOutput out )
         throws IOException
     {
-        out.writeObject( fieldName );
-        out.writeObject( fieldType.getName() );
+        out.writeObject( name );
+        out.writeObject( type.getName() );
     }
 
 }

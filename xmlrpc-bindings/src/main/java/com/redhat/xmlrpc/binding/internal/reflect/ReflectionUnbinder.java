@@ -17,8 +17,6 @@
 
 package com.redhat.xmlrpc.binding.internal.reflect;
 
-import static com.redhat.xmlrpc.binding.recipe.RecipeUtils.mapRecipesByClass;
-
 import com.redhat.xmlrpc.binding.anno.Request;
 import com.redhat.xmlrpc.binding.anno.Response;
 import com.redhat.xmlrpc.binding.error.BindException;
@@ -34,7 +32,6 @@ import com.redhat.xmlrpc.vocab.ValueType;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -51,11 +48,11 @@ public class ReflectionUnbinder
 
     private final Object message;
 
-    public ReflectionUnbinder( final Object message, final Collection<Recipe<?>> recipes )
+    public ReflectionUnbinder( final Object message, final Map<Class<?>, Recipe<?>> recipes )
         throws BindException
     {
         this.message = message;
-        recipesByClass = mapRecipesByClass( recipes );
+        recipesByClass = recipes;
     }
 
     @Override
@@ -124,7 +121,7 @@ public class ReflectionUnbinder
             listener.startParameter( entry.getKey() );
             final Object value = fireValueEvents( entry.getValue(), message, listener );
 
-            listener.parameter( entry.getKey(), value, typeOf( value ) );
+            listener.parameter( entry.getKey(), value, typeOf( value, entry.getValue() ) );
             listener.endParameter();
         }
     }
@@ -142,12 +139,14 @@ public class ReflectionUnbinder
 
         final Map<Integer, FieldBinding> bindings = new TreeMap<Integer, FieldBinding>( recipe.getFieldBindings() );
 
+        listener.startArray();
+
         final List<Object> result = new ArrayList<Object>();
         for ( final Map.Entry<Integer, FieldBinding> entry : bindings.entrySet() )
         {
             listener.startArrayElement( entry.getKey() );
 
-            final Object value = fireValueEvents( entry.getValue(), message, listener );
+            final Object value = fireValueEvents( entry.getValue(), part, listener );
 
             while ( result.size() < entry.getKey() )
             {
@@ -156,9 +155,11 @@ public class ReflectionUnbinder
 
             result.add( value );
 
-            listener.arrayElement( entry.getKey(), value, typeOf( value ) );
+            listener.arrayElement( entry.getKey(), value, typeOf( value, entry.getValue() ) );
             listener.endArrayElement();
         }
+
+        listener.endArray();
 
         return result;
     }
@@ -174,38 +175,41 @@ public class ReflectionUnbinder
             throw new BindException( "Cannot find recipe for array value: " + type );
         }
 
+        listener.startStruct();
+
         final Map<String, Object> result = new LinkedHashMap<String, Object>();
         for ( final Map.Entry<String, FieldBinding> entry : recipe.getFieldBindings().entrySet() )
         {
             listener.startStructMember( entry.getKey() );
 
-            final Object value = fireValueEvents( entry.getValue(), message, listener );
+            final Object value = fireValueEvents( entry.getValue(), part, listener );
 
             result.put( entry.getKey(), value );
 
-            listener.structMember( entry.getKey(), value, typeOf( value ) );
+            listener.structMember( entry.getKey(), value, typeOf( value, entry.getValue() ) );
             listener.endStructMember();
         }
 
-        return result;
-    }
+        listener.endStruct();
 
-    private ValueType typeOf( final Object value )
-        throws BindException
-    {
-        return typeOf( value, null );
+        return result;
     }
 
     private ValueType typeOf( final Object value, final FieldBinding binding )
         throws BindException
     {
+        if ( value == null )
+        {
+            return ValueType.NIL;
+        }
+
         final Class<?> cls = value.getClass();
         ValueType type = typeCache.get( cls );
         if ( type == null )
         {
-            if ( binding == null || recipesByClass.containsKey( binding.getFieldType() ) )
+            if ( binding != null && recipesByClass.containsKey( binding.getFieldType() ) )
             {
-                final Recipe<?> recipe = recipesByClass.get( cls );
+                final Recipe<?> recipe = recipesByClass.get( binding.getFieldType() );
 
                 if ( recipe instanceof ArrayRecipe )
                 {
@@ -217,8 +221,8 @@ public class ReflectionUnbinder
                 }
                 else
                 {
-                    throw new BindException( "Unknown recipe reference type: "
-                        + ( binding == null ? cls.getName() : binding.getFieldType() ) );
+                    throw new BindException( "Unknown recipe reference type: " + binding.getFieldType() + "\nField: "
+                        + binding.getFieldName() );
                 }
             }
             else
@@ -241,12 +245,35 @@ public class ReflectionUnbinder
         final Class<?> parentCls = parent.getClass();
         try
         {
-            final Field field = parentCls.getField( binding.getFieldName() );
+            // TODO: What if the declared field is in the parent's parent?? Does this code handle it?
+            Field field = null;
+            Class<?> fieldOwner = parentCls;
+            while ( field == null && fieldOwner != null )
+            {
+                try
+                {
+                    field = fieldOwner.getDeclaredField( binding.getFieldName() );
+                }
+                catch ( final NoSuchFieldException e )
+                {
+                    // TODO: log this to debug log-level.
+                    field = null;
+                    fieldOwner = fieldOwner.getSuperclass();
+                }
+            }
+
+            if ( field == null )
+            {
+                throw new BindException( "Cannot find field: " + binding.getFieldName()
+                    + " in class (or parent classes of): " + parentCls.getName() );
+            }
+
             field.setAccessible( true );
 
             Object value = field.get( parent );
             final ValueType type = typeOf( value, binding );
 
+            // FIXME: Invert this logic, and look for @Raw before deciding whether to fire array/struct events...
             if ( recipesByClass.containsKey( binding.getFieldType() ) )
             {
                 if ( type == ValueType.ARRAY )
@@ -259,7 +286,8 @@ public class ReflectionUnbinder
                 }
                 else
                 {
-                    throw new BindException( "Unknown recipe reference type: " + binding.getFieldType() );
+                    throw new BindException( "Unknown recipe reference type: " + binding.getFieldType() + "\nField: "
+                        + binding.getFieldName() + "\nClass: " + parentCls.getName() );
                 }
             }
             else
@@ -270,11 +298,6 @@ public class ReflectionUnbinder
             listener.value( value, type );
 
             return value;
-        }
-        catch ( final NoSuchFieldException e )
-        {
-            throw new BindException( "Cannot find field: " + binding.getFieldName() + " in class: "
-                + parentCls.getName(), e );
         }
         catch ( final IllegalAccessException e )
         {
