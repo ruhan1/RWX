@@ -2,16 +2,18 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
   
-  <groupId>com.redhat.xmlrpc</groupId>
-  <artifactId>xmlrpc-parent</artifactId>
+  <groupId>org.commonjava.rwx</groupId>
+  <artifactId>rwx-parent</artifactId>
   <version>0.1-SNAPSHOT</version>
   
   <packaging>pom</packaging>
   
+  <name>RWX XML-RPC APIs for Java</name>
+  
   <modules>
-    <module>xmlrpc-core</module>
-    <module>xmlrpc-bindings</module>
-    <module>xmlrpc-http</module>
+    <module>rwx-core</module>
+    <module>rwx-bindings</module>
+    <module>rwx-http</module>
   </modules>
   
   <dependencyManagement>
@@ -19,7 +21,7 @@
     	<dependency>
     		<groupId>org.apache.xbean</groupId>
     		<artifactId>xbean-reflect</artifactId>
-    		<version>3.6</version>
+    		<version>3.7</version>
     	</dependency>
       <dependency>
         <groupId>commons-codec</groupId>
@@ -61,6 +63,19 @@
     <url>http://github.com/jdcasey/RWX</url>
   </scm>
   
+  <distributionManagement>
+    <repository>
+      <id>nexus</id>
+      <name>Local Nexus Releases Repository</name>
+      <url>http://localhost:8081/nexus/content/repositories/releases</url>
+    </repository>
+    <snapshotRepository>
+      <id>nexus</id>
+      <name>Local Nexus Snapshots Repository</name>
+      <url>http://localhost:8081/nexus/content/repositories/snapshots</url>
+    </snapshotRepository>
+  </distributionManagement>
+  
   <dependencies>
     <dependency>
       <groupId>junit</groupId>
@@ -92,7 +107,162 @@
             </excludes>
           </configuration>
         </plugin>
+        <plugin>
+          <artifactId>maven-release-plugin</artifactId>
+          <version>2.0</version>
+          <dependencies>
+            <dependency>
+              <groupId>org.apache.maven.scm</groupId>
+              <artifactId>maven-scm-provider-gitexe</artifactId>
+              <version>1.3</version>
+            </dependency>
+          </dependencies>
+          <configuration>
+            <autoVersionSubmodules>true</autoVersionSubmodules>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-javadoc-plugin</artifactId>
+          <version>2.7</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-source-plugin</artifactId>
+          <version>2.1.1</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-remote-resources-plugin</artifactId>
+          <version>1.1</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-assembly-plugin</artifactId>
+          <version>2.2-beta-5</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-clean-plugin</artifactId>
+          <version>2.4</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-enforcer-plugin</artifactId>
+          <version>1.0-beta-1</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-gpg-plugin</artifactId>
+          <version>1.0-alpha-4</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-install-plugin</artifactId>
+          <version>2.3</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-jar-plugin</artifactId>
+          <version>2.3</version>
+        </plugin>
+        <plugin>
+          <artifactId>maven-resources-plugin</artifactId>
+          <version>2.4.2</version>
+        </plugin>
+        <plugin>
+          <artifactId>maven-deploy-plugin</artifactId>
+          <version>2.5</version>
+        </plugin>
       </plugins>
     </pluginManagement>
   </build>
+  
+  <profiles>
+    <profile>
+      <id>release</id>
+      <build>
+        <plugins>
+          <!-- Create a source-release artifact that contains the fully buildable 
+               project directory source structure. This is the artifact which is 
+               the official subject of any release vote. -->
+          <plugin>
+            <artifactId>maven-assembly-plugin</artifactId>
+            <dependencies>
+              <dependency>
+                <groupId>org.apache.apache.resources</groupId>
+                <artifactId>apache-source-release-assembly-descriptor</artifactId>
+                <version>1.0.2</version>
+              </dependency>
+            </dependencies>
+            <executions>
+              <execution>
+                <id>source-release-assembly</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>single</goal>
+                </goals>
+                <configuration>
+                  <runOnlyAtExecutionRoot>true</runOnlyAtExecutionRoot>
+                  <descriptorRefs>
+                    <descriptorRef>source-release</descriptorRef>
+                  </descriptorRefs>
+                  <tarLongFileFormat>gnu</tarLongFileFormat>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-gpg-plugin</artifactId>
+            <configuration>
+              <passphrase>${gpg.passphrase}</passphrase>
+            </configuration>
+            <executions>
+              <execution>
+                <goals>
+                  <goal>sign</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <inherited>true</inherited>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-deploy-plugin</artifactId>
+            <configuration>
+              <updateReleaseInfo>true</updateReleaseInfo>
+            </configuration>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-source-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>attach-sources</id>
+                <goals>
+                  <goal>jar</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-javadoc-plugin</artifactId>
+            <configuration>
+              <encoding>${project.build.sourceEncoding}</encoding>
+            </configuration>
+            <executions>
+              <execution>
+                <id>attach-javadocs</id>
+                <goals>
+                  <goal>jar</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
 </project>
