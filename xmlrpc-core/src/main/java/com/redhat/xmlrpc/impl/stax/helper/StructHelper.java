@@ -112,11 +112,13 @@ public class StructHelper
 
         if ( name == null )
         {
-            throw new XmlRpcException( "Invalid struct member. Name is missing." );
+            throw new XmlRpcException( "Invalid struct member. Name is missing. Location: "
+                + reader.getLocation().getLineNumber() + ":" + reader.getLocation().getColumnNumber() );
         }
-        else if ( value == null )
+        else if ( ValueType.NIL != vt && value == null )
         {
-            throw new XmlRpcException( "Invalid struct member. Value is missing." );
+            throw new XmlRpcException( "Invalid struct member. Value is missing. Location: "
+                + reader.getLocation().getLineNumber() + ":" + reader.getLocation().getColumnNumber() );
         }
     }
 

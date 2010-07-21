@@ -17,6 +17,7 @@
 
 package com.redhat.xmlrpc.binding.internal.reflect;
 
+import static com.redhat.xmlrpc.binding.anno.AnnotationUtils.isMessage;
 import static com.redhat.xmlrpc.binding.recipe.RecipeUtils.toIntegerArray;
 
 import com.redhat.xmlrpc.binding.anno.ArrayPart;
@@ -26,8 +27,6 @@ import com.redhat.xmlrpc.binding.anno.Ignored;
 import com.redhat.xmlrpc.binding.anno.IndexRefs;
 import com.redhat.xmlrpc.binding.anno.KeyRefs;
 import com.redhat.xmlrpc.binding.anno.Raw;
-import com.redhat.xmlrpc.binding.anno.Request;
-import com.redhat.xmlrpc.binding.anno.Response;
 import com.redhat.xmlrpc.binding.anno.StructPart;
 import com.redhat.xmlrpc.binding.error.BindException;
 import com.redhat.xmlrpc.binding.recipe.ArrayRecipe;
@@ -73,7 +72,7 @@ public class ReflectionLoader
             {
                 current = new HashMap<Class<?>, Recipe<?>>();
 
-                if ( root.getAnnotation( Request.class ) != null || root.getAnnotation( Response.class ) != null )
+                if ( isMessage( root ) )
                 {
                     processArrayRecipe( root, current );
                 }

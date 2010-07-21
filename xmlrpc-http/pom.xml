@@ -30,9 +30,7 @@
     <dependency>
     	<groupId>com.redhat.xmlrpc</groupId>
     	<artifactId>xmlrpc-bindings</artifactId>
-    	<version>0.1-SNAPSHOT</version>
-    	<type>jar</type>
-    	<scope>compile</scope>
+    	<version>${project.version}</version>
     </dependency>
   </dependencies>
   

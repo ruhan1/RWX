@@ -17,8 +17,10 @@
 
 package com.redhat.xmlrpc.binding.internal.reflect;
 
-import com.redhat.xmlrpc.binding.anno.Request;
-import com.redhat.xmlrpc.binding.anno.Response;
+import static com.redhat.xmlrpc.binding.anno.AnnotationUtils.getRequestMethod;
+import static com.redhat.xmlrpc.binding.anno.AnnotationUtils.isRequest;
+import static com.redhat.xmlrpc.binding.anno.AnnotationUtils.isResponse;
+
 import com.redhat.xmlrpc.binding.error.BindException;
 import com.redhat.xmlrpc.binding.recipe.ArrayRecipe;
 import com.redhat.xmlrpc.binding.recipe.FieldBinding;
@@ -70,31 +72,29 @@ public class ReflectionUnbinder
             return this;
         }
 
-        final Class<?> messageCls = message.getClass();
-
-        final Request req = messageCls.getAnnotation( Request.class );
-        if ( req != null )
+        final String method = getRequestMethod( message );
+        if ( method != null )
         {
             listener.startRequest();
-            listener.requestMethod( req.method() );
+            listener.requestMethod( method );
         }
-        else if ( messageCls.getAnnotation( Response.class ) != null )
+        else if ( isResponse( message ) )
         {
             listener.startResponse();
         }
         else
         {
             throw new BindException( "Can only unbind classes annotated with either @Request or @Response. Class: "
-                + messageCls.getName() );
+                + message.getClass().getName() );
         }
 
         fireMessageEvents( listener );
 
-        if ( req != null )
+        if ( isRequest( message ) )
         {
             listener.endRequest();
         }
-        else if ( messageCls.getAnnotation( Response.class ) != null )
+        else if ( isResponse( message ) )
         {
             listener.endResponse();
         }

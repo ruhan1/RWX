@@ -86,6 +86,11 @@ public class JDomRenderer
     public JDomRenderer value( final Object value, final ValueType type )
         throws CoercionException
     {
+        if ( ValueType.STRUCT == type || ValueType.ARRAY == type )
+        {
+            return this;
+        }
+
         generateValue( currentParent, value, type );
 
         return this;

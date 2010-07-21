@@ -16,6 +16,11 @@
   
   <dependencyManagement>
     <dependencies>
+    	<dependency>
+    		<groupId>org.apache.xbean</groupId>
+    		<artifactId>xbean-reflect</artifactId>
+    		<version>3.6</version>
+    	</dependency>
       <dependency>
         <groupId>commons-codec</groupId>
         <artifactId>commons-codec</artifactId>
@@ -47,16 +52,15 @@
         <version>4.8.1</version>
         <scope>test</scope>
       </dependency>
-    <dependency>
-        <groupId>com.redhat.xmlrpc</groupId>
-        <artifactId>xmlrpc-core</artifactId>
-        <version>${project.version}</version>
-        <classifier>tests</classifier>
-        <scope>test</scope>
-    </dependency>
     </dependencies>
   </dependencyManagement>
 
+  <scm>
+    <connection>scm:git:git@github.com:jdcasey/RWX.git</connection>
+    <developerConnection>scm:git:git@github.com:jdcasey/RWX.git</developerConnection>
+    <url>http://github.com/jdcasey/RWX</url>
+  </scm>
+  
   <dependencies>
     <dependency>
       <groupId>junit</groupId>

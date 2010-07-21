@@ -17,7 +17,6 @@
 
 package com.redhat.xmlrpc.error;
 
-
 public class XmlRpcFaultException
     extends XmlRpcException
 {
@@ -43,6 +42,50 @@ public class XmlRpcFaultException
     public String getReason()
     {
         return faultMessage;
+    }
+
+    @Override
+    public int hashCode()
+    {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + code;
+        result = prime * result + ( ( faultMessage == null ) ? 0 : faultMessage.hashCode() );
+        return result;
+    }
+
+    @Override
+    public boolean equals( final Object obj )
+    {
+        if ( this == obj )
+        {
+            return true;
+        }
+        if ( obj == null )
+        {
+            return false;
+        }
+        if ( getClass() != obj.getClass() )
+        {
+            return false;
+        }
+        final XmlRpcFaultException other = (XmlRpcFaultException) obj;
+        if ( code != other.code )
+        {
+            return false;
+        }
+        if ( faultMessage == null )
+        {
+            if ( other.faultMessage != null )
+            {
+                return false;
+            }
+        }
+        else if ( !faultMessage.equals( other.faultMessage ) )
+        {
+            return false;
+        }
+        return true;
     }
 
 }

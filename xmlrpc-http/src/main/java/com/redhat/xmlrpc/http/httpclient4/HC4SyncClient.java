@@ -17,6 +17,8 @@
 
 package com.redhat.xmlrpc.http.httpclient4;
 
+import static com.redhat.xmlrpc.binding.anno.AnnotationUtils.getRequestMethod;
+
 import org.apache.http.HttpResponse;
 import org.apache.http.StatusLine;
 import org.apache.http.client.ClientProtocolException;
@@ -27,7 +29,6 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
 
 import com.redhat.xmlrpc.binding.Bindery;
-import com.redhat.xmlrpc.binding.anno.Request;
 import com.redhat.xmlrpc.error.XmlRpcException;
 import com.redhat.xmlrpc.http.SyncXmlRpcClient;
 import com.redhat.xmlrpc.http.error.XmlRpcTransportException;
@@ -64,13 +65,11 @@ public class HC4SyncClient
     public <T> T call( final Object request, final Class<T> responseType )
         throws XmlRpcException
     {
-        final Request req = request.getClass().getAnnotation( Request.class );
-        if ( req == null )
+        final String methodName = getRequestMethod( request );
+        if ( methodName == null )
         {
             throw new XmlRpcTransportException( "Request value is not annotated with @Request.", request );
         }
-
-        final String methodName = req.method();
 
         final HttpPost method = new HttpPost( url.toString() );
         method.setHeader( "Content-Type", "text/xml" );

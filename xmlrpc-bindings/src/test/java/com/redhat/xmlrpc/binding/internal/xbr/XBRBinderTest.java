@@ -25,8 +25,10 @@ import com.redhat.xmlrpc.binding.error.BindException;
 import com.redhat.xmlrpc.binding.recipe.Recipe;
 import com.redhat.xmlrpc.binding.testutil.ComposedPersonResponse;
 import com.redhat.xmlrpc.binding.testutil.ComposedPersonResponse3;
+import com.redhat.xmlrpc.binding.testutil.ComposedPersonResponseWithFinalFields;
 import com.redhat.xmlrpc.binding.testutil.InheritedPersonRequest;
 import com.redhat.xmlrpc.binding.testutil.SimpleAddress;
+import com.redhat.xmlrpc.binding.testutil.SimpleFinalFieldAddress;
 import com.redhat.xmlrpc.binding.testutil.SimplePersonRequest;
 import com.redhat.xmlrpc.binding.testutil.TestObject;
 import com.redhat.xmlrpc.error.XmlRpcException;
@@ -82,6 +84,16 @@ public class XBRBinderTest
         throws XmlRpcException
     {
         assertBindings( new ComposedPersonResponse3() );
+    }
+
+    @Test
+    public void responseWithConstructorAnnotations()
+        throws XmlRpcException
+    {
+        assertBindings( new ComposedPersonResponseWithFinalFields( "foo", "foo@nowhere.com",
+                                                                   new SimpleFinalFieldAddress( "123 Sesame St",
+                                                                                                "Little Big Fork",
+                                                                                                "NV", "01234" ) ) );
     }
 
     @SuppressWarnings( "unchecked" )

@@ -17,15 +17,13 @@
 
 package com.redhat.xmlrpc.binding.internal.xbr;
 
-import static com.redhat.xmlrpc.binding.recipe.RecipeUtils.toStringArray;
+import static com.redhat.xmlrpc.binding.anno.AnnotationUtils.isMessage;
 
 import org.apache.xbean.recipe.ConstructionException;
 import org.apache.xbean.recipe.DefaultRepository;
 import org.apache.xbean.recipe.ObjectRecipe;
 import org.apache.xbean.recipe.Repository;
 
-import com.redhat.xmlrpc.binding.anno.Request;
-import com.redhat.xmlrpc.binding.anno.Response;
 import com.redhat.xmlrpc.binding.error.BindException;
 import com.redhat.xmlrpc.binding.recipe.ArrayRecipe;
 import com.redhat.xmlrpc.binding.recipe.FieldBinding;
@@ -71,7 +69,7 @@ public class XBRBinder<T>
                 + entryPoint.getName() );
         }
 
-        if ( entryPoint.getAnnotation( Request.class ) == null && entryPoint.getAnnotation( Response.class ) == null )
+        if ( !isMessage( entryPoint ) )
         {
             throw new BindException( "Invalid entry-point for binding. Class: " + entryPoint.getName()
                 + " must be annotated with either @Request or @Response." );
@@ -81,8 +79,7 @@ public class XBRBinder<T>
 
         for ( final Recipe<?> recipe : recipes.values() )
         {
-            final ObjectRecipe builder =
-                new ObjectRecipe( recipe.getObjectType(), toStringArray( recipe.getConstructorKeys() ) );
+            final ObjectRecipe builder = new ObjectRecipe( recipe.getObjectType() );
 
             if ( current == recipe )
             {
@@ -98,7 +95,7 @@ public class XBRBinder<T>
 
             final Map<? extends Object, FieldBinding> bindings = recipe.getFieldBindings();
 
-            final String[] ctorKeys = toStringArray( recipe.getConstructorKeys() );
+            final Object[] ctorKeys = recipe.getConstructorKeys();
             final String[] ctorArgs = new String[ctorKeys.length];
             for ( int i = 0; i < ctorKeys.length; i++ )
             {
@@ -167,6 +164,7 @@ public class XBRBinder<T>
 
     @Override
     public XBRBinder<T> startArrayElement( final int index )
+        throws BindException
     {
         findField( index );
         return this;
@@ -181,6 +179,7 @@ public class XBRBinder<T>
 
     @Override
     public XBRBinder<T> startParameter( final int index )
+        throws BindException
     {
         findField( index );
         return this;
@@ -188,8 +187,9 @@ public class XBRBinder<T>
 
     @Override
     public XBRBinder<T> startStructMember( final String key )
+        throws BindException
     {
-        pushCurrent( key );
+        findField( key );
         return this;
     }
 
@@ -206,8 +206,8 @@ public class XBRBinder<T>
     {
         if ( currentFieldBinding == null )
         {
-            throw new BindException( "Cannot find field for value: " + value + " (type: " + type
-                + ")\nCurrent recipe: " + current.getObjectType().getName() );
+            // TODO: Is this really safe??
+            return this;
         }
 
         currentBuilder.setProperty( currentFieldBinding.getFieldName(), value );
@@ -215,6 +215,7 @@ public class XBRBinder<T>
     }
 
     private void findField( final Object key )
+        throws BindException
     {
         final FieldBinding binding;
 
@@ -251,21 +252,40 @@ public class XBRBinder<T>
 
     private void popCurrent()
     {
+        //        System.out.print( "POP (was: " + current.getObjectType().getName() + ") / " );
         current = recipeStack.pop();
         currentBuilder = builderStack.pop();
+
+        //        System.out.println( "CURRENT " + current.getObjectType().getName() );
     }
 
     private void pushCurrent( final Object key )
+        throws BindException
     {
         final FieldBinding binding = current.getFieldBindings().get( key );
+        if ( binding == null )
+        {
+            throw new BindException( "Cannot find FieldBinding for: " + key );
+        }
+
         final ObjectRecipe r = (ObjectRecipe) repository.get( binding.getFieldType().getName() );
         final Recipe<?> recipe = recipes.get( binding.getFieldType() );
+
+        if ( recipe == null )
+        {
+            throw new BindException( "Cannot find FieldBinding for: " + key + " (field type: "
+                + binding.getFieldType().getName() + ")" );
+        }
 
         recipeStack.push( current );
         builderStack.push( currentBuilder );
 
+        //        System.out.print( "PUSH " + current.getObjectType().getName() + " / " );
+
         current = recipe;
         currentBuilder = r;
+
+        //        System.out.println( "CURRENT " + current.getObjectType().getName() );
     }
 
 }
