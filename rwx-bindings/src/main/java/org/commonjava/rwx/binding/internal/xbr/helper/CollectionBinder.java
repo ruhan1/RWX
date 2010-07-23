@@ -18,6 +18,8 @@
 package org.commonjava.rwx.binding.internal.xbr.helper;
 
 import org.apache.xbean.recipe.CollectionRecipe;
+import org.commonjava.rwx.binding.internal.xbr.XBRBindingContext;
+import org.commonjava.rwx.binding.spi.Binder;
 import org.commonjava.rwx.error.XmlRpcException;
 import org.commonjava.rwx.spi.XmlRpcListener;
 import org.commonjava.rwx.vocab.ValueType;
@@ -100,7 +102,7 @@ public class CollectionBinder
     public XmlRpcListener startArrayElement( final int index )
         throws XmlRpcException
     {
-        final Binder binder = getContext().newBinder( this, getType() );
+        final Binder binder = getBindingContext().newBinder( this, getType() );
         if ( binder != null )
         {
             currentIndex = index;

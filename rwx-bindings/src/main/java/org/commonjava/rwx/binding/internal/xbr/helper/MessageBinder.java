@@ -18,9 +18,10 @@
 package org.commonjava.rwx.binding.internal.xbr.helper;
 
 import org.apache.xbean.recipe.ObjectRecipe;
-import org.commonjava.rwx.binding.anno.Contains;
+import org.commonjava.rwx.binding.internal.xbr.XBRBindingContext;
 import org.commonjava.rwx.binding.mapping.ArrayMapping;
 import org.commonjava.rwx.binding.mapping.FieldBinding;
+import org.commonjava.rwx.binding.spi.Binder;
 import org.commonjava.rwx.error.XmlRpcException;
 import org.commonjava.rwx.error.XmlRpcFaultException;
 import org.commonjava.rwx.spi.XmlRpcListener;
@@ -65,10 +66,9 @@ public class MessageBinder
         throws XmlRpcException
     {
         final FieldBinding binding = getMapping().getFieldBinding( index );
-        final Field field = getContext().findField( binding, getType() );
-        final Contains contains = field.getAnnotation( Contains.class );
+        final Field field = getBindingContext().findField( binding, getType() );
 
-        final Binder binder = getContext().newBinder( this, binding.getFieldType(), contains );
+        final Binder binder = getBindingContext().newBinder( this, field );
         if ( binder != null )
         {
             currentField = binding;
@@ -101,7 +101,7 @@ public class MessageBinder
     public XmlRpcListener startRequest()
         throws XmlRpcException
     {
-        recipe = getContext().setupObjectRecipe( getMapping() );
+        recipe = XBRBindingContext.setupObjectRecipe( getMapping() );
         return this;
     }
 
@@ -109,7 +109,7 @@ public class MessageBinder
     public XmlRpcListener startResponse()
         throws XmlRpcException
     {
-        recipe = getContext().setupObjectRecipe( getMapping() );
+        recipe = XBRBindingContext.setupObjectRecipe( getMapping() );
         return this;
     }
 

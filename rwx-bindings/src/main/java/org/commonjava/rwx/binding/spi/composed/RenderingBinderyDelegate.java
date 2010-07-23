@@ -15,50 +15,50 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.commonjava.rwx.binding.internal;
+package org.commonjava.rwx.binding.spi.composed;
 
-import org.commonjava.rwx.binding.Bindery;
+import org.commonjava.rwx.binding.spi.Bindery;
 import org.commonjava.rwx.error.XmlRpcException;
-import org.commonjava.rwx.spi.XmlRpcListener;
+import org.commonjava.rwx.spi.XmlRpcGenerator;
 
 
-import java.io.OutputStream;
-import java.io.Writer;
+import java.io.InputStream;
+import java.io.Reader;
 
-public abstract class ParsingBinderyDelegate
+public abstract class RenderingBinderyDelegate
     implements Bindery
 {
 
     @Override
-    public final void render( final OutputStream out, final Object value )
+    public final <T> T parse( final InputStream in, final Class<T> type )
         throws XmlRpcException
     {
         throw new UnsupportedOperationException(
-                                                 "Not supported. This delegate is meant to work in conjunction with a rendering delegate." );
+                                                 "Not supported. This delegate is meant to work in conjunction with a parsing delegate." );
     }
 
     @Override
-    public final void render( final Writer out, final Object value )
+    public final <T> T parse( final Reader in, final Class<T> type )
         throws XmlRpcException
     {
         throw new UnsupportedOperationException(
-                                                 "Not supported. This delegate is meant to work in conjunction with a rendering delegate." );
+                                                 "Not supported. This delegate is meant to work in conjunction with a parsing delegate." );
     }
 
     @Override
-    public final void render( final XmlRpcListener out, final Object value )
+    public final <T> T parse( final String in, final Class<T> type )
         throws XmlRpcException
     {
         throw new UnsupportedOperationException(
-                                                 "Not supported. This delegate is meant to work in conjunction with a rendering delegate." );
+                                                 "Not supported. This delegate is meant to work in conjunction with a parsing delegate." );
     }
 
     @Override
-    public final String renderString( final Object value )
+    public final <T> T parse( final XmlRpcGenerator in, final Class<T> type )
         throws XmlRpcException
     {
         throw new UnsupportedOperationException(
-                                                 "Not supported. This delegate is meant to work in conjunction with a rendering delegate." );
+                                                 "Not supported. This delegate is meant to work in conjunction with a parsing delegate." );
     }
 
 }

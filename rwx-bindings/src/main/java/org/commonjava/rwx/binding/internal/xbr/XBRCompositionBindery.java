@@ -18,10 +18,10 @@
 package org.commonjava.rwx.binding.internal.xbr;
 
 import org.commonjava.rwx.binding.error.BindException;
-import org.commonjava.rwx.binding.internal.CompositionBindery;
 import org.commonjava.rwx.binding.internal.reflect.ReflectionMapper;
 import org.commonjava.rwx.binding.internal.reflect.ReflectionUnbindery;
 import org.commonjava.rwx.binding.mapping.Mapping;
+import org.commonjava.rwx.binding.spi.composed.CompositionBindery;
 import org.jdom.output.XMLOutputter;
 
 

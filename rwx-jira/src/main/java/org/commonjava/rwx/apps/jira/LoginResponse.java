@@ -15,11 +15,34 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.commonjava.rwx.binding.internal.xbr.helper;
+package org.commonjava.rwx.apps.jira;
 
-import org.commonjava.rwx.spi.XmlRpcListener;
+import org.commonjava.rwx.binding.anno.DataIndex;
+import org.commonjava.rwx.binding.anno.IndexRefs;
+import org.commonjava.rwx.binding.anno.Response;
 
-public interface Binder
-    extends XmlRpcListener
+@Response
+public class LoginResponse
 {
+
+    @DataIndex( 0 )
+    private final String token;
+
+    @IndexRefs( 0 )
+    public LoginResponse( final String token )
+    {
+        this.token = token;
+    }
+
+    public String getToken()
+    {
+        return token;
+    }
+
+    @Override
+    public String toString()
+    {
+        return "LoginResponse [token=" + token + "]";
+    }
+
 }

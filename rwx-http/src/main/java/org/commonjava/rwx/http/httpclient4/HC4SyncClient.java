@@ -19,6 +19,8 @@ package org.commonjava.rwx.http.httpclient4;
 
 import static org.commonjava.rwx.binding.anno.AnnotationUtils.getRequestMethod;
 
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.StatusLine;
 import org.apache.http.client.ClientProtocolException;
@@ -27,13 +29,13 @@ import org.apache.http.client.ResponseHandler;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
-import org.commonjava.rwx.binding.Bindery;
+import org.commonjava.rwx.binding.spi.Bindery;
 import org.commonjava.rwx.error.XmlRpcException;
 import org.commonjava.rwx.http.SyncXmlRpcClient;
 import org.commonjava.rwx.http.error.XmlRpcTransportException;
 import org.commonjava.rwx.http.util.FinalHolder;
 
-
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 
@@ -77,8 +79,7 @@ public class HC4SyncClient
         {
             // TODO: Can't we get around pre-rendering to string?? Maybe not, if we want content-length to be right...
             final String content = bindery.renderString( request );
-
-            method.setHeader( "Content-Length", Integer.toString( content.length() ) );
+            System.out.println( "Sending request:\n\n" + content + "\n\n" );
 
             method.setEntity( new StringEntity( content ) );
         }
@@ -97,11 +98,19 @@ public class HC4SyncClient
                     throws ClientProtocolException, IOException
                 {
                     final StatusLine status = resp.getStatusLine();
+                    System.out.println( status );
                     if ( status.getStatusCode() > 199 && status.getStatusCode() < 203 )
                     {
+                        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                        IOUtils.copy( resp.getEntity().getContent(), baos );
                         try
                         {
-                            return bindery.parse( resp.getEntity().getContent(), responseType );
+                            final String content =
+                                StringEscapeUtils.unescapeHtml( new String( baos.toByteArray(), "UTF-8" ) );
+
+                            System.out.println( "Got response: \n\n" + content );
+
+                            return bindery.parse( content, responseType );
                         }
                         catch ( final XmlRpcException e )
                         {
@@ -118,7 +127,7 @@ public class HC4SyncClient
 
             } );
 
-            if ( responseType == null && errorHolder.hasValue() )
+            if ( response == null && errorHolder.hasValue() )
             {
                 throw errorHolder.getValue();
             }

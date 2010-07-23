@@ -15,27 +15,18 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.commonjava.rwx.binding.convert;
+package org.commonjava.rwx.binding.anno;
 
-import org.commonjava.rwx.binding.error.BindException;
-import org.commonjava.rwx.binding.mapping.Mapping;
-import org.commonjava.rwx.binding.mapping.discovery.Mapper;
-import org.commonjava.rwx.error.XmlRpcException;
-import org.commonjava.rwx.spi.XmlRpcListener;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-import java.util.Map;
-
-public interface ValueConverter
-    extends XmlRpcListener
+@Retention( RetentionPolicy.RUNTIME )
+@Target( ElementType.TYPE )
+public @interface ImportMappings
 {
 
-    Map<Class<?>, Mapping<?>> getSupplementalRecipes( Mapper loader )
-        throws BindException;
-
-    void generate( XmlRpcListener listener, Object value, Map<Class<?>, Mapping<?>> recipes )
-        throws XmlRpcException;
-
-    void setContext( XmlRpcListener parent, Map<Class<?>, Mapping<?>> recipes )
-        throws XmlRpcException;
+    Class<?>[] value();
 
 }

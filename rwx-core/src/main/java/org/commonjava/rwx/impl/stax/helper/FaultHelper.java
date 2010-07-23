@@ -51,7 +51,8 @@ public class FaultHelper
                         throw new XmlRpcException( "Fault can only contain ONE value." );
                     }
 
-                    values = (Map<String, Object>) new ValueHelper( false ).parse( reader, handler );
+                    final ValueHelper vh = new ValueHelper( false );
+                    values = (Map<String, Object>) vh.parse( reader, handler );
                     break;
                 }
                 else

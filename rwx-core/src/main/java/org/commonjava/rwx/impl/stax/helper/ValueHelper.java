@@ -38,7 +38,7 @@ public class ValueHelper
 
     private ValueType type;
 
-    private final boolean enableEvents;
+    private boolean enableEvents = false;
 
     public ValueHelper()
     {
@@ -66,8 +66,15 @@ public class ValueHelper
         int evt = -1;
         do
         {
-            evt = reader.nextTag();
-            if ( evt == START_ELEMENT )
+            evt = reader.next();
+            if ( value == null && evt == CHARACTERS )
+            {
+                final String src = reader.getText();
+
+                type = ValueType.STRING;
+                value = src;
+            }
+            else if ( evt == START_ELEMENT )
             {
                 final String tag = reader.getName().getLocalPart();
                 if ( XmlRpcConstants.VALUE.equals( tag ) )

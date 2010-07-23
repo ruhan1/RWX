@@ -18,6 +18,8 @@
 package org.commonjava.rwx.binding.internal.xbr.helper;
 
 import org.apache.xbean.recipe.MapRecipe;
+import org.commonjava.rwx.binding.internal.xbr.XBRBindingContext;
+import org.commonjava.rwx.binding.spi.Binder;
 import org.commonjava.rwx.error.XmlRpcException;
 import org.commonjava.rwx.spi.XmlRpcListener;
 import org.commonjava.rwx.vocab.ValueType;
@@ -62,7 +64,7 @@ public class MapBinder
     public XmlRpcListener startStructMember( final String key )
         throws XmlRpcException
     {
-        final Binder binder = getContext().newBinder( this, getType() );
+        final Binder binder = getBindingContext().newBinder( this, getType() );
         if ( binder != null )
         {
             currentMember = key;

@@ -25,14 +25,15 @@ import static org.commonjava.rwx.binding.anno.AnnotationUtils.isResponse;
 
 import org.commonjava.rwx.binding.anno.ArrayPart;
 import org.commonjava.rwx.binding.anno.Contains;
-import org.commonjava.rwx.binding.anno.Converter;
 import org.commonjava.rwx.binding.anno.StructPart;
-import org.commonjava.rwx.binding.convert.ValueConverter;
+import org.commonjava.rwx.binding.anno.UnbindVia;
 import org.commonjava.rwx.binding.error.BindException;
+import org.commonjava.rwx.binding.internal.xbr.XBRBinderInstantiator;
 import org.commonjava.rwx.binding.mapping.ArrayMapping;
 import org.commonjava.rwx.binding.mapping.FieldBinding;
 import org.commonjava.rwx.binding.mapping.Mapping;
 import org.commonjava.rwx.binding.mapping.StructMapping;
+import org.commonjava.rwx.binding.spi.value.ValueUnbinder;
 import org.commonjava.rwx.error.XmlRpcException;
 import org.commonjava.rwx.error.XmlRpcFaultException;
 import org.commonjava.rwx.spi.XmlRpcGenerator;
@@ -293,20 +294,11 @@ public class ReflectionUnbinder
             Object value = field.get( parent );
             final ValueType type = typeOf( value, binding );
 
-            final Converter converter = field.getAnnotation( Converter.class );
+            final UnbindVia converter = field.getAnnotation( UnbindVia.class );
             if ( converter != null )
             {
-                try
-                {
-                    final ValueConverter vc = converter.value().newInstance();
-                    vc.generate( listener, value, recipesByClass );
-                }
-                catch ( final InstantiationException e )
-                {
-                    throw new BindException( "Cannot create ValueConverter: " + converter.value().getName()
-                        + "\nField: " + binding.getFieldName() + "\nClass: " + parentCls.getName() + "\nError: "
-                        + e.getMessage(), e );
-                }
+                final ValueUnbinder vc = XBRBinderInstantiator.newValueUnbinder( converter, null, null, null );
+                vc.generate( listener, value, recipesByClass );
             }
             else if ( recipesByClass.containsKey( binding.getFieldType() ) )
             {

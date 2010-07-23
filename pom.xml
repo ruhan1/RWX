@@ -14,6 +14,7 @@
     <module>rwx-core</module>
     <module>rwx-bindings</module>
     <module>rwx-http</module>
+    <module>rwx-jira</module>
   </modules>
   
   <dependencyManagement>

@@ -18,9 +18,10 @@
 package org.commonjava.rwx.binding.internal.xbr.helper;
 
 import org.apache.xbean.recipe.ObjectRecipe;
-import org.commonjava.rwx.binding.anno.Contains;
+import org.commonjava.rwx.binding.internal.xbr.XBRBindingContext;
 import org.commonjava.rwx.binding.mapping.FieldBinding;
 import org.commonjava.rwx.binding.mapping.StructMapping;
+import org.commonjava.rwx.binding.spi.Binder;
 import org.commonjava.rwx.error.XmlRpcException;
 import org.commonjava.rwx.spi.XmlRpcListener;
 import org.commonjava.rwx.vocab.ValueType;
@@ -38,6 +39,8 @@ public class StructMappingBinder
 
     private Object result;
 
+    private boolean ignore = false;
+
     public StructMappingBinder( final Binder parent, final Class<?> type, final StructMapping mapping,
                                 final XBRBindingContext context )
     {
@@ -48,10 +51,10 @@ public class StructMappingBinder
     public XmlRpcListener structMember( final String key, final Object value, final ValueType type )
         throws XmlRpcException
     {
-        if ( currentField == null )
+        if ( !ignore && currentField == null )
         {
             final FieldBinding binding = getMapping().getFieldBinding( key );
-            recipe.setProperty( binding.getFieldName(), value );
+            recipe.setProperty( binding.getFieldName(), type.coercion().fromString( (String) value ) );
         }
 
         return this;
@@ -62,10 +65,15 @@ public class StructMappingBinder
         throws XmlRpcException
     {
         final FieldBinding binding = getMapping().getFieldBinding( key );
-        final Field field = getContext().findField( binding, getType() );
-        final Contains contains = field.getAnnotation( Contains.class );
+        if ( binding == null )
+        {
+            ignore = true;
+            return this;
+        }
 
-        final Binder binder = getContext().newBinder( this, binding.getFieldType(), contains );
+        final Field field = getBindingContext().findField( binding, getType() );
+
+        final Binder binder = getBindingContext().newBinder( this, field );
         if ( binder != null )
         {
             currentField = binding;
@@ -97,7 +105,7 @@ public class StructMappingBinder
     public XmlRpcListener startStruct()
         throws XmlRpcException
     {
-        recipe = getContext().setupObjectRecipe( getMapping() );
+        recipe = XBRBindingContext.setupObjectRecipe( getMapping() );
         return this;
     }
 
@@ -115,6 +123,7 @@ public class StructMappingBinder
         throws XmlRpcException
     {
         currentField = null;
+        ignore = false;
         return this;
     }
 

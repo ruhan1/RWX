@@ -17,7 +17,7 @@
 
 package org.commonjava.rwx.binding.anno;
 
-import org.commonjava.rwx.binding.convert.ValueConverter;
+import org.commonjava.rwx.binding.spi.value.ValueBinder;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -26,7 +26,7 @@ import java.lang.annotation.Target;
 
 @Target( ElementType.FIELD )
 @Retention( RetentionPolicy.RUNTIME )
-public @interface Converter
+public @interface BindVia
 {
-    Class<? extends ValueConverter> value();
+    Class<? extends ValueBinder> value();
 }

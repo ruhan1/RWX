@@ -18,9 +18,10 @@
 package org.commonjava.rwx.binding.internal.xbr.helper;
 
 import org.apache.xbean.recipe.ObjectRecipe;
-import org.commonjava.rwx.binding.anno.Contains;
+import org.commonjava.rwx.binding.internal.xbr.XBRBindingContext;
 import org.commonjava.rwx.binding.mapping.ArrayMapping;
 import org.commonjava.rwx.binding.mapping.FieldBinding;
+import org.commonjava.rwx.binding.spi.Binder;
 import org.commonjava.rwx.error.XmlRpcException;
 import org.commonjava.rwx.spi.XmlRpcListener;
 import org.commonjava.rwx.vocab.ValueType;
@@ -38,6 +39,8 @@ public class ArrayMappingBinder
 
     private Object result;
 
+    private boolean ignore = false;
+
     public ArrayMappingBinder( final Binder parent, final Class<?> type, final ArrayMapping mapping,
                                final XBRBindingContext context )
     {
@@ -48,10 +51,10 @@ public class ArrayMappingBinder
     public XmlRpcListener arrayElement( final int index, final Object value, final ValueType type )
         throws XmlRpcException
     {
-        if ( currentField == null )
+        if ( !ignore && currentField == null )
         {
             final FieldBinding binding = getMapping().getFieldBinding( index );
-            recipe.setProperty( binding.getFieldName(), value );
+            recipe.setProperty( binding.getFieldName(), type.coercion().fromString( (String) value ) );
         }
 
         return this;
@@ -62,10 +65,15 @@ public class ArrayMappingBinder
         throws XmlRpcException
     {
         final FieldBinding binding = getMapping().getFieldBinding( index );
-        final Field field = getContext().findField( binding, getType() );
-        final Contains contains = field.getAnnotation( Contains.class );
+        if ( binding == null )
+        {
+            ignore = true;
+            return this;
+        }
 
-        final Binder binder = getContext().newBinder( this, binding.getFieldType(), contains );
+        final Field field = getBindingContext().findField( binding, getType() );
+
+        final Binder binder = getBindingContext().newBinder( this, field );
         if ( binder != null )
         {
             currentField = binding;
@@ -97,7 +105,7 @@ public class ArrayMappingBinder
     public XmlRpcListener startArray()
         throws XmlRpcException
     {
-        recipe = getContext().setupObjectRecipe( getMapping() );
+        recipe = XBRBindingContext.setupObjectRecipe( getMapping() );
         return this;
     }
 
@@ -114,6 +122,7 @@ public class ArrayMappingBinder
         throws XmlRpcException
     {
         currentField = null;
+        ignore = false;
         return this;
     }
 

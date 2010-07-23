@@ -15,7 +15,7 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.commonjava.rwx.binding.internal.xbr.helper;
+package org.commonjava.rwx.binding.internal.xbr;
 
 import static org.commonjava.rwx.binding.anno.AnnotationUtils.hasAnnotation;
 import static org.commonjava.rwx.binding.anno.AnnotationUtils.isMessage;
@@ -28,19 +28,29 @@ import org.apache.xbean.recipe.ObjectRecipe;
 import org.apache.xbean.recipe.Recipe;
 import org.apache.xbean.recipe.Repository;
 import org.commonjava.rwx.binding.anno.ArrayPart;
+import org.commonjava.rwx.binding.anno.BindVia;
 import org.commonjava.rwx.binding.anno.Contains;
 import org.commonjava.rwx.binding.anno.StructPart;
 import org.commonjava.rwx.binding.error.BindException;
+import org.commonjava.rwx.binding.internal.xbr.helper.ArrayBinder;
+import org.commonjava.rwx.binding.internal.xbr.helper.ArrayMappingBinder;
+import org.commonjava.rwx.binding.internal.xbr.helper.CollectionBinder;
+import org.commonjava.rwx.binding.internal.xbr.helper.MapBinder;
+import org.commonjava.rwx.binding.internal.xbr.helper.MessageBinder;
+import org.commonjava.rwx.binding.internal.xbr.helper.StructMappingBinder;
 import org.commonjava.rwx.binding.mapping.ArrayMapping;
 import org.commonjava.rwx.binding.mapping.FieldBinding;
 import org.commonjava.rwx.binding.mapping.Mapping;
 import org.commonjava.rwx.binding.mapping.StructMapping;
+import org.commonjava.rwx.binding.spi.Binder;
+import org.commonjava.rwx.binding.spi.BindingContext;
 
 import java.lang.reflect.Field;
 import java.util.Collection;
 import java.util.Map;
 
 public class XBRBindingContext
+    implements BindingContext
 {
 
     private final Repository repository = new DefaultRepository();
@@ -109,7 +119,7 @@ public class XBRBindingContext
         }
     }
 
-    public ObjectRecipe setupObjectRecipe( final Mapping<?> mapping )
+    public static ObjectRecipe setupObjectRecipe( final Mapping<?> mapping )
     {
         final ObjectRecipe recipe = new ObjectRecipe( mapping.getObjectType() );
 
@@ -180,14 +190,26 @@ public class XBRBindingContext
     public Binder newBinder( final Binder parent, final Class<?> type )
         throws BindException
     {
-        return newBinder( parent, type, null );
+        return newBinder( parent, type, null, null );
+    }
+
+    public Binder newBinder( final Binder parent, final Field field )
+        throws BindException
+    {
+        return newBinder( parent, field.getType(), field.getAnnotation( Contains.class ),
+                          field.getAnnotation( BindVia.class ) );
     }
 
     @SuppressWarnings( "unchecked" )
-    public Binder newBinder( final Binder parent, final Class<?> type, final Contains containsAnno )
+    protected Binder newBinder( final Binder parent, final Class<?> type, final Contains containsAnno,
+                                final BindVia bindVia )
         throws BindException
     {
-        if ( mappings.containsKey( type ) )
+        if ( bindVia != null )
+        {
+            return XBRBinderInstantiator.newValueBinder( bindVia, parent, type, this );
+        }
+        else if ( mappings.containsKey( type ) )
         {
             final Mapping<?> mapping = mappings.get( type );
 

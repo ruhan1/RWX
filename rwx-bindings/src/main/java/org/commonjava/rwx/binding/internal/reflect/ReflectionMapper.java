@@ -17,25 +17,29 @@
 
 package org.commonjava.rwx.binding.internal.reflect;
 
+import static org.commonjava.rwx.binding.anno.AnnotationUtils.hasAnnotation;
 import static org.commonjava.rwx.binding.anno.AnnotationUtils.isMessage;
 import static org.commonjava.rwx.binding.mapping.MappingUtils.toIntegerArray;
 
 import org.commonjava.rwx.binding.anno.ArrayPart;
+import org.commonjava.rwx.binding.anno.BindVia;
 import org.commonjava.rwx.binding.anno.Contains;
-import org.commonjava.rwx.binding.anno.Converter;
 import org.commonjava.rwx.binding.anno.DataIndex;
 import org.commonjava.rwx.binding.anno.DataKey;
 import org.commonjava.rwx.binding.anno.Ignored;
+import org.commonjava.rwx.binding.anno.ImportMappings;
 import org.commonjava.rwx.binding.anno.IndexRefs;
 import org.commonjava.rwx.binding.anno.KeyRefs;
+import org.commonjava.rwx.binding.anno.Request;
+import org.commonjava.rwx.binding.anno.Response;
 import org.commonjava.rwx.binding.anno.StructPart;
-import org.commonjava.rwx.binding.convert.ValueConverter;
+import org.commonjava.rwx.binding.anno.UnbindVia;
 import org.commonjava.rwx.binding.error.BindException;
 import org.commonjava.rwx.binding.mapping.ArrayMapping;
 import org.commonjava.rwx.binding.mapping.FieldBinding;
 import org.commonjava.rwx.binding.mapping.Mapping;
 import org.commonjava.rwx.binding.mapping.StructMapping;
-import org.commonjava.rwx.binding.mapping.discovery.Mapper;
+import org.commonjava.rwx.binding.spi.Mapper;
 
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Constructor;
@@ -76,7 +80,7 @@ public class ReflectionMapper
 
                 if ( isMessage( root ) )
                 {
-                    processArrayRecipe( root, current );
+                    processArrayPart( root, current );
                 }
                 else
                 {
@@ -93,7 +97,7 @@ public class ReflectionMapper
         return recipes;
     }
 
-    protected ArrayMapping processArrayRecipe( final Class<?> type, final Map<Class<?>, Mapping<?>> recipes )
+    protected ArrayMapping processArrayPart( final Class<?> type, final Map<Class<?>, Mapping<?>> mappings )
         throws BindException
     {
         final String typeName = type.getName();
@@ -109,8 +113,8 @@ public class ReflectionMapper
             }
         }
 
-        final ArrayMapping recipe = new ArrayMapping( type, toIntegerArray( ctorIndices ) );
-        recipes.put( type, recipe );
+        final ArrayMapping mapping = new ArrayMapping( type, toIntegerArray( ctorIndices ) );
+        mappings.put( type, mapping );
 
         final SortedSet<Integer> taken = new TreeSet<Integer>();
         final Set<Field> noDecl = new HashSet<Field>();
@@ -133,7 +137,7 @@ public class ReflectionMapper
                     }
                     else
                     {
-                        addFieldBinding( recipe, di.value(), field, ctorIndices, recipes );
+                        addFieldBinding( mapping, di.value(), field, ctorIndices, mappings );
                         taken.add( di.value() );
                     }
                 }
@@ -161,11 +165,12 @@ public class ReflectionMapper
         //            taken.add( counter );
         //        }
 
-        return recipe;
+        processSupplementalMappings( type, mappings );
+        return mapping;
     }
 
     protected void addFieldBinding( final ArrayMapping recipe, final int index, final Field field,
-                                    final int[] ctorIndices, final Map<Class<?>, Mapping<?>> recipes )
+                                    final int[] ctorIndices, final Map<Class<?>, Mapping<?>> mappings )
         throws BindException
     {
         if ( Modifier.isFinal( field.getModifiers() ) )
@@ -190,29 +195,35 @@ public class ReflectionMapper
         final Class<?> type = field.getType();
         final String name = field.getName();
 
-        final Converter converter = field.getAnnotation( Converter.class );
-        if ( converter != null )
+        final FieldBinding binding = new FieldBinding( name, type );
+
+        final BindVia bindVia = field.getAnnotation( BindVia.class );
+        if ( bindVia != null )
         {
-            loadSupplementalRecipes( converter, recipes, recipe, name );
-            recipe.addFieldBinding( index, new FieldBinding( name, type, converter.value() ) );
+            binding.withValueBinderType( bindVia.value() );
+        }
+
+        final UnbindVia unbindVia = field.getAnnotation( UnbindVia.class );
+        if ( unbindVia != null )
+        {
+            binding.withValueUnbinderType( unbindVia.value() );
+        }
+
+        final Contains contains = field.getAnnotation( Contains.class );
+        if ( contains != null )
+        {
+            processBindingTarget( contains.value(), mappings );
         }
         else
         {
-            final Contains contains = field.getAnnotation( Contains.class );
-            if ( contains != null )
-            {
-                processBindingTarget( contains.value(), recipes );
-            }
-            else
-            {
-                processBindingTarget( type, recipes );
-            }
-            recipe.addFieldBinding( index, new FieldBinding( name, type ) );
+            processBindingTarget( type, mappings );
         }
+
+        recipe.addFieldBinding( index, binding );
     }
 
     protected void addFieldBinding( final StructMapping recipe, final String key, final Field field,
-                                    final String[] ctorKeys, final Map<Class<?>, Mapping<?>> recipes )
+                                    final String[] ctorKeys, final Map<Class<?>, Mapping<?>> mappings )
         throws BindException
     {
         if ( Modifier.isTransient( field.getModifiers() ) )
@@ -241,68 +252,78 @@ public class ReflectionMapper
         final Class<?> type = field.getType();
         final String name = field.getName();
 
-        final Converter converter = field.getAnnotation( Converter.class );
-        if ( converter != null )
+        final FieldBinding binding = new FieldBinding( name, type );
+
+        final BindVia bindVia = field.getAnnotation( BindVia.class );
+        if ( bindVia != null )
         {
-            loadSupplementalRecipes( converter, recipes, recipe, name );
-            recipe.addFieldBinding( key, new FieldBinding( name, type, converter.value() ) );
+            binding.withValueBinderType( bindVia.value() );
+        }
+
+        final UnbindVia unbindVia = field.getAnnotation( UnbindVia.class );
+        if ( unbindVia != null )
+        {
+            binding.withValueBinderType( bindVia.value() );
+        }
+
+        final Contains contains = field.getAnnotation( Contains.class );
+        if ( contains != null )
+        {
+            processBindingTarget( contains.value(), mappings );
         }
         else
         {
-            final Contains contains = field.getAnnotation( Contains.class );
-            if ( contains != null )
-            {
-                processBindingTarget( contains.value(), recipes );
-            }
-            else
-            {
-                processBindingTarget( type, recipes );
-            }
-            recipe.addFieldBinding( key, new FieldBinding( name, type ) );
+            processBindingTarget( type, mappings );
         }
+
+        recipe.addFieldBinding( key, binding );
     }
 
-    protected void loadSupplementalRecipes( final Converter converter, final Map<Class<?>, Mapping<?>> recipes,
-                                            final Mapping<?> recipe, final String fieldName )
+    @SuppressWarnings( "unchecked" )
+    protected void processSupplementalMappings( final Class<?> type, final Map<Class<?>, Mapping<?>> mappings )
         throws BindException
     {
-        try
+        final ImportMappings extraMappings = type.getAnnotation( ImportMappings.class );
+        if ( extraMappings != null )
         {
-            final ValueConverter vc = converter.value().newInstance();
-            final Map<Class<?>, Mapping<?>> supplementalRecipes = vc.getSupplementalRecipes( this );
-            if ( supplementalRecipes != null && !supplementalRecipes.isEmpty() )
+            final Class<?>[] imported = extraMappings.value();
+            if ( imported != null )
             {
-                recipes.putAll( supplementalRecipes );
+                for ( final Class<?> cls : imported )
+                {
+                    if ( hasAnnotation( cls, Request.class, Response.class, ArrayPart.class ) )
+                    {
+                        processArrayPart( type, mappings );
+                    }
+                    else if ( hasAnnotation( cls, StructPart.class ) )
+                    {
+                        processStructPart( type, mappings );
+                    }
+                    else
+                    {
+                        throw new BindException( "Imported class is not a valid message-part: " + cls.getName() );
+                    }
+                }
             }
-        }
-        catch ( final InstantiationException e )
-        {
-            throw new BindException( "Cannot create ValueConverter: " + converter.value().getName() + "\nField: "
-                + fieldName + "\nClass: " + recipe.getObjectType().getName() + "\nError: " + e.getMessage(), e );
-        }
-        catch ( final IllegalAccessException e )
-        {
-            throw new BindException( "Cannot create ValueConverter: " + converter.value().getName() + "\nField: "
-                + fieldName + "\nClass: " + recipe.getObjectType().getName() + "\nError: " + e.getMessage(), e );
         }
     }
 
-    protected Mapping<?> processBindingTarget( final Class<?> type, final Map<Class<?>, Mapping<?>> recipes )
+    protected Mapping<?> processBindingTarget( final Class<?> type, final Map<Class<?>, Mapping<?>> mappings )
         throws BindException
     {
         if ( type.getAnnotation( ArrayPart.class ) != null )
         {
-            return processArrayRecipe( type, recipes );
+            return processArrayPart( type, mappings );
         }
         else if ( type.getAnnotation( StructPart.class ) != null )
         {
-            return processStructRecipe( type, recipes );
+            return processStructPart( type, mappings );
         }
 
         return null;
     }
 
-    protected StructMapping processStructRecipe( final Class<?> type, final Map<Class<?>, Mapping<?>> recipes )
+    protected StructMapping processStructPart( final Class<?> type, final Map<Class<?>, Mapping<?>> mappings )
         throws BindException
     {
         final String typeName = type.getName();
@@ -318,8 +339,8 @@ public class ReflectionMapper
             }
         }
 
-        final StructMapping recipe = new StructMapping( type, ctorKeys );
-        recipes.put( type, recipe );
+        final StructMapping mapping = new StructMapping( type, ctorKeys );
+        mappings.put( type, mapping );
 
         final Set<String> takenKeys = new HashSet<String>();
         final Set<Field> noDecl = new HashSet<Field>();
@@ -336,7 +357,7 @@ public class ReflectionMapper
                             + typeName );
                     }
 
-                    addFieldBinding( recipe, dk.value(), field, ctorKeys, recipes );
+                    addFieldBinding( mapping, dk.value(), field, ctorKeys, mappings );
                     takenKeys.add( dk.value() );
                 }
                 else
@@ -362,11 +383,12 @@ public class ReflectionMapper
 
             if ( !Modifier.isTransient( field.getModifiers() ) )
             {
-                addFieldBinding( recipe, name, field, ctorKeys, recipes );
+                addFieldBinding( mapping, name, field, ctorKeys, mappings );
             }
         }
 
-        return recipe;
+        processSupplementalMappings( type, mappings );
+        return mapping;
     }
 
 }

@@ -18,29 +18,35 @@
 package org.commonjava.rwx.binding.convert;
 
 import org.commonjava.rwx.binding.mapping.Mapping;
-import org.commonjava.rwx.binding.mapping.discovery.Mapper;
+import org.commonjava.rwx.binding.spi.Binder;
+import org.commonjava.rwx.binding.spi.BindingContext;
+import org.commonjava.rwx.binding.spi.value.AbstractValueBinder;
+import org.commonjava.rwx.binding.spi.value.ValueUnbinder;
 import org.commonjava.rwx.error.XmlRpcException;
-import org.commonjava.rwx.spi.AbstractXmlRpcListener;
 import org.commonjava.rwx.spi.XmlRpcListener;
 import org.commonjava.rwx.vocab.ValueType;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
 public class ListOfStringsConverter
-    extends AbstractXmlRpcListener
-    implements ValueConverter
+    extends AbstractValueBinder
+    implements ValueUnbinder
 {
-
-    private XmlRpcListener parent;
 
     private final List<String> result = new ArrayList<String>();
 
-    public Map<Class<?>, Mapping<?>> getSupplementalRecipes( final Mapper loader )
+    private boolean done = false;
+
+    public ListOfStringsConverter( final Binder parent, final Class<?> type, final BindingContext context )
     {
-        return Collections.emptyMap();
+        super( parent, type, context );
+    }
+
+    public ListOfStringsConverter()
+    {
+        super( null, null, null );
     }
 
     @SuppressWarnings( "unchecked" )
@@ -66,12 +72,6 @@ public class ListOfStringsConverter
     }
 
     @Override
-    public void setContext( final XmlRpcListener parent, final Map<Class<?>, Mapping<?>> recipes )
-    {
-        this.parent = parent;
-    }
-
-    @Override
     public XmlRpcListener arrayElement( final int index, final Object value, final ValueType type )
         throws XmlRpcException
     {
@@ -88,8 +88,8 @@ public class ListOfStringsConverter
     public XmlRpcListener endArray()
         throws XmlRpcException
     {
-        parent.value( result, ValueType.ARRAY );
-        return parent;
+        done = true;
+        return this;
     }
 
     @Override
@@ -97,6 +97,19 @@ public class ListOfStringsConverter
         throws XmlRpcException
     {
         result.clear();
+        return this;
+    }
+
+    @Override
+    public XmlRpcListener value( final Object value, final ValueType type )
+        throws XmlRpcException
+    {
+        if ( done )
+        {
+            getParent().value( result, ValueType.ARRAY );
+            return getParent();
+        }
+
         return this;
     }
 

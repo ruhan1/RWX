@@ -18,10 +18,9 @@
 package org.commonjava.rwx.binding.internal.xbr;
 
 import org.commonjava.rwx.binding.error.BindException;
-import org.commonjava.rwx.binding.internal.ParsingBinderyDelegate;
 import org.commonjava.rwx.binding.internal.xbr.helper.MessageBinder;
-import org.commonjava.rwx.binding.internal.xbr.helper.XBRBindingContext;
 import org.commonjava.rwx.binding.mapping.Mapping;
+import org.commonjava.rwx.binding.spi.composed.ParsingBinderyDelegate;
 import org.commonjava.rwx.error.XmlRpcException;
 import org.commonjava.rwx.impl.stax.StaxParser;
 import org.commonjava.rwx.spi.XmlRpcGenerator;

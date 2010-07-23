@@ -15,17 +15,13 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.commonjava.rwx.binding.mapping.discovery;
+package org.commonjava.rwx.apps.jira;
 
-import org.commonjava.rwx.binding.error.BindException;
-import org.commonjava.rwx.binding.mapping.Mapping;
-
-import java.util.Map;
-
-public interface Mapper
+public class JIRAMessageConstants
 {
 
-    Map<Class<?>, Mapping<?>> loadRecipes( final Class<?>... roots )
-        throws BindException;
+    public static final Class<?>[] MESSAGE_TYPES =
+        { GetCommentsRequest.class, GetCommentsResponse.class, ServerInfoRequest.class, ServerInfoResponse.class,
+            LoginRequest.class, LoginResponse.class };
 
 }

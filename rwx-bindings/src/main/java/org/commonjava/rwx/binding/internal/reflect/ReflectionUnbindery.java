@@ -17,8 +17,8 @@
 
 package org.commonjava.rwx.binding.internal.reflect;
 
-import org.commonjava.rwx.binding.internal.RenderingBinderyDelegate;
 import org.commonjava.rwx.binding.mapping.Mapping;
+import org.commonjava.rwx.binding.spi.composed.RenderingBinderyDelegate;
 import org.commonjava.rwx.error.XmlRpcException;
 import org.commonjava.rwx.impl.jdom.JDomRenderer;
 import org.commonjava.rwx.spi.XmlRpcListener;

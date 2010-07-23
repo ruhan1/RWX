@@ -15,28 +15,23 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.commonjava.rwx.binding.internal.xbr.helper;
+package org.commonjava.rwx.binding.spi;
 
-import org.apache.xbean.recipe.ArrayRecipe;
-import org.commonjava.rwx.binding.internal.xbr.XBRBindingContext;
-import org.commonjava.rwx.binding.spi.Binder;
+import org.commonjava.rwx.binding.error.BindException;
+import org.commonjava.rwx.binding.mapping.FieldBinding;
 
-public class ArrayBinder
-    extends CollectionBinder
-    implements Binder
+import java.lang.reflect.Field;
+
+public interface BindingContext
 {
 
-    public ArrayBinder( final Binder parent, final Class<?> valueType, final XBRBindingContext context )
-    {
-        super( parent, null, valueType, context );
-    }
+    Field findField( final FieldBinding binding, final Class<?> parentCls )
+        throws BindException;
 
-    @Override
-    protected Object create()
-    {
-        final ArrayRecipe recipe = new ArrayRecipe( getType() );
-        recipe.addAll( getValues() );
-        return recipe.create();
-    }
+    Binder newBinder( final Binder parent, final Class<?> type )
+        throws BindException;
+
+    Binder newBinder( final Binder parent, final Field field )
+        throws BindException;
 
 }

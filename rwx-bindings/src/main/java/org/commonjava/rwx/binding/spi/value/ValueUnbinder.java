@@ -15,28 +15,18 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.commonjava.rwx.binding.internal.xbr.helper;
+package org.commonjava.rwx.binding.spi.value;
 
-import org.apache.xbean.recipe.ArrayRecipe;
-import org.commonjava.rwx.binding.internal.xbr.XBRBindingContext;
-import org.commonjava.rwx.binding.spi.Binder;
+import org.commonjava.rwx.binding.mapping.Mapping;
+import org.commonjava.rwx.error.XmlRpcException;
+import org.commonjava.rwx.spi.XmlRpcListener;
 
-public class ArrayBinder
-    extends CollectionBinder
-    implements Binder
+import java.util.Map;
+
+public interface ValueUnbinder
 {
 
-    public ArrayBinder( final Binder parent, final Class<?> valueType, final XBRBindingContext context )
-    {
-        super( parent, null, valueType, context );
-    }
-
-    @Override
-    protected Object create()
-    {
-        final ArrayRecipe recipe = new ArrayRecipe( getType() );
-        recipe.addAll( getValues() );
-        return recipe.create();
-    }
+    void generate( XmlRpcListener listener, Object value, Map<Class<?>, Mapping<?>> recipes )
+        throws XmlRpcException;
 
 }

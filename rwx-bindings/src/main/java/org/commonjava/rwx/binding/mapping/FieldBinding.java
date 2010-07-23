@@ -17,7 +17,8 @@
 
 package org.commonjava.rwx.binding.mapping;
 
-import org.commonjava.rwx.binding.convert.ValueConverter;
+import org.commonjava.rwx.binding.spi.value.ValueBinder;
+import org.commonjava.rwx.binding.spi.value.ValueUnbinder;
 
 import java.io.Externalizable;
 import java.io.IOException;
@@ -25,7 +26,6 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.io.Serializable;
 
-// FIXME: Incorporate ValueConverters.
 public class FieldBinding
     implements Externalizable, Serializable
 {
@@ -36,23 +36,36 @@ public class FieldBinding
 
     private Class<?> type;
 
-    private final Class<? extends ValueConverter> converterType;
+    private Class<? extends ValueBinder> valueBinder;
+
+    private Class<? extends ValueUnbinder> valueUnbinder;
 
     public FieldBinding( final String name, final Class<?> type )
     {
-        this( name, type, null );
-    }
-
-    public FieldBinding( final String name, final Class<?> type, final Class<? extends ValueConverter> converterType )
-    {
         this.name = name;
         this.type = type;
-        this.converterType = converterType;
     }
 
-    public Class<? extends ValueConverter> getValueConverterType()
+    public FieldBinding withValueBinderType( final Class<? extends ValueBinder> valueBinder )
     {
-        return converterType;
+        this.valueBinder = valueBinder;
+        return this;
+    }
+
+    public Class<? extends ValueBinder> getValueBinderType()
+    {
+        return valueBinder;
+    }
+
+    public FieldBinding withValueUnbinderType( final Class<? extends ValueUnbinder> valueUnbinder )
+    {
+        this.valueUnbinder = valueUnbinder;
+        return this;
+    }
+
+    public Class<? extends ValueUnbinder> getValueUnbinderType()
+    {
+        return valueUnbinder;
     }
 
     public String getFieldName()
@@ -84,7 +97,8 @@ public class FieldBinding
     @Override
     public String toString()
     {
-        return "FieldBinding [converterType=" + converterType + ", name=" + name + ", type=" + type + "]";
+        return "FieldBinding [name=" + name + ", type=" + type + ", valueBinder=" + valueBinder + ", valueUnbinder="
+            + valueUnbinder + "]";
     }
 
 }

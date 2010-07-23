@@ -21,15 +21,19 @@ import static org.commonjava.rwx.impl.estream.testutil.EventAssertions.assertRec
 
 import org.commonjava.rwx.error.XmlRpcException;
 import org.commonjava.rwx.impl.estream.model.Event;
+import org.commonjava.rwx.impl.estream.model.ParameterEvent;
 import org.commonjava.rwx.impl.estream.model.RequestEvent;
 import org.commonjava.rwx.impl.estream.model.ResponseEvent;
+import org.commonjava.rwx.impl.estream.model.StructEvent;
+import org.commonjava.rwx.impl.estream.model.ValueEvent;
 import org.commonjava.rwx.impl.estream.testutil.ExtList;
+import org.commonjava.rwx.impl.estream.testutil.ExtMap;
 import org.commonjava.rwx.impl.estream.testutil.RecordedEvent;
 import org.commonjava.rwx.impl.estream.testutil.RecordingListener;
-import org.commonjava.rwx.impl.stax.StaxParser;
+import org.commonjava.rwx.vocab.EventType;
+import org.commonjava.rwx.vocab.ValueType;
 import org.jdom.JDOMException;
 import org.junit.Test;
-
 
 import javax.xml.stream.XMLStreamException;
 
@@ -141,6 +145,55 @@ public class StaxParserTest
 
         final List<Event<?>> check =
             new ExtList<Event<?>>( new RequestEvent( true ), new RequestEvent( "foo" ), new RequestEvent( false ) );
+
+        assertRecordedEvents( check, events );
+    }
+
+    @Test
+    public void jiraServerInfo_String()
+        throws JDOMException, IOException, XMLStreamException, XmlRpcException
+    {
+        final StaxParser parser = new StaxParser( getXMLString( "jiraServerInfo" ) );
+
+        final RecordingListener listener = new RecordingListener();
+        parser.parse( listener );
+
+        final List<RecordedEvent> events = listener.getRecordedEvents();
+
+        final ExtMap<String, String> map =
+            new ExtMap<String, String>( "version", "4.1.2" ).with( "baseUrl", "http://jira.codehaus.org" )
+                                                            .with( "buildDate", "Mon Jun 07 00:00:00 CDT 2010" )
+                                                            .with( "buildNumber", "531" )
+                                                            .with( "edition", "Enterprise" )
+                                                            .with( "serverTime",
+                                                                   "com.atlassian.jira.rpc.soap.beans.RemoteTimeInfo@18702b7" );
+
+        final List<Event<?>> check =
+            new ExtList<Event<?>>( new ResponseEvent( true ), new ParameterEvent( 0 ),
+                                   new StructEvent( EventType.START_STRUCT ), new StructEvent( "version" ),
+                                   new ValueEvent( "4.1.2", ValueType.STRING ), new StructEvent( "version", "4.1.2",
+                                                                                                 ValueType.STRING ),
+                                   new StructEvent( EventType.END_STRUCT_MEMBER ), new StructEvent( "baseUrl" ),
+                                   new ValueEvent( "http://jira.codehaus.org", ValueType.STRING ),
+                                   new StructEvent( "baseUrl", "http://jira.codehaus.org", ValueType.STRING ),
+                                   new StructEvent( EventType.END_STRUCT_MEMBER ), new StructEvent( "buildDate" ),
+                                   new ValueEvent( "Mon Jun 07 00:00:00 CDT 2010", ValueType.STRING ),
+                                   new StructEvent( "buildDate", "Mon Jun 07 00:00:00 CDT 2010", ValueType.STRING ),
+                                   new StructEvent( EventType.END_STRUCT_MEMBER ), new StructEvent( "buildNumber" ),
+                                   new ValueEvent( "531", ValueType.STRING ), new StructEvent( "buildNumber", "531",
+                                                                                               ValueType.STRING ),
+                                   new StructEvent( EventType.END_STRUCT_MEMBER ), new StructEvent( "edition" ),
+                                   new ValueEvent( "Enterprise", ValueType.STRING ),
+                                   new StructEvent( "edition", "Enterprise", ValueType.STRING ),
+                                   new StructEvent( EventType.END_STRUCT_MEMBER ), new StructEvent( "serverTime" ),
+                                   new ValueEvent( "com.atlassian.jira.rpc.soap.beans.RemoteTimeInfo@18702b7",
+                                                   ValueType.STRING ),
+                                   new StructEvent( "serverTime",
+                                                    "com.atlassian.jira.rpc.soap.beans.RemoteTimeInfo@18702b7",
+                                                    ValueType.STRING ), new StructEvent( EventType.END_STRUCT_MEMBER ),
+                                   new StructEvent( EventType.END_STRUCT ), new ValueEvent( map, ValueType.STRUCT ),
+                                   new ParameterEvent( 0, map, ValueType.STRUCT ), new ParameterEvent(),
+                                   new ResponseEvent( false ) );
 
         assertRecordedEvents( check, events );
     }

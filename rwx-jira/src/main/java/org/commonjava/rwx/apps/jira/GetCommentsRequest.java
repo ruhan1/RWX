@@ -15,43 +15,51 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.commonjava.rwx.binding.internal.xbr.helper;
+package org.commonjava.rwx.apps.jira;
 
-import org.commonjava.rwx.binding.spi.Binder;
-import org.commonjava.rwx.binding.spi.BindingContext;
-import org.commonjava.rwx.spi.AbstractXmlRpcListener;
+import org.commonjava.rwx.binding.anno.DataIndex;
+import org.commonjava.rwx.binding.anno.Request;
 
-public class AbstractBinder
-    extends AbstractXmlRpcListener
-    implements Binder
+@Request( method = "jira1.getComments" )
+public class GetCommentsRequest
 {
 
-    private final Class<?> type;
+    @DataIndex( 0 )
+    private String token;
 
-    private final BindingContext context;
+    @DataIndex( 1 )
+    private String id;
 
-    private final Binder parent;
-
-    protected AbstractBinder( final Binder parent, final Class<?> type, final BindingContext context )
+    public GetCommentsRequest( final String id )
     {
-        this.parent = parent;
-        this.context = context;
-        this.type = type;
+        token = id;
+        this.id = id;
     }
 
-    public final Binder getParent()
+    public GetCommentsRequest( final String token, final String id )
     {
-        return parent;
+        this.token = token;
+        this.id = id;
     }
 
-    public final BindingContext getBindingContext()
+    public String getId()
     {
-        return context;
+        return id;
     }
 
-    public final Class<?> getType()
+    public void setToken( final String token )
     {
-        return type;
+        this.token = token;
+    }
+
+    public void setId( final String id )
+    {
+        this.id = id;
+    }
+
+    public String getToken()
+    {
+        return token;
     }
 
 }

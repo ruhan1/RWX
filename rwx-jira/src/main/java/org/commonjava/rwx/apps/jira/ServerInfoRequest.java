@@ -15,28 +15,36 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.commonjava.rwx.binding.internal.xbr.helper;
+package org.commonjava.rwx.apps.jira;
 
-import org.apache.xbean.recipe.ArrayRecipe;
-import org.commonjava.rwx.binding.internal.xbr.XBRBindingContext;
-import org.commonjava.rwx.binding.spi.Binder;
+import org.commonjava.rwx.binding.anno.DataIndex;
+import org.commonjava.rwx.binding.anno.IndexRefs;
+import org.commonjava.rwx.binding.anno.Request;
 
-public class ArrayBinder
-    extends CollectionBinder
-    implements Binder
+@Request( method = "jira1.getServerInfo" )
+public class ServerInfoRequest
 {
 
-    public ArrayBinder( final Binder parent, final Class<?> valueType, final XBRBindingContext context )
+    public static final String VERSION = "version";
+
+    @DataIndex( 0 )
+    private final String infoType;
+
+    @IndexRefs( 0 )
+    public ServerInfoRequest( final String infoType )
     {
-        super( parent, null, valueType, context );
+        this.infoType = infoType;
     }
 
-    @Override
-    protected Object create()
+    @IndexRefs( 0 )
+    public ServerInfoRequest()
     {
-        final ArrayRecipe recipe = new ArrayRecipe( getType() );
-        recipe.addAll( getValues() );
-        return recipe.create();
+        infoType = null;
+    }
+
+    public String getInfoType()
+    {
+        return infoType;
     }
 
 }
