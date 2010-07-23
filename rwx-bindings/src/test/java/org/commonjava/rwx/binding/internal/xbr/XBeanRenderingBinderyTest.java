@@ -20,26 +20,26 @@ package org.commonjava.rwx.binding.internal.xbr;
 import static org.junit.Assert.assertEquals;
 
 import org.commonjava.rwx.binding.error.BindException;
-import org.commonjava.rwx.binding.internal.xbr.XBRBinder;
-import org.commonjava.rwx.binding.recipe.Recipe;
 import org.commonjava.rwx.binding.testutil.ComposedPersonResponse;
 import org.commonjava.rwx.binding.testutil.ComposedPersonResponse3;
 import org.commonjava.rwx.binding.testutil.ComposedPersonResponseWithFinalFields;
 import org.commonjava.rwx.binding.testutil.InheritedPersonRequest;
 import org.commonjava.rwx.binding.testutil.SimpleAddress;
+import org.commonjava.rwx.binding.testutil.SimpleAddressMapResponse;
+import org.commonjava.rwx.binding.testutil.SimpleConverterRequest;
 import org.commonjava.rwx.binding.testutil.SimpleFinalFieldAddress;
+import org.commonjava.rwx.binding.testutil.SimpleListRequest;
 import org.commonjava.rwx.binding.testutil.SimplePersonRequest;
 import org.commonjava.rwx.binding.testutil.TestObject;
 import org.commonjava.rwx.error.XmlRpcException;
 import org.commonjava.rwx.error.XmlRpcFaultException;
 import org.commonjava.rwx.impl.estream.EventStreamGenerator;
+import org.commonjava.rwx.impl.estream.model.Event;
+import org.commonjava.rwx.impl.estream.model.ResponseEvent;
+import org.commonjava.rwx.impl.estream.testutil.ExtList;
 import org.junit.Test;
 
-
-import java.util.HashMap;
-import java.util.Map;
-
-public class XBRBinderTest
+public class XBeanRenderingBinderyTest
 {
 
     @Test
@@ -49,21 +49,47 @@ public class XBRBinderTest
         assertBindings( new SimplePersonRequest() );
     }
 
+    @Test
+    public void simpleConverterRequest()
+        throws XmlRpcException
+    {
+        assertBindings( new SimpleConverterRequest() );
+    }
+
+    @Test
+    public void simpleListRequest()
+        throws XmlRpcException
+    {
+        assertBindings( new SimpleListRequest() );
+    }
+
+    @Test
+    public void simpleAddressMapResponse()
+        throws XmlRpcException
+    {
+        assertBindings( new SimpleAddressMapResponse() );
+    }
+
     @Test( expected = BindException.class )
     public void invalidEntryPoint()
         throws XmlRpcException
     {
-        new XBRBinder<SimpleAddress>( SimpleAddress.class, new HashMap<Class<?>, Recipe<?>>() );
+        final SimpleAddress address = new SimpleAddress();
+        final XBeanRenderingBindery bindery = new XBeanRenderingBindery( address.recipes() );
+        bindery.parse( new EventStreamGenerator( address.events() ), SimpleAddress.class );
     }
 
     @Test( expected = XmlRpcFaultException.class )
     public void fault()
         throws XmlRpcException
     {
-        final XBRBinder<SimplePersonRequest> binder =
-            new XBRBinder<SimplePersonRequest>( SimplePersonRequest.class, new SimplePersonRequest().recipes() );
+        final XBeanRenderingBindery bindery = new XBeanRenderingBindery( new SimplePersonRequest().recipes() );
 
-        binder.startResponse().fault( 101, "Test fault" ).endResponse();
+        final ExtList<Event<?>> events =
+            new ExtList<Event<?>>( new ResponseEvent( true ), new ResponseEvent( 101, "test fault" ),
+                                   new ResponseEvent( false ) );
+
+        bindery.parse( new EventStreamGenerator( events ), SimplePersonRequest.class );
     }
 
     @Test
@@ -101,13 +127,8 @@ public class XBRBinderTest
     private <T extends TestObject> void assertBindings( final T object )
         throws XmlRpcException
     {
-        final Map<Class<?>, Recipe<?>> recipes = object.recipes();
-
-        final XBRBinder<T> binder = new XBRBinder<T>( (Class<T>) object.getClass(), recipes );
-
-        new EventStreamGenerator( object.events() ).generate( binder );
-
-        final T result = binder.create();
+        final XBeanRenderingBindery bindery = new XBeanRenderingBindery( object.recipes() );
+        final T result = (T) bindery.parse( new EventStreamGenerator( object.events() ), object.getClass() );
 
         assertEquals( object, result );
     }

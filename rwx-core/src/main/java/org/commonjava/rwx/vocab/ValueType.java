@@ -21,7 +21,6 @@ import org.apache.commons.codec.binary.Base64;
 import org.commonjava.rwx.error.CoercionException;
 import org.commonjava.rwx.util.ValueCoercion;
 
-
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -254,9 +253,10 @@ public enum ValueType
         }
         else
         {
+            final Class<?> cls = value instanceof Class<?> ? (Class<?>) value : value.getClass();
             for ( final ValueType vt : values() )
             {
-                if ( vt.nativeType.isAssignableFrom( value.getClass() ) )
+                if ( vt.nativeType.isAssignableFrom( cls ) )
                 {
                     result = vt;
                     break;

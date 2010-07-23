@@ -19,21 +19,17 @@ package org.commonjava.rwx.binding.testutil;
 
 import static org.commonjava.rwx.binding.testutil.recipe.RecipeEventUtils.endParameter;
 import static org.commonjava.rwx.binding.testutil.recipe.RecipeEventUtils.parameter;
-import static org.commonjava.rwx.binding.testutil.recipe.RecipeEventUtils.stringStruct;
 
 import org.commonjava.rwx.binding.anno.DataIndex;
 import org.commonjava.rwx.binding.anno.Response;
-import org.commonjava.rwx.binding.recipe.ArrayRecipe;
-import org.commonjava.rwx.binding.recipe.FieldBinding;
-import org.commonjava.rwx.binding.recipe.Recipe;
-import org.commonjava.rwx.binding.recipe.StructRecipe;
+import org.commonjava.rwx.binding.mapping.ArrayMapping;
+import org.commonjava.rwx.binding.mapping.FieldBinding;
+import org.commonjava.rwx.binding.mapping.Mapping;
 import org.commonjava.rwx.impl.estream.model.Event;
 import org.commonjava.rwx.impl.estream.model.ParameterEvent;
 import org.commonjava.rwx.impl.estream.model.ResponseEvent;
 import org.commonjava.rwx.impl.estream.testutil.ExtList;
-import org.commonjava.rwx.impl.estream.testutil.ExtMap;
 import org.commonjava.rwx.vocab.ValueType;
-
 
 import java.util.HashMap;
 import java.util.List;
@@ -109,30 +105,21 @@ public class ComposedPersonResponse
         this.userId = userId;
     }
 
-    public Map<Class<?>, Recipe<?>> recipes()
+    public Map<Class<?>, Mapping<?>> recipes()
     {
-        final Map<Class<?>, Recipe<?>> recipes = new HashMap<Class<?>, Recipe<?>>();
+        final Map<Class<?>, Mapping<?>> recipes = new HashMap<Class<?>, Mapping<?>>();
 
-        final ArrayRecipe recipe = new ArrayRecipe( ComposedPersonResponse.class, new Integer[0] );
+        final ArrayMapping recipe = new ArrayMapping( ComposedPersonResponse.class, new Integer[0] );
 
-        recipe.addFieldBinding( 0, new FieldBinding( "userId", String.class, true ) )
-              .addFieldBinding( 1, new FieldBinding( "firstName", String.class, true ) )
-              .addFieldBinding( 2, new FieldBinding( "lastName", String.class, true ) )
-              .addFieldBinding( 3, new FieldBinding( "email", String.class, true ) )
-              .addFieldBinding( 4, new FieldBinding( "address", SimpleAddress.class, false ) );
+        recipe.addFieldBinding( 0, new FieldBinding( "userId", String.class ) )
+              .addFieldBinding( 1, new FieldBinding( "firstName", String.class ) )
+              .addFieldBinding( 2, new FieldBinding( "lastName", String.class ) )
+              .addFieldBinding( 3, new FieldBinding( "email", String.class ) )
+              .addFieldBinding( 4, new FieldBinding( "address", SimpleAddress.class ) );
 
         recipes.put( ComposedPersonResponse.class, recipe );
 
-        // SimpleAddress
-        final StructRecipe sRecipe = new StructRecipe( SimpleAddress.class, new String[0] );
-
-        sRecipe.addFieldBinding( "line1", new FieldBinding( "line1", String.class, true ) )
-               .addFieldBinding( "line2", new FieldBinding( "line2", String.class, true ) )
-               .addFieldBinding( "city", new FieldBinding( "city", String.class, true ) )
-               .addFieldBinding( "state", new FieldBinding( "state", String.class, true ) )
-               .addFieldBinding( "zip", new FieldBinding( "zip", String.class, true ) );
-
-        recipes.put( SimpleAddress.class, sRecipe );
+        recipes.putAll( getAddress().recipes() );
 
         return recipes;
 
@@ -153,15 +140,8 @@ public class ComposedPersonResponse
         final SimpleAddress addr = getAddress();
         check.with( new ParameterEvent( 4 ) );
 
-        final ExtMap<String, String> addrMap = new ExtMap<String, String>();
-        addrMap.with( "line1", addr.getLine1() )
-               .with( "line2", null )
-               .with( "city", addr.getCity() )
-               .with( "state", addr.getState() )
-               .with( "zip", addr.getZip() );
-
-        check.withAll( stringStruct( addrMap ) );
-        check.withAll( endParameter( 4, addrMap, ValueType.STRUCT ) );
+        check.withAll( addr.events() );
+        check.withAll( endParameter( 4, addr.asMap(), ValueType.STRUCT ) );
 
         check.with( new ResponseEvent( false ) );
 

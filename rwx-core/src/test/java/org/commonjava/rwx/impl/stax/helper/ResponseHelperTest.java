@@ -20,16 +20,15 @@ package org.commonjava.rwx.impl.stax.helper;
 import static org.commonjava.rwx.impl.estream.testutil.EventAssertions.assertRecordedEvents;
 
 import org.commonjava.rwx.error.XmlRpcException;
+import org.commonjava.rwx.impl.TrackingXmlRpcListener;
 import org.commonjava.rwx.impl.estream.model.Event;
 import org.commonjava.rwx.impl.estream.model.ResponseEvent;
 import org.commonjava.rwx.impl.estream.testutil.ExtList;
 import org.commonjava.rwx.impl.estream.testutil.RecordedEvent;
 import org.commonjava.rwx.impl.estream.testutil.RecordingListener;
 import org.commonjava.rwx.impl.stax.AbstractStaxTest;
-import org.commonjava.rwx.impl.stax.helper.ResponseHelper;
 import org.jdom.JDOMException;
 import org.junit.Test;
-
 
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
@@ -48,7 +47,7 @@ public class ResponseHelperTest
         final XMLStreamReader reader = getXML( "simpleResponse" );
 
         final RecordingListener listener = new RecordingListener();
-        ResponseHelper.parse( reader, listener );
+        ResponseHelper.parse( reader, new TrackingXmlRpcListener( listener ) );
 
         final List<RecordedEvent> events = listener.getRecordedEvents();
 

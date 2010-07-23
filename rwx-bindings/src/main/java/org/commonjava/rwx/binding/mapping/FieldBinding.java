@@ -15,7 +15,9 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.commonjava.rwx.binding.recipe;
+package org.commonjava.rwx.binding.mapping;
+
+import org.commonjava.rwx.binding.convert.ValueConverter;
 
 import java.io.Externalizable;
 import java.io.IOException;
@@ -23,7 +25,6 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.io.Serializable;
 
-// FIXME: Move to Class<?> type refs, and forget marking for external recipe refs.
 // FIXME: Incorporate ValueConverters.
 public class FieldBinding
     implements Externalizable, Serializable
@@ -35,23 +36,23 @@ public class FieldBinding
 
     private Class<?> type;
 
-    private final boolean raw;
+    private final Class<? extends ValueConverter> converterType;
 
     public FieldBinding( final String name, final Class<?> type )
     {
-        this( name, type, false );
+        this( name, type, null );
     }
 
-    public FieldBinding( final String name, final Class<?> type, final boolean raw )
+    public FieldBinding( final String name, final Class<?> type, final Class<? extends ValueConverter> converterType )
     {
         this.name = name;
         this.type = type;
-        this.raw = raw;
+        this.converterType = converterType;
     }
 
-    public boolean isRaw()
+    public Class<? extends ValueConverter> getValueConverterType()
     {
-        return raw;
+        return converterType;
     }
 
     public String getFieldName()
@@ -78,6 +79,12 @@ public class FieldBinding
     {
         out.writeObject( name );
         out.writeObject( type.getName() );
+    }
+
+    @Override
+    public String toString()
+    {
+        return "FieldBinding [converterType=" + converterType + ", name=" + name + ", type=" + type + "]";
     }
 
 }

@@ -18,7 +18,7 @@
 package org.commonjava.rwx.binding.internal.reflect;
 
 import org.commonjava.rwx.binding.internal.RenderingBinderyDelegate;
-import org.commonjava.rwx.binding.recipe.Recipe;
+import org.commonjava.rwx.binding.mapping.Mapping;
 import org.commonjava.rwx.error.XmlRpcException;
 import org.commonjava.rwx.impl.jdom.JDomRenderer;
 import org.commonjava.rwx.spi.XmlRpcListener;
@@ -35,17 +35,17 @@ public class ReflectionUnbindery
     extends RenderingBinderyDelegate
 {
 
-    private final Map<Class<?>, Recipe<?>> recipes;
+    private final Map<Class<?>, Mapping<?>> recipes;
 
     private final XMLOutputter outputter;
 
-    public ReflectionUnbindery( final Map<Class<?>, Recipe<?>> recipes )
+    public ReflectionUnbindery( final Map<Class<?>, Mapping<?>> recipes )
     {
         this.recipes = recipes;
         outputter = new XMLOutputter( Format.getCompactFormat() );
     }
 
-    public ReflectionUnbindery( final Map<Class<?>, Recipe<?>> recipes, final XMLOutputter outputter )
+    public ReflectionUnbindery( final Map<Class<?>, Mapping<?>> recipes, final XMLOutputter outputter )
     {
         this.recipes = recipes;
         this.outputter = outputter == null ? new XMLOutputter( Format.getCompactFormat() ) : outputter;

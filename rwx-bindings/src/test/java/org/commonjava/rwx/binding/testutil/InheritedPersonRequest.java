@@ -20,14 +20,13 @@ package org.commonjava.rwx.binding.testutil;
 import static org.commonjava.rwx.binding.testutil.recipe.RecipeEventUtils.parameter;
 
 import org.commonjava.rwx.binding.anno.Request;
-import org.commonjava.rwx.binding.recipe.ArrayRecipe;
-import org.commonjava.rwx.binding.recipe.FieldBinding;
-import org.commonjava.rwx.binding.recipe.Recipe;
+import org.commonjava.rwx.binding.mapping.ArrayMapping;
+import org.commonjava.rwx.binding.mapping.FieldBinding;
+import org.commonjava.rwx.binding.mapping.Mapping;
 import org.commonjava.rwx.impl.estream.model.Event;
 import org.commonjava.rwx.impl.estream.model.RequestEvent;
 import org.commonjava.rwx.impl.estream.testutil.ExtList;
 import org.commonjava.rwx.vocab.ValueType;
-
 
 import java.util.HashMap;
 import java.util.List;
@@ -38,12 +37,12 @@ public class InheritedPersonRequest
     extends SimplePersonRequest
 {
     @Override
-    public Map<Class<?>, Recipe<?>> recipes()
+    public Map<Class<?>, Mapping<?>> recipes()
     {
-        final Map<Class<?>, Recipe<?>> recipes = new HashMap<Class<?>, Recipe<?>>();
+        final Map<Class<?>, Mapping<?>> recipes = new HashMap<Class<?>, Mapping<?>>();
 
-        final ArrayRecipe recipe = new ArrayRecipe( InheritedPersonRequest.class, new Integer[0] );
-        recipe.addFieldBinding( 0, new FieldBinding( "userId", String.class, true ) );
+        final ArrayMapping recipe = new ArrayMapping( InheritedPersonRequest.class, new Integer[0] );
+        recipe.addFieldBinding( 0, new FieldBinding( "userId", String.class ) );
         recipes.put( InheritedPersonRequest.class, recipe );
 
         return recipes;

@@ -160,4 +160,11 @@ public class SimpleFinalFieldAddress
         return true;
     }
 
+    @Override
+    public String toString()
+    {
+        return "SimpleFinalFieldAddress [city=" + city + ", line1=" + line1 + ", line2=" + line2 + ", state=" + state
+            + ", zip=" + zip + "]";
+    }
+
 }

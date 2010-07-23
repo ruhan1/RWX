@@ -18,6 +18,7 @@
 package org.commonjava.rwx.impl.estream;
 
 import org.commonjava.rwx.error.XmlRpcException;
+import org.commonjava.rwx.impl.TrackingXmlRpcListener;
 import org.commonjava.rwx.impl.estream.model.ArrayEvent;
 import org.commonjava.rwx.impl.estream.model.Event;
 import org.commonjava.rwx.impl.estream.model.ParameterEvent;
@@ -78,9 +79,10 @@ public class EventStreamGenerator
     }
 
     @Override
-    public EventStreamGenerator generate( final XmlRpcListener listener )
+    public EventStreamGenerator generate( final XmlRpcListener l )
         throws XmlRpcException
     {
+        final XmlRpcListener listener = new TrackingXmlRpcListener( l );
         locked = true;
 
         try

@@ -20,13 +20,16 @@ package org.commonjava.rwx.binding.internal.reflect;
 import static org.commonjava.rwx.impl.estream.testutil.EventAssertions.assertRecordedEvents;
 
 import org.commonjava.rwx.binding.error.BindException;
-import org.commonjava.rwx.binding.internal.reflect.ReflectionUnbinder;
-import org.commonjava.rwx.binding.recipe.Recipe;
+import org.commonjava.rwx.binding.mapping.Mapping;
 import org.commonjava.rwx.binding.testutil.ComposedPersonResponse;
 import org.commonjava.rwx.binding.testutil.ComposedPersonResponse3;
 import org.commonjava.rwx.binding.testutil.InheritedPersonRequest;
 import org.commonjava.rwx.binding.testutil.SimpleAddress;
+import org.commonjava.rwx.binding.testutil.SimpleAddressMapResponse;
+import org.commonjava.rwx.binding.testutil.SimpleConverterRequest;
+import org.commonjava.rwx.binding.testutil.SimpleListRequest;
 import org.commonjava.rwx.binding.testutil.SimplePersonRequest;
+import org.commonjava.rwx.binding.testutil.TestObject;
 import org.commonjava.rwx.error.XmlRpcException;
 import org.commonjava.rwx.error.XmlRpcFaultException;
 import org.commonjava.rwx.impl.estream.model.Event;
@@ -35,7 +38,6 @@ import org.commonjava.rwx.impl.estream.testutil.ExtList;
 import org.commonjava.rwx.impl.estream.testutil.RecordedEvent;
 import org.commonjava.rwx.impl.estream.testutil.RecordingListener;
 import org.junit.Test;
-
 
 import java.util.HashMap;
 import java.util.List;
@@ -47,7 +49,7 @@ public class ReflectionUnbinderTest
     public void invalidEntryPoint()
         throws XmlRpcException
     {
-        new ReflectionUnbinder( new SimpleAddress(), new HashMap<Class<?>, Recipe<?>>() ).generate( new RecordingListener() );
+        new ReflectionUnbinder( new SimpleAddress(), new HashMap<Class<?>, Mapping<?>>() ).generate( new RecordingListener() );
     }
 
     @Test
@@ -59,7 +61,7 @@ public class ReflectionUnbinderTest
                                    new ResponseEvent( false ) );
 
         final ReflectionUnbinder unbinder =
-            new ReflectionUnbinder( new XmlRpcFaultException( 101, "Test fault" ), new HashMap<Class<?>, Recipe<?>>() );
+            new ReflectionUnbinder( new XmlRpcFaultException( 101, "Test fault" ), new HashMap<Class<?>, Mapping<?>>() );
         final RecordingListener listener = new RecordingListener();
         unbinder.generate( listener );
 
@@ -72,24 +74,54 @@ public class ReflectionUnbinderTest
     public void simpleRequest()
         throws XmlRpcException
     {
-        final SimplePersonRequest request = new SimplePersonRequest();
+        assertUnbind( new SimplePersonRequest() );
+    }
 
-        final ReflectionUnbinder unbinder = new ReflectionUnbinder( request, request.recipes() );
+    @Test
+    public void simpleConverterRequest()
+        throws XmlRpcException
+    {
+        assertUnbind( new SimpleConverterRequest() );
+    }
 
-        final RecordingListener listener = new RecordingListener();
-        unbinder.generate( listener );
+    @Test
+    public void simpleListRequest()
+        throws XmlRpcException
+    {
+        assertUnbind( new SimpleListRequest() );
+    }
 
-        final List<RecordedEvent> events = listener.getRecordedEvents();
-
-        assertRecordedEvents( request.events(), events );
+    @Test
+    public void simpleAddressMapResponse()
+        throws XmlRpcException
+    {
+        assertUnbind( new SimpleAddressMapResponse() );
     }
 
     @Test
     public void requestWithInheritedFields()
         throws XmlRpcException
     {
-        final InheritedPersonRequest request = new InheritedPersonRequest();
+        assertUnbind( new InheritedPersonRequest() );
+    }
 
+    @Test
+    public void responseWithStructParam()
+        throws XmlRpcException
+    {
+        assertUnbind( new ComposedPersonResponse() );
+    }
+
+    @Test
+    public void responseWithArrayParam()
+        throws XmlRpcException
+    {
+        assertUnbind( new ComposedPersonResponse3() );
+    }
+
+    private void assertUnbind( final TestObject request )
+        throws XmlRpcException
+    {
         final ReflectionUnbinder unbinder = new ReflectionUnbinder( request, request.recipes() );
 
         final RecordingListener listener = new RecordingListener();
@@ -98,38 +130,6 @@ public class ReflectionUnbinderTest
         final List<RecordedEvent> events = listener.getRecordedEvents();
 
         assertRecordedEvents( request.events(), events );
-    }
-
-    @Test
-    public void responseWithStructParam()
-        throws XmlRpcException
-    {
-        final ComposedPersonResponse response = new ComposedPersonResponse();
-
-        final ReflectionUnbinder unbinder = new ReflectionUnbinder( response, response.recipes() );
-
-        final RecordingListener listener = new RecordingListener();
-        unbinder.generate( listener );
-
-        final List<RecordedEvent> actual = listener.getRecordedEvents();
-
-        assertRecordedEvents( response.events(), actual );
-    }
-
-    @Test
-    public void responseWithArrayParam()
-        throws XmlRpcException
-    {
-        final ComposedPersonResponse3 response = new ComposedPersonResponse3();
-
-        final ReflectionUnbinder unbinder = new ReflectionUnbinder( response, response.recipes() );
-
-        final RecordingListener listener = new RecordingListener();
-        unbinder.generate( listener );
-
-        final List<RecordedEvent> actual = listener.getRecordedEvents();
-
-        assertRecordedEvents( response.events(), actual );
     }
 
 }

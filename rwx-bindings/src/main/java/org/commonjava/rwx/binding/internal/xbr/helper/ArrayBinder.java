@@ -15,23 +15,26 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.commonjava.rwx.binding.recipe;
+package org.commonjava.rwx.binding.internal.xbr.helper;
 
-import java.io.Externalizable;
-import java.io.Serializable;
-import java.util.Map;
+import org.apache.xbean.recipe.ArrayRecipe;
 
-// FIXME: Move to Class<?> type references, and get rid of name in favor of type. We don't need aliases for classes.
-public interface Recipe<T>
-    extends Externalizable, Serializable
+public class ArrayBinder
+    extends CollectionBinder
+    implements Binder
 {
 
-    T[] getConstructorKeys();
+    public ArrayBinder( final Binder parent, final Class<?> valueType, final XBRBindingContext context )
+    {
+        super( parent, null, valueType, context );
+    }
 
-    Map<T, FieldBinding> getFieldBindings();
-
-    Class<?> getObjectType();
-
-    FieldBinding getFieldBinding( T key );
+    @Override
+    protected Object create()
+    {
+        final ArrayRecipe recipe = new ArrayRecipe( getType() );
+        recipe.addAll( getValues() );
+        return recipe.create();
+    }
 
 }

@@ -17,10 +17,22 @@
 
 package org.commonjava.rwx.binding.testutil;
 
+import static org.commonjava.rwx.binding.testutil.recipe.RecipeEventUtils.stringStruct;
+
 import org.commonjava.rwx.binding.anno.StructPart;
+import org.commonjava.rwx.binding.mapping.FieldBinding;
+import org.commonjava.rwx.binding.mapping.Mapping;
+import org.commonjava.rwx.binding.mapping.StructMapping;
+import org.commonjava.rwx.impl.estream.model.Event;
+import org.commonjava.rwx.impl.estream.testutil.ExtList;
+import org.commonjava.rwx.impl.estream.testutil.ExtMap;
+
+import java.util.List;
+import java.util.Map;
 
 @StructPart
 public class SimpleAddress
+    implements TestObject
 {
 
     private String line1 = "123 Sesame St";
@@ -168,6 +180,39 @@ public class SimpleAddress
             return false;
         }
         return true;
+    }
+
+    @Override
+    public List<Event<?>> events()
+    {
+        final ExtList<Event<?>> check = new ExtList<Event<?>>();
+
+        check.withAll( stringStruct( asMap() ) );
+
+        return check;
+    }
+
+    ExtMap<String, String> asMap()
+    {
+        return new ExtMap<String, String>().with( "line1", getLine1() )
+                                           .with( "line2", getLine2() )
+                                           .with( "city", getCity() )
+                                           .with( "state", getState() )
+                                           .with( "zip", getZip() );
+    }
+
+    @Override
+    public Map<Class<?>, Mapping<?>> recipes()
+    {
+        final StructMapping sRecipe = new StructMapping( SimpleAddress.class, new String[0] );
+
+        sRecipe.addFieldBinding( "line1", new FieldBinding( "line1", String.class ) )
+               .addFieldBinding( "line2", new FieldBinding( "line2", String.class ) )
+               .addFieldBinding( "city", new FieldBinding( "city", String.class ) )
+               .addFieldBinding( "state", new FieldBinding( "state", String.class ) )
+               .addFieldBinding( "zip", new FieldBinding( "zip", String.class ) );
+
+        return new ExtMap<Class<?>, Mapping<?>>( SimpleAddress.class, sRecipe );
     }
 
 }

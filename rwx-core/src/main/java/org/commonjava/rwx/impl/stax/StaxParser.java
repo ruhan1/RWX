@@ -18,6 +18,7 @@
 package org.commonjava.rwx.impl.stax;
 
 import org.commonjava.rwx.error.XmlRpcException;
+import org.commonjava.rwx.impl.TrackingXmlRpcListener;
 import org.commonjava.rwx.impl.stax.helper.RequestHelper;
 import org.commonjava.rwx.impl.stax.helper.ResponseHelper;
 import org.commonjava.rwx.spi.XmlRpcListener;
@@ -82,9 +83,10 @@ public class StaxParser
         }
     }
 
-    public void parse( final XmlRpcListener listener )
+    public void parse( final XmlRpcListener l )
         throws XmlRpcException
     {
+        final TrackingXmlRpcListener listener = new TrackingXmlRpcListener( l );
         try
         {
             while ( reader.hasNext() )

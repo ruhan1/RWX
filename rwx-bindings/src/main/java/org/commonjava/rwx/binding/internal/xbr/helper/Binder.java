@@ -15,19 +15,11 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.commonjava.rwx.binding.testutil;
+package org.commonjava.rwx.binding.internal.xbr.helper;
 
-import org.commonjava.rwx.binding.mapping.Mapping;
-import org.commonjava.rwx.impl.estream.model.Event;
+import org.commonjava.rwx.spi.XmlRpcListener;
 
-
-import java.util.List;
-import java.util.Map;
-
-public interface TestObject
+public interface Binder
+    extends XmlRpcListener
 {
-
-    Map<Class<?>, Mapping<?>> recipes();
-
-    List<Event<?>> events();
 }

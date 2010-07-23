@@ -15,17 +15,18 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.commonjava.rwx.binding.recipe.discovery;
+package org.commonjava.rwx.binding.anno;
 
-import org.commonjava.rwx.binding.error.BindException;
-import org.commonjava.rwx.binding.recipe.Recipe;
+import org.commonjava.rwx.binding.convert.ValueConverter;
 
-import java.util.Map;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-public interface RecipeLoader
+@Target( ElementType.FIELD )
+@Retention( RetentionPolicy.RUNTIME )
+public @interface Converter
 {
-
-    Map<Class<?>, Recipe<?>> loadRecipes( final Class<?>... roots )
-        throws BindException;
-
+    Class<? extends ValueConverter> value();
 }

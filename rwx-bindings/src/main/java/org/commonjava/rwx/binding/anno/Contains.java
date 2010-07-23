@@ -15,21 +15,18 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.commonjava.rwx.binding.recipe;
+package org.commonjava.rwx.binding.anno;
 
-public class StructRecipe
-    extends AbstractRecipe<String>
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
+@Target( ElementType.FIELD )
+@Retention( RetentionPolicy.RUNTIME )
+public @interface Contains
 {
 
-    public StructRecipe( final Class<?> objectType, final String... constructorKeys )
-    {
-        super( objectType, constructorKeys );
-    }
-
-    public final StructRecipe addFieldBinding( final String key, final FieldBinding binding )
-    {
-        putBinding( key, binding );
-        return this;
-    }
+    Class<?> value();
 
 }

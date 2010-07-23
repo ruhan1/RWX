@@ -19,7 +19,7 @@ package org.commonjava.rwx.impl.stax.helper;
 
 import org.commonjava.rwx.error.CoercionException;
 import org.commonjava.rwx.error.XmlRpcException;
-import org.commonjava.rwx.spi.XmlRpcListener;
+import org.commonjava.rwx.impl.TrackingXmlRpcListener;
 import org.commonjava.rwx.vocab.ValueType;
 import org.commonjava.rwx.vocab.XmlRpcConstants;
 
@@ -60,7 +60,7 @@ public class ValueHelper
         return type;
     }
 
-    public Object parse( final XMLStreamReader reader, final XmlRpcListener listener )
+    public Object parse( final XMLStreamReader reader, final TrackingXmlRpcListener listener )
         throws XMLStreamException, XmlRpcException
     {
         int evt = -1;
@@ -104,7 +104,7 @@ public class ValueHelper
         return value;
     }
 
-    private void parseSimpleValue( final XMLStreamReader reader, final XmlRpcListener listener )
+    private void parseSimpleValue( final XMLStreamReader reader, final TrackingXmlRpcListener listener )
         throws XMLStreamException, CoercionException
     {
         //        while ( reader.hasNext() && reader.next() != XMLStreamReader.START_ELEMENT )

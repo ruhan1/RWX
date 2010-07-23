@@ -15,19 +15,21 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.commonjava.rwx.binding.testutil;
+package org.commonjava.rwx.binding.mapping;
 
-import org.commonjava.rwx.binding.mapping.Mapping;
-import org.commonjava.rwx.impl.estream.model.Event;
-
-
-import java.util.List;
-import java.util.Map;
-
-public interface TestObject
+public class ArrayMapping
+    extends AbstractMapping<Integer>
 {
 
-    Map<Class<?>, Mapping<?>> recipes();
+    public ArrayMapping( final Class<?> objectType, final Integer... constructorIndices )
+    {
+        super( objectType, constructorIndices );
+    }
 
-    List<Event<?>> events();
+    public final ArrayMapping addFieldBinding( final int index, final FieldBinding binding )
+    {
+        putBinding( index, binding );
+        return this;
+    }
+
 }

@@ -15,19 +15,21 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.commonjava.rwx.binding.testutil;
+package org.commonjava.rwx.binding.mapping;
 
-import org.commonjava.rwx.binding.mapping.Mapping;
-import org.commonjava.rwx.impl.estream.model.Event;
-
-
-import java.util.List;
-import java.util.Map;
-
-public interface TestObject
+public class StructMapping
+    extends AbstractMapping<String>
 {
 
-    Map<Class<?>, Mapping<?>> recipes();
+    public StructMapping( final Class<?> objectType, final String... constructorKeys )
+    {
+        super( objectType, constructorKeys );
+    }
 
-    List<Event<?>> events();
+    public final StructMapping addFieldBinding( final String key, final FieldBinding binding )
+    {
+        putBinding( key, binding );
+        return this;
+    }
+
 }

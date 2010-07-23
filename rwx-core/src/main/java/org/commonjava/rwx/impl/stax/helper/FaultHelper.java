@@ -18,7 +18,7 @@
 package org.commonjava.rwx.impl.stax.helper;
 
 import org.commonjava.rwx.error.XmlRpcException;
-import org.commonjava.rwx.spi.XmlRpcListener;
+import org.commonjava.rwx.impl.TrackingXmlRpcListener;
 import org.commonjava.rwx.vocab.XmlRpcConstants;
 
 import javax.xml.stream.XMLStreamConstants;
@@ -32,7 +32,7 @@ public class FaultHelper
 {
 
     @SuppressWarnings( "unchecked" )
-    public static void parse( final XMLStreamReader reader, final XmlRpcListener handler )
+    public static void parse( final XMLStreamReader reader, final TrackingXmlRpcListener handler )
         throws XMLStreamException, XmlRpcException
     {
         Map<String, Object> values = null;

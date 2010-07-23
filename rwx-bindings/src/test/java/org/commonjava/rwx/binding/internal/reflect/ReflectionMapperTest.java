@@ -23,12 +23,12 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
+import org.commonjava.rwx.binding.convert.ListOfStringsConverter;
 import org.commonjava.rwx.binding.error.BindException;
-import org.commonjava.rwx.binding.internal.reflect.ReflectionLoader;
-import org.commonjava.rwx.binding.recipe.ArrayRecipe;
-import org.commonjava.rwx.binding.recipe.FieldBinding;
-import org.commonjava.rwx.binding.recipe.Recipe;
-import org.commonjava.rwx.binding.recipe.StructRecipe;
+import org.commonjava.rwx.binding.mapping.ArrayMapping;
+import org.commonjava.rwx.binding.mapping.FieldBinding;
+import org.commonjava.rwx.binding.mapping.Mapping;
+import org.commonjava.rwx.binding.mapping.StructMapping;
 import org.commonjava.rwx.binding.testutil.AnnotatedAddress;
 import org.commonjava.rwx.binding.testutil.ArrayAddress;
 import org.commonjava.rwx.binding.testutil.ComposedPersonResponse;
@@ -37,7 +37,6 @@ import org.commonjava.rwx.binding.testutil.ComposedPersonResponse3;
 import org.commonjava.rwx.binding.testutil.ComposedPersonResponse4;
 import org.commonjava.rwx.binding.testutil.ComposedPersonResponse5;
 import org.commonjava.rwx.binding.testutil.ComposedPersonResponseWithFinalFields;
-import org.commonjava.rwx.binding.testutil.ComposedPersonResponseWithRawAddress;
 import org.commonjava.rwx.binding.testutil.ComposedPersonResponseWithTwoAddresses;
 import org.commonjava.rwx.binding.testutil.ConstructedPersonRequest;
 import org.commonjava.rwx.binding.testutil.ConstructedPersonResponse;
@@ -48,7 +47,10 @@ import org.commonjava.rwx.binding.testutil.OverlappingDataIndexRequest;
 import org.commonjava.rwx.binding.testutil.OverlappingDataKeyRequest;
 import org.commonjava.rwx.binding.testutil.OverlappingDataKeyRequest2;
 import org.commonjava.rwx.binding.testutil.SimpleAddress;
+import org.commonjava.rwx.binding.testutil.SimpleAddressMapResponse;
+import org.commonjava.rwx.binding.testutil.SimpleConverterRequest;
 import org.commonjava.rwx.binding.testutil.SimpleFinalFieldAddress;
+import org.commonjava.rwx.binding.testutil.SimpleListRequest;
 import org.commonjava.rwx.binding.testutil.SimplePersonRequest;
 import org.commonjava.rwx.binding.testutil.SimplePersonResponse;
 import org.commonjava.rwx.binding.testutil.StructAddressWithIgnored;
@@ -56,39 +58,106 @@ import org.commonjava.rwx.binding.testutil.StructAddressWithTransient;
 import org.commonjava.rwx.binding.testutil.TransientDataIndexRequest;
 import org.junit.Test;
 
-
+import java.util.List;
 import java.util.Map;
 
-public class ReflectionLoaderTest
+public class ReflectionMapperTest
 {
 
     @Test
     public void simplePersonRequest()
         throws BindException
     {
-        final ReflectionLoader loader = new ReflectionLoader();
-        final Map<Class<?>, Recipe<?>> recipes = loader.loadRecipes( SimplePersonRequest.class );
+        final ReflectionMapper loader = new ReflectionMapper();
+        final Map<Class<?>, Mapping<?>> recipes = loader.loadRecipes( SimplePersonRequest.class );
 
         assertEquals( 1, recipes.size() );
 
-        final Recipe<?> recipe = recipes.get( SimplePersonRequest.class );
-        assertTrue( recipe instanceof ArrayRecipe );
+        final Mapping<?> recipe = recipes.get( SimplePersonRequest.class );
+        assertTrue( recipe instanceof ArrayMapping );
 
-        final ArrayRecipe ar = (ArrayRecipe) recipe;
+        final ArrayMapping ar = (ArrayMapping) recipe;
         assertEquals( 1, ar.getFieldBindings().size() );
 
         assertEquals( "userId", ar.getFieldBinding( 0 ).getFieldName() );
     }
 
     @Test
+    public void simpleRequestWithConverter()
+        throws BindException
+    {
+        final ReflectionMapper loader = new ReflectionMapper();
+        final Map<Class<?>, Mapping<?>> recipes = loader.loadRecipes( SimpleConverterRequest.class );
+
+        assertEquals( 1, recipes.size() );
+
+        final Mapping<?> recipe = recipes.get( SimpleConverterRequest.class );
+        assertTrue( recipe instanceof ArrayMapping );
+
+        final ArrayMapping ar = (ArrayMapping) recipe;
+        assertEquals( 1, ar.getFieldBindings().size() );
+
+        assertEquals( "userIds", ar.getFieldBinding( 0 ).getFieldName() );
+        assertEquals( ListOfStringsConverter.class, ar.getFieldBinding( 0 ).getValueConverterType() );
+    }
+
+    @Test
+    public void simpleRequestWithList()
+        throws BindException
+    {
+        final ReflectionMapper loader = new ReflectionMapper();
+        final Map<Class<?>, Mapping<?>> recipes = loader.loadRecipes( SimpleListRequest.class );
+
+        assertEquals( 1, recipes.size() );
+
+        final Mapping<?> recipe = recipes.get( SimpleListRequest.class );
+        assertTrue( recipe instanceof ArrayMapping );
+
+        final ArrayMapping ar = (ArrayMapping) recipe;
+        assertEquals( 1, ar.getFieldBindings().size() );
+
+        assertEquals( "userIds", ar.getFieldBinding( 0 ).getFieldName() );
+        assertEquals( List.class, ar.getFieldBinding( 0 ).getFieldType() );
+    }
+
+    @Test
+    public void simpleResponseWithMapOfAddresses()
+        throws BindException
+    {
+        final ReflectionMapper loader = new ReflectionMapper();
+        final Map<Class<?>, Mapping<?>> recipes = loader.loadRecipes( SimpleAddressMapResponse.class );
+
+        assertEquals( 2, recipes.size() );
+
+        Mapping<?> recipe = recipes.get( SimpleAddressMapResponse.class );
+        assertTrue( recipe instanceof ArrayMapping );
+
+        final ArrayMapping ar = (ArrayMapping) recipe;
+        assertEquals( 1, ar.getFieldBindings().size() );
+
+        assertEquals( "addresses", ar.getFieldBinding( 0 ).getFieldName() );
+        assertEquals( Map.class, ar.getFieldBinding( 0 ).getFieldType() );
+
+        recipe = recipes.get( SimpleAddress.class );
+        assertTrue( recipe instanceof StructMapping );
+
+        final StructMapping sr = (StructMapping) recipe;
+        assertNotNull( sr.getFieldBinding( "line1" ) );
+        assertNotNull( sr.getFieldBinding( "line2" ) );
+        assertNotNull( sr.getFieldBinding( "city" ) );
+        assertNotNull( sr.getFieldBinding( "state" ) );
+        assertNotNull( sr.getFieldBinding( "zip" ) );
+    }
+
+    @Test
     public void cacheRecipes()
         throws BindException
     {
-        final ReflectionLoader loader = new ReflectionLoader();
-        final Map<Class<?>, Recipe<?>> recipes = loader.loadRecipes( SimplePersonRequest.class );
-        final Map<Class<?>, Recipe<?>> recipes2 = loader.loadRecipes( SimplePersonRequest.class );
+        final ReflectionMapper loader = new ReflectionMapper();
+        final Map<Class<?>, Mapping<?>> recipes = loader.loadRecipes( SimplePersonRequest.class );
+        final Map<Class<?>, Mapping<?>> recipes2 = loader.loadRecipes( SimplePersonRequest.class );
 
-        for ( final Map.Entry<Class<?>, Recipe<?>> entry : recipes.entrySet() )
+        for ( final Map.Entry<Class<?>, Mapping<?>> entry : recipes.entrySet() )
         {
             assertSame( "Recipe not cached for: " + entry.getKey().getName(), entry.getValue(),
                         recipes2.get( entry.getKey() ) );
@@ -99,15 +168,15 @@ public class ReflectionLoaderTest
     public void simplePersonResponse()
         throws BindException
     {
-        final ReflectionLoader loader = new ReflectionLoader();
-        final Map<Class<?>, Recipe<?>> recipes = loader.loadRecipes( SimplePersonResponse.class );
+        final ReflectionMapper loader = new ReflectionMapper();
+        final Map<Class<?>, Mapping<?>> recipes = loader.loadRecipes( SimplePersonResponse.class );
 
         assertEquals( 1, recipes.size() );
 
-        final Recipe<?> recipe = recipes.get( SimplePersonResponse.class );
-        assertTrue( recipe instanceof ArrayRecipe );
+        final Mapping<?> recipe = recipes.get( SimplePersonResponse.class );
+        assertTrue( recipe instanceof ArrayMapping );
 
-        final ArrayRecipe ar = (ArrayRecipe) recipe;
+        final ArrayMapping ar = (ArrayMapping) recipe;
         assertEquals( 4, ar.getFieldBindings().size() );
 
         int i = 0;
@@ -121,15 +190,15 @@ public class ReflectionLoaderTest
     public void constructedPersonRequest()
         throws BindException
     {
-        final ReflectionLoader loader = new ReflectionLoader();
-        final Map<Class<?>, Recipe<?>> recipes = loader.loadRecipes( ConstructedPersonRequest.class );
+        final ReflectionMapper loader = new ReflectionMapper();
+        final Map<Class<?>, Mapping<?>> recipes = loader.loadRecipes( ConstructedPersonRequest.class );
 
         assertEquals( 1, recipes.size() );
 
-        final Recipe<?> recipe = recipes.get( ConstructedPersonRequest.class );
-        assertTrue( recipe instanceof ArrayRecipe );
+        final Mapping<?> recipe = recipes.get( ConstructedPersonRequest.class );
+        assertTrue( recipe instanceof ArrayMapping );
 
-        final ArrayRecipe ar = (ArrayRecipe) recipe;
+        final ArrayMapping ar = (ArrayMapping) recipe;
         assertEquals( 1, ar.getFieldBindings().size() );
 
         assertEquals( "userId", ar.getFieldBinding( 0 ).getFieldName() );
@@ -143,15 +212,15 @@ public class ReflectionLoaderTest
     public void constructedPersonResponse()
         throws BindException
     {
-        final ReflectionLoader loader = new ReflectionLoader();
-        final Map<Class<?>, Recipe<?>> recipes = loader.loadRecipes( ConstructedPersonResponse.class );
+        final ReflectionMapper loader = new ReflectionMapper();
+        final Map<Class<?>, Mapping<?>> recipes = loader.loadRecipes( ConstructedPersonResponse.class );
 
         assertEquals( 1, recipes.size() );
 
-        final Recipe<?> recipe = recipes.get( ConstructedPersonResponse.class );
-        assertTrue( recipe instanceof ArrayRecipe );
+        final Mapping<?> recipe = recipes.get( ConstructedPersonResponse.class );
+        assertTrue( recipe instanceof ArrayMapping );
 
-        final ArrayRecipe ar = (ArrayRecipe) recipe;
+        final ArrayMapping ar = (ArrayMapping) recipe;
         assertEquals( 4, ar.getFieldBindings().size() );
 
         int i = 0;
@@ -170,71 +239,71 @@ public class ReflectionLoaderTest
     public void invalidEntryPointClass()
         throws BindException
     {
-        new ReflectionLoader().loadRecipes( SimpleAddress.class );
+        new ReflectionMapper().loadRecipes( SimpleAddress.class );
     }
 
     @Test( expected = BindException.class )
     public void overlappingDataIndex()
         throws BindException
     {
-        new ReflectionLoader().loadRecipes( OverlappingDataIndexRequest.class );
+        new ReflectionMapper().loadRecipes( OverlappingDataIndexRequest.class );
     }
 
     @Test( expected = BindException.class )
     public void overlappingDataKey()
         throws BindException
     {
-        new ReflectionLoader().loadRecipes( OverlappingDataKeyRequest.class );
+        new ReflectionMapper().loadRecipes( OverlappingDataKeyRequest.class );
     }
 
     @Test( expected = BindException.class )
     public void overlappingDataKeyWithFieldName()
         throws BindException
     {
-        new ReflectionLoader().loadRecipes( OverlappingDataKeyRequest2.class );
+        new ReflectionMapper().loadRecipes( OverlappingDataKeyRequest2.class );
     }
 
     @Test( expected = BindException.class )
     public void transientFieldWithDataKeyAnnotation()
         throws BindException
     {
-        new ReflectionLoader().loadRecipes( InvalidAddressResponse.class );
+        new ReflectionMapper().loadRecipes( InvalidAddressResponse.class );
     }
 
     @Test( expected = BindException.class )
     public void transientFieldWithDataIndexAnnotation()
         throws BindException
     {
-        new ReflectionLoader().loadRecipes( TransientDataIndexRequest.class );
+        new ReflectionMapper().loadRecipes( TransientDataIndexRequest.class );
     }
 
     @Test( expected = BindException.class )
     public void finalFieldWithInvalidDataKeyAnnotation()
         throws BindException
     {
-        new ReflectionLoader().loadRecipes( InvalidAddressResponse2.class );
+        new ReflectionMapper().loadRecipes( InvalidAddressResponse2.class );
     }
 
     @Test( expected = BindException.class )
     public void finalFieldWithInvalidDataIndexAnnotation()
         throws BindException
     {
-        new ReflectionLoader().loadRecipes( InvalidFinalRequest.class );
+        new ReflectionMapper().loadRecipes( InvalidFinalRequest.class );
     }
 
     @Test
     public void personResponseWithStructAddress()
         throws BindException
     {
-        final ReflectionLoader loader = new ReflectionLoader();
-        final Map<Class<?>, Recipe<?>> recipes = loader.loadRecipes( ComposedPersonResponse.class );
+        final ReflectionMapper loader = new ReflectionMapper();
+        final Map<Class<?>, Mapping<?>> recipes = loader.loadRecipes( ComposedPersonResponse.class );
 
         assertEquals( 2, recipes.size() );
 
-        Recipe<?> recipe = recipes.get( ComposedPersonResponse.class );
-        assertTrue( recipe instanceof ArrayRecipe );
+        Mapping<?> recipe = recipes.get( ComposedPersonResponse.class );
+        assertTrue( recipe instanceof ArrayMapping );
 
-        final ArrayRecipe ar = (ArrayRecipe) recipe;
+        final ArrayMapping ar = (ArrayMapping) recipe;
         assertEquals( 5, ar.getFieldBindings().size() );
 
         int i = 0;
@@ -246,9 +315,9 @@ public class ReflectionLoaderTest
         assertSame( SimpleAddress.class, ar.getFieldBinding( i ).getFieldType() );
 
         recipe = recipes.get( SimpleAddress.class );
-        assertTrue( recipe instanceof StructRecipe );
+        assertTrue( recipe instanceof StructMapping );
 
-        final StructRecipe sr = (StructRecipe) recipe;
+        final StructMapping sr = (StructMapping) recipe;
         assertNotNull( sr.getFieldBinding( "line1" ) );
         assertNotNull( sr.getFieldBinding( "line2" ) );
         assertNotNull( sr.getFieldBinding( "city" ) );
@@ -260,15 +329,15 @@ public class ReflectionLoaderTest
     public void finalFieldsReferencedInConstructAnnos()
         throws BindException
     {
-        final ReflectionLoader loader = new ReflectionLoader();
-        final Map<Class<?>, Recipe<?>> recipes = loader.loadRecipes( ComposedPersonResponseWithFinalFields.class );
+        final ReflectionMapper loader = new ReflectionMapper();
+        final Map<Class<?>, Mapping<?>> recipes = loader.loadRecipes( ComposedPersonResponseWithFinalFields.class );
 
         assertEquals( 2, recipes.size() );
 
-        Recipe<?> recipe = recipes.get( ComposedPersonResponseWithFinalFields.class );
-        assertTrue( recipe instanceof ArrayRecipe );
+        Mapping<?> recipe = recipes.get( ComposedPersonResponseWithFinalFields.class );
+        assertTrue( recipe instanceof ArrayMapping );
 
-        final ArrayRecipe ar = (ArrayRecipe) recipe;
+        final ArrayMapping ar = (ArrayMapping) recipe;
         assertEquals( 5, ar.getFieldBindings().size() );
 
         int i = 0;
@@ -280,9 +349,9 @@ public class ReflectionLoaderTest
         assertSame( SimpleFinalFieldAddress.class, ar.getFieldBinding( i ).getFieldType() );
 
         recipe = recipes.get( SimpleFinalFieldAddress.class );
-        assertTrue( recipe instanceof StructRecipe );
+        assertTrue( recipe instanceof StructMapping );
 
-        final StructRecipe sr = (StructRecipe) recipe;
+        final StructMapping sr = (StructMapping) recipe;
         assertNotNull( sr.getFieldBinding( "line1" ) );
         assertNotNull( sr.getFieldBinding( "line2" ) );
         assertNotNull( sr.getFieldBinding( "city" ) );
@@ -294,15 +363,15 @@ public class ReflectionLoaderTest
     public void personResponseWithAnnotatedStructAddress()
         throws BindException
     {
-        final ReflectionLoader loader = new ReflectionLoader();
-        final Map<Class<?>, Recipe<?>> recipes = loader.loadRecipes( ComposedPersonResponse2.class );
+        final ReflectionMapper loader = new ReflectionMapper();
+        final Map<Class<?>, Mapping<?>> recipes = loader.loadRecipes( ComposedPersonResponse2.class );
 
         assertEquals( 2, recipes.size() );
 
-        Recipe<?> recipe = recipes.get( ComposedPersonResponse2.class );
-        assertTrue( recipe instanceof ArrayRecipe );
+        Mapping<?> recipe = recipes.get( ComposedPersonResponse2.class );
+        assertTrue( recipe instanceof ArrayMapping );
 
-        final ArrayRecipe ar = (ArrayRecipe) recipe;
+        final ArrayMapping ar = (ArrayMapping) recipe;
         assertEquals( 5, ar.getFieldBindings().size() );
 
         int i = 0;
@@ -314,9 +383,9 @@ public class ReflectionLoaderTest
         assertSame( AnnotatedAddress.class, ar.getFieldBinding( i ).getFieldType() );
 
         recipe = recipes.get( AnnotatedAddress.class );
-        assertTrue( recipe instanceof StructRecipe );
+        assertTrue( recipe instanceof StructMapping );
 
-        final StructRecipe sr = (StructRecipe) recipe;
+        final StructMapping sr = (StructMapping) recipe;
         assertNotNull( sr.getFieldBinding( "AddressLine1" ) );
         assertNotNull( sr.getFieldBinding( "AddressLine2" ) );
         assertNotNull( sr.getFieldBinding( "City" ) );
@@ -328,15 +397,15 @@ public class ReflectionLoaderTest
     public void personResponseWithArrayAddress()
         throws BindException
     {
-        final ReflectionLoader loader = new ReflectionLoader();
-        final Map<Class<?>, Recipe<?>> recipes = loader.loadRecipes( ComposedPersonResponse3.class );
+        final ReflectionMapper loader = new ReflectionMapper();
+        final Map<Class<?>, Mapping<?>> recipes = loader.loadRecipes( ComposedPersonResponse3.class );
 
         assertEquals( 2, recipes.size() );
 
-        Recipe<?> recipe = recipes.get( ComposedPersonResponse3.class );
-        assertTrue( recipe instanceof ArrayRecipe );
+        Mapping<?> recipe = recipes.get( ComposedPersonResponse3.class );
+        assertTrue( recipe instanceof ArrayMapping );
 
-        ArrayRecipe ar = (ArrayRecipe) recipe;
+        ArrayMapping ar = (ArrayMapping) recipe;
         assertEquals( 5, ar.getFieldBindings().size() );
 
         int i = 0;
@@ -348,9 +417,9 @@ public class ReflectionLoaderTest
         assertSame( ArrayAddress.class, ar.getFieldBinding( i ).getFieldType() );
 
         recipe = recipes.get( ArrayAddress.class );
-        assertTrue( recipe instanceof ArrayRecipe );
+        assertTrue( recipe instanceof ArrayMapping );
 
-        ar = (ArrayRecipe) recipe;
+        ar = (ArrayMapping) recipe;
         i = 0;
 
         assertEquals( "line1", ar.getFieldBinding( i++ ).getFieldName() );
@@ -364,15 +433,15 @@ public class ReflectionLoaderTest
     public void personResponseWithStructAddressContainingIgnoredField()
         throws BindException
     {
-        final ReflectionLoader loader = new ReflectionLoader();
-        final Map<Class<?>, Recipe<?>> recipes = loader.loadRecipes( ComposedPersonResponse4.class );
+        final ReflectionMapper loader = new ReflectionMapper();
+        final Map<Class<?>, Mapping<?>> recipes = loader.loadRecipes( ComposedPersonResponse4.class );
 
         assertEquals( 2, recipes.size() );
 
-        Recipe<?> recipe = recipes.get( ComposedPersonResponse4.class );
-        assertTrue( recipe instanceof ArrayRecipe );
+        Mapping<?> recipe = recipes.get( ComposedPersonResponse4.class );
+        assertTrue( recipe instanceof ArrayMapping );
 
-        final ArrayRecipe ar = (ArrayRecipe) recipe;
+        final ArrayMapping ar = (ArrayMapping) recipe;
         assertEquals( 5, ar.getFieldBindings().size() );
 
         int i = 0;
@@ -384,9 +453,9 @@ public class ReflectionLoaderTest
         assertSame( StructAddressWithIgnored.class, ar.getFieldBinding( i ).getFieldType() );
 
         recipe = recipes.get( StructAddressWithIgnored.class );
-        assertTrue( recipe instanceof StructRecipe );
+        assertTrue( recipe instanceof StructMapping );
 
-        final StructRecipe sr = (StructRecipe) recipe;
+        final StructMapping sr = (StructMapping) recipe;
         assertNotNull( sr.getFieldBinding( "AddressLine1" ) );
         assertNotNull( sr.getFieldBinding( "AddressLine2" ) );
         assertNotNull( sr.getFieldBinding( "City" ) );
@@ -399,15 +468,15 @@ public class ReflectionLoaderTest
     public void personResponseWithStructAddressContainingTransientField()
         throws BindException
     {
-        final ReflectionLoader loader = new ReflectionLoader();
-        final Map<Class<?>, Recipe<?>> recipes = loader.loadRecipes( ComposedPersonResponse5.class );
+        final ReflectionMapper loader = new ReflectionMapper();
+        final Map<Class<?>, Mapping<?>> recipes = loader.loadRecipes( ComposedPersonResponse5.class );
 
         assertEquals( 2, recipes.size() );
 
-        Recipe<?> recipe = recipes.get( ComposedPersonResponse5.class );
-        assertTrue( recipe instanceof ArrayRecipe );
+        Mapping<?> recipe = recipes.get( ComposedPersonResponse5.class );
+        assertTrue( recipe instanceof ArrayMapping );
 
-        final ArrayRecipe ar = (ArrayRecipe) recipe;
+        final ArrayMapping ar = (ArrayMapping) recipe;
         assertEquals( 5, ar.getFieldBindings().size() );
 
         int i = 0;
@@ -419,9 +488,9 @@ public class ReflectionLoaderTest
         assertSame( StructAddressWithTransient.class, ar.getFieldBinding( i ).getFieldType() );
 
         recipe = recipes.get( StructAddressWithTransient.class );
-        assertTrue( recipe instanceof StructRecipe );
+        assertTrue( recipe instanceof StructMapping );
 
-        final StructRecipe sr = (StructRecipe) recipe;
+        final StructMapping sr = (StructMapping) recipe;
         assertNotNull( sr.getFieldBinding( "AddressLine1" ) );
         assertNotNull( sr.getFieldBinding( "AddressLine2" ) );
         assertNotNull( sr.getFieldBinding( "City" ) );
@@ -431,43 +500,18 @@ public class ReflectionLoaderTest
     }
 
     @Test
-    public void personResponseWithRawAddressRefToStructPartClass()
-        throws BindException
-    {
-        final ReflectionLoader loader = new ReflectionLoader();
-        final Map<Class<?>, Recipe<?>> recipes = loader.loadRecipes( ComposedPersonResponseWithRawAddress.class );
-
-        assertEquals( 1, recipes.size() );
-
-        final Recipe<?> recipe = recipes.get( ComposedPersonResponseWithRawAddress.class );
-        assertTrue( recipe instanceof ArrayRecipe );
-
-        final ArrayRecipe ar = (ArrayRecipe) recipe;
-        assertEquals( 5, ar.getFieldBindings().size() );
-
-        int i = 0;
-        assertEquals( "userId", ar.getFieldBinding( i++ ).getFieldName() );
-        assertEquals( "firstName", ar.getFieldBinding( i++ ).getFieldName() );
-        assertEquals( "lastName", ar.getFieldBinding( i++ ).getFieldName() );
-        assertEquals( "email", ar.getFieldBinding( i++ ).getFieldName() );
-        assertEquals( "address", ar.getFieldBinding( i ).getFieldName() );
-        assertSame( SimpleAddress.class, ar.getFieldBinding( i ).getFieldType() );
-        assertTrue( ar.getFieldBinding( i ).isRaw() );
-    }
-
-    @Test
     public void personResponseWithTwoAddresses()
         throws BindException
     {
-        final ReflectionLoader loader = new ReflectionLoader();
-        final Map<Class<?>, Recipe<?>> recipes = loader.loadRecipes( ComposedPersonResponseWithTwoAddresses.class );
+        final ReflectionMapper loader = new ReflectionMapper();
+        final Map<Class<?>, Mapping<?>> recipes = loader.loadRecipes( ComposedPersonResponseWithTwoAddresses.class );
 
         assertEquals( 2, recipes.size() );
 
-        Recipe<?> recipe = recipes.get( ComposedPersonResponseWithTwoAddresses.class );
-        assertTrue( recipe instanceof ArrayRecipe );
+        Mapping<?> recipe = recipes.get( ComposedPersonResponseWithTwoAddresses.class );
+        assertTrue( recipe instanceof ArrayMapping );
 
-        final ArrayRecipe ar = (ArrayRecipe) recipe;
+        final ArrayMapping ar = (ArrayMapping) recipe;
         assertEquals( 6, ar.getFieldBindings().size() );
 
         int i = 0;
@@ -485,9 +529,9 @@ public class ReflectionLoaderTest
         assertSame( SimpleAddress.class, binding.getFieldType() );
 
         recipe = recipes.get( SimpleAddress.class );
-        assertTrue( recipe instanceof StructRecipe );
+        assertTrue( recipe instanceof StructMapping );
 
-        final StructRecipe sr = (StructRecipe) recipe;
+        final StructMapping sr = (StructMapping) recipe;
         assertNotNull( sr.getFieldBinding( "line1" ) );
         assertNotNull( sr.getFieldBinding( "line2" ) );
         assertNotNull( sr.getFieldBinding( "city" ) );

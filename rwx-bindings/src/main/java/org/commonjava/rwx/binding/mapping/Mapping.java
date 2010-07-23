@@ -15,19 +15,23 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.commonjava.rwx.binding.testutil;
+package org.commonjava.rwx.binding.mapping;
 
-import org.commonjava.rwx.binding.mapping.Mapping;
-import org.commonjava.rwx.impl.estream.model.Event;
-
-
-import java.util.List;
+import java.io.Externalizable;
+import java.io.Serializable;
 import java.util.Map;
 
-public interface TestObject
+// FIXME: Move to Class<?> type references, and get rid of name in favor of type. We don't need aliases for classes.
+public interface Mapping<T>
+    extends Externalizable, Serializable
 {
 
-    Map<Class<?>, Mapping<?>> recipes();
+    T[] getConstructorKeys();
 
-    List<Event<?>> events();
+    Map<T, FieldBinding> getFieldBindings();
+
+    Class<?> getObjectType();
+
+    FieldBinding getFieldBinding( T key );
+
 }

@@ -20,6 +20,7 @@ package org.commonjava.rwx.impl.stax.helper;
 import static org.commonjava.rwx.impl.estream.testutil.EventAssertions.assertRecordedEvents;
 
 import org.commonjava.rwx.error.XmlRpcException;
+import org.commonjava.rwx.impl.TrackingXmlRpcListener;
 import org.commonjava.rwx.impl.estream.model.ArrayEvent;
 import org.commonjava.rwx.impl.estream.model.Event;
 import org.commonjava.rwx.impl.estream.model.StructEvent;
@@ -28,12 +29,10 @@ import org.commonjava.rwx.impl.estream.testutil.ExtList;
 import org.commonjava.rwx.impl.estream.testutil.ExtMap;
 import org.commonjava.rwx.impl.estream.testutil.RecordedEvent;
 import org.commonjava.rwx.impl.estream.testutil.RecordingListener;
-import org.commonjava.rwx.impl.stax.helper.ArrayHelper;
 import org.commonjava.rwx.vocab.EventType;
 import org.commonjava.rwx.vocab.ValueType;
 import org.jdom.JDOMException;
 import org.junit.Test;
-
 
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
@@ -53,7 +52,7 @@ public class ArrayHelperTest
         gotoElement( reader );
 
         final RecordingListener listener = new RecordingListener();
-        ArrayHelper.parse( reader, listener );
+        ArrayHelper.parse( reader, new TrackingXmlRpcListener( listener ) );
 
         final List<RecordedEvent> events = listener.getRecordedEvents();
 
@@ -74,7 +73,7 @@ public class ArrayHelperTest
         gotoElement( reader );
 
         final RecordingListener listener = new RecordingListener();
-        ArrayHelper.parse( reader, listener );
+        ArrayHelper.parse( reader, new TrackingXmlRpcListener( listener ) );
 
         final List<RecordedEvent> events = listener.getRecordedEvents();
 
@@ -98,7 +97,7 @@ public class ArrayHelperTest
         gotoElement( reader );
 
         final RecordingListener listener = new RecordingListener();
-        ArrayHelper.parse( reader, listener );
+        ArrayHelper.parse( reader, new TrackingXmlRpcListener( listener ) );
 
         final List<RecordedEvent> events = listener.getRecordedEvents();
 

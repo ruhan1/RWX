@@ -17,47 +17,55 @@
 
 package org.commonjava.rwx.binding.testutil;
 
-import static org.commonjava.rwx.binding.testutil.recipe.RecipeEventUtils.parameter;
+import static org.commonjava.rwx.binding.testutil.recipe.RecipeEventUtils.endParameter;
 
+import org.commonjava.rwx.binding.anno.Converter;
 import org.commonjava.rwx.binding.anno.DataIndex;
 import org.commonjava.rwx.binding.anno.Request;
+import org.commonjava.rwx.binding.convert.ListOfStringsConverter;
 import org.commonjava.rwx.binding.mapping.ArrayMapping;
 import org.commonjava.rwx.binding.mapping.FieldBinding;
 import org.commonjava.rwx.binding.mapping.Mapping;
+import org.commonjava.rwx.impl.estream.model.ArrayEvent;
 import org.commonjava.rwx.impl.estream.model.Event;
+import org.commonjava.rwx.impl.estream.model.ParameterEvent;
 import org.commonjava.rwx.impl.estream.model.RequestEvent;
+import org.commonjava.rwx.impl.estream.model.ValueEvent;
 import org.commonjava.rwx.impl.estream.testutil.ExtList;
+import org.commonjava.rwx.vocab.EventType;
 import org.commonjava.rwx.vocab.ValueType;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 @Request( method = "getPerson" )
-public class SimplePersonRequest
+public class SimpleConverterRequest
     implements TestObject
 {
 
     @DataIndex( 0 )
-    private String userId = "foo";
+    @Converter( ListOfStringsConverter.class )
+    private List<String> userIds = Arrays.asList( new String[] { "foo", "bar" } );
 
-    public String getUserId()
+    public List<String> getUserIds()
     {
-        return userId;
+        return userIds;
     }
 
-    public void setUserId( final String userId )
+    public void setUserIds( final List<String> userIds )
     {
-        this.userId = userId;
+        this.userIds = userIds;
     }
 
     public Map<Class<?>, Mapping<?>> recipes()
     {
         final Map<Class<?>, Mapping<?>> recipes = new HashMap<Class<?>, Mapping<?>>();
 
-        final ArrayMapping recipe = new ArrayMapping( SimplePersonRequest.class, new Integer[0] );
-        recipe.addFieldBinding( 0, new FieldBinding( "userId", String.class ) );
-        recipes.put( SimplePersonRequest.class, recipe );
+        final ArrayMapping recipe = new ArrayMapping( SimpleConverterRequest.class, new Integer[0] );
+        recipe.addFieldBinding( 0, new FieldBinding( "userIds", List.class, ListOfStringsConverter.class ) );
+        recipes.put( SimpleConverterRequest.class, recipe );
 
         return recipes;
     }
@@ -68,7 +76,19 @@ public class SimplePersonRequest
 
         check.withAll( new RequestEvent( true ), new RequestEvent( "getPerson" ) );
 
-        check.withAll( parameter( 0, "foo", ValueType.STRING ) );
+        check.with( new ParameterEvent( 0 ) );
+        check.with( new ArrayEvent( EventType.START_ARRAY ) );
+
+        for ( int i = 0; i < userIds.size(); i++ )
+        {
+            check.with( new ArrayEvent( i ) );
+            check.with( new ValueEvent( userIds.get( i ), ValueType.STRING ) );
+            check.with( new ArrayEvent( i, userIds.get( i ), ValueType.STRING ) );
+            check.with( new ArrayEvent( EventType.END_ARRAY_ELEMENT ) );
+        }
+
+        check.with( new ArrayEvent( EventType.END_ARRAY ) );
+        check.withAll( endParameter( 0, userIds, ValueType.ARRAY ) );
         check.with( new RequestEvent( false ) );
 
         return check;
@@ -79,7 +99,7 @@ public class SimplePersonRequest
     {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ( ( userId == null ) ? 0 : userId.hashCode() );
+        result = prime * result + ( ( userIds == null ) ? 0 : userIds.hashCode() );
         return result;
     }
 
@@ -98,15 +118,15 @@ public class SimplePersonRequest
         {
             return false;
         }
-        final SimplePersonRequest other = (SimplePersonRequest) obj;
-        if ( userId == null )
+        final SimpleConverterRequest other = (SimpleConverterRequest) obj;
+        if ( userIds == null )
         {
-            if ( other.userId != null )
+            if ( other.userIds != null )
             {
                 return false;
             }
         }
-        else if ( !userId.equals( other.userId ) )
+        else if ( !userIds.equals( other.userIds ) )
         {
             return false;
         }

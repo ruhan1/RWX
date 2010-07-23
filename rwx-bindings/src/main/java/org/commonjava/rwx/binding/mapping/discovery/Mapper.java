@@ -15,21 +15,17 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.commonjava.rwx.binding.recipe;
+package org.commonjava.rwx.binding.mapping.discovery;
 
-public class ArrayRecipe
-    extends AbstractRecipe<Integer>
+import org.commonjava.rwx.binding.error.BindException;
+import org.commonjava.rwx.binding.mapping.Mapping;
+
+import java.util.Map;
+
+public interface Mapper
 {
 
-    public ArrayRecipe( final Class<?> objectType, final Integer... constructorIndices )
-    {
-        super( objectType, constructorIndices );
-    }
-
-    public final ArrayRecipe addFieldBinding( final int index, final FieldBinding binding )
-    {
-        putBinding( index, binding );
-        return this;
-    }
+    Map<Class<?>, Mapping<?>> loadRecipes( final Class<?>... roots )
+        throws BindException;
 
 }

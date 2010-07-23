@@ -15,7 +15,7 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.commonjava.rwx.binding.recipe;
+package org.commonjava.rwx.binding.mapping;
 
 import org.commonjava.rwx.binding.error.BindException;
 
@@ -23,10 +23,10 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-public final class RecipeUtils
+public final class MappingUtils
 {
 
-    private RecipeUtils()
+    private MappingUtils()
     {
     }
 
@@ -52,11 +52,11 @@ public final class RecipeUtils
         return result;
     }
 
-    public static Map<Class<?>, Recipe<?>> mapRecipesByClass( final Collection<Recipe<?>> recipes )
+    public static Map<Class<?>, Mapping<?>> mapRecipesByClass( final Collection<Mapping<?>> recipes )
         throws BindException
     {
-        final Map<Class<?>, Recipe<?>> result = new HashMap<Class<?>, Recipe<?>>();
-        for ( final Recipe<?> recipe : recipes )
+        final Map<Class<?>, Mapping<?>> result = new HashMap<Class<?>, Mapping<?>>();
+        for ( final Mapping<?> recipe : recipes )
         {
             result.put( recipe.getObjectType(), recipe );
         }

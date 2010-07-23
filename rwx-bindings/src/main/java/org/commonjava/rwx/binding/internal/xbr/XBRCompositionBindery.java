@@ -19,9 +19,9 @@ package org.commonjava.rwx.binding.internal.xbr;
 
 import org.commonjava.rwx.binding.error.BindException;
 import org.commonjava.rwx.binding.internal.CompositionBindery;
-import org.commonjava.rwx.binding.internal.reflect.ReflectionLoader;
+import org.commonjava.rwx.binding.internal.reflect.ReflectionMapper;
 import org.commonjava.rwx.binding.internal.reflect.ReflectionUnbindery;
-import org.commonjava.rwx.binding.recipe.Recipe;
+import org.commonjava.rwx.binding.mapping.Mapping;
 import org.jdom.output.XMLOutputter;
 
 
@@ -40,17 +40,17 @@ public final class XBRCompositionBindery
     public static XBRCompositionBindery binderyFor( final XMLOutputter outputter, final Class<?>... roots )
         throws BindException
     {
-        final Map<Class<?>, Recipe<?>> recipes = new ReflectionLoader().loadRecipes( roots );
+        final Map<Class<?>, Mapping<?>> recipes = new ReflectionMapper().loadRecipes( roots );
         return new XBRCompositionBindery( recipes, outputter );
     }
 
-    public XBRCompositionBindery( final Map<Class<?>, Recipe<?>> recipes )
+    public XBRCompositionBindery( final Map<Class<?>, Mapping<?>> recipes )
         throws BindException
     {
         this( recipes, null );
     }
 
-    public XBRCompositionBindery( final Map<Class<?>, Recipe<?>> recipes, final XMLOutputter outputter )
+    public XBRCompositionBindery( final Map<Class<?>, Mapping<?>> recipes, final XMLOutputter outputter )
         throws BindException
     {
         super( new ReflectionUnbindery( recipes, outputter ), new XBeanRenderingBindery( recipes ) );

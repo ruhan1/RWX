@@ -20,6 +20,7 @@ package org.commonjava.rwx.impl.stax.helper;
 import static org.commonjava.rwx.impl.estream.testutil.EventAssertions.assertRecordedEvents;
 
 import org.commonjava.rwx.error.XmlRpcException;
+import org.commonjava.rwx.impl.TrackingXmlRpcListener;
 import org.commonjava.rwx.impl.estream.model.ArrayEvent;
 import org.commonjava.rwx.impl.estream.model.Event;
 import org.commonjava.rwx.impl.estream.model.StructEvent;
@@ -28,12 +29,10 @@ import org.commonjava.rwx.impl.estream.testutil.ExtList;
 import org.commonjava.rwx.impl.estream.testutil.ExtMap;
 import org.commonjava.rwx.impl.estream.testutil.RecordedEvent;
 import org.commonjava.rwx.impl.estream.testutil.RecordingListener;
-import org.commonjava.rwx.impl.stax.helper.ValueHelper;
 import org.commonjava.rwx.vocab.EventType;
 import org.commonjava.rwx.vocab.ValueType;
 import org.jdom.JDOMException;
 import org.junit.Test;
-
 
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
@@ -55,7 +54,7 @@ public class ValueHelperTest
         final ValueHelper helper = new ValueHelper();
 
         final RecordingListener listener = new RecordingListener();
-        helper.parse( reader, listener );
+        helper.parse( reader, new TrackingXmlRpcListener( listener ) );
 
         final List<RecordedEvent> events = listener.getRecordedEvents();
 
@@ -72,7 +71,7 @@ public class ValueHelperTest
         gotoElement( reader );
 
         final RecordingListener listener = new RecordingListener();
-        new ValueHelper().parse( reader, listener );
+        new ValueHelper().parse( reader, new TrackingXmlRpcListener( listener ) );
 
         final List<RecordedEvent> events = listener.getRecordedEvents();
 
@@ -95,7 +94,7 @@ public class ValueHelperTest
         gotoElement( reader );
 
         final RecordingListener listener = new RecordingListener();
-        new ValueHelper().parse( reader, listener );
+        new ValueHelper().parse( reader, new TrackingXmlRpcListener( listener ) );
 
         final List<RecordedEvent> events = listener.getRecordedEvents();
 

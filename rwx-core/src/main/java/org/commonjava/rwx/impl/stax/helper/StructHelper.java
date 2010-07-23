@@ -18,7 +18,7 @@
 package org.commonjava.rwx.impl.stax.helper;
 
 import org.commonjava.rwx.error.XmlRpcException;
-import org.commonjava.rwx.spi.XmlRpcListener;
+import org.commonjava.rwx.impl.TrackingXmlRpcListener;
 import org.commonjava.rwx.vocab.ValueType;
 import org.commonjava.rwx.vocab.XmlRpcConstants;
 
@@ -33,13 +33,13 @@ public class StructHelper
     implements XMLStreamConstants
 {
 
-    public static Map<String, Object> parse( final XMLStreamReader reader, final XmlRpcListener handler )
+    public static Map<String, Object> parse( final XMLStreamReader reader, final TrackingXmlRpcListener handler )
         throws XMLStreamException, XmlRpcException
     {
         return parse( reader, handler, true );
     }
 
-    public static Map<String, Object> parse( final XMLStreamReader reader, final XmlRpcListener handler,
+    public static Map<String, Object> parse( final XMLStreamReader reader, final TrackingXmlRpcListener handler,
                                              final boolean enableEvents )
         throws XMLStreamException, XmlRpcException
     {
@@ -77,7 +77,7 @@ public class StructHelper
         return values;
     }
 
-    private static void parseMember( final XMLStreamReader reader, final XmlRpcListener handler,
+    private static void parseMember( final XMLStreamReader reader, final TrackingXmlRpcListener handler,
                                      final Map<String, Object> values, final boolean enableEvents )
         throws XMLStreamException, XmlRpcException
     {

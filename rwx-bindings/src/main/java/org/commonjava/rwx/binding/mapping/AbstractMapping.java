@@ -15,7 +15,7 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.commonjava.rwx.binding.recipe;
+package org.commonjava.rwx.binding.mapping;
 
 import java.io.IOException;
 import java.io.ObjectInput;
@@ -23,8 +23,8 @@ import java.io.ObjectOutput;
 import java.util.HashMap;
 import java.util.Map;
 
-public abstract class AbstractRecipe<T>
-    implements Recipe<T>
+public abstract class AbstractMapping<T>
+    implements Mapping<T>
 {
 
     private static final long serialVersionUID = 1L;
@@ -35,7 +35,7 @@ public abstract class AbstractRecipe<T>
 
     private Map<T, FieldBinding> bindings = new HashMap<T, FieldBinding>();
 
-    protected AbstractRecipe( final Class<?> objectType, final T... constructorKeys )
+    protected AbstractMapping( final Class<?> objectType, final T... constructorKeys )
     {
         this.objectType = objectType;
         this.constructorKeys = constructorKeys;
@@ -99,6 +99,12 @@ public abstract class AbstractRecipe<T>
             out.writeObject( binding.getKey() );
             out.writeObject( binding.getValue() );
         }
+    }
+
+    @Override
+    public String toString()
+    {
+        return getClass().getName() + " [objectType=" + objectType + "]";
     }
 
 }

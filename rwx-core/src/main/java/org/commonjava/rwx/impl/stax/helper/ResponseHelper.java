@@ -18,7 +18,7 @@
 package org.commonjava.rwx.impl.stax.helper;
 
 import org.commonjava.rwx.error.XmlRpcException;
-import org.commonjava.rwx.spi.XmlRpcListener;
+import org.commonjava.rwx.impl.TrackingXmlRpcListener;
 import org.commonjava.rwx.vocab.XmlRpcConstants;
 
 import javax.xml.stream.XMLStreamConstants;
@@ -29,7 +29,7 @@ public class ResponseHelper
     implements XMLStreamConstants
 {
 
-    public static void parse( final XMLStreamReader reader, final XmlRpcListener listener )
+    public static void parse( final XMLStreamReader reader, final TrackingXmlRpcListener listener )
         throws XMLStreamException, XmlRpcException
     {
         listener.startResponse();
