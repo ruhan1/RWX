@@ -21,7 +21,7 @@ import org.commonjava.rwx.binding.internal.xbr.XBRBindingContext;
 import org.commonjava.rwx.binding.mapping.Mapping;
 import org.commonjava.rwx.binding.spi.Binder;
 
-public class AbstractMappingBinder<T extends Mapping<?>>
+public abstract class AbstractMappingBinder<T extends Mapping<?>>
     extends AbstractBinder
     implements Binder
 {

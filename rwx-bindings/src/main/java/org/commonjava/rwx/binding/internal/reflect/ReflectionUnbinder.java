@@ -315,6 +315,8 @@ public class ReflectionUnbinder
                     throw new BindException( "Unknown recipe reference type: " + binding.getFieldType() + "\nField: "
                         + binding.getFieldName() + "\nClass: " + parentCls.getName() );
                 }
+
+                listener.value( value, type );
             }
             else
             {
@@ -331,9 +333,9 @@ public class ReflectionUnbinder
                 {
                     value = type.coercion().toString( value );
                 }
-            }
 
-            listener.value( value, type );
+                listener.value( value, type );
+            }
 
             return value;
         }

@@ -17,6 +17,9 @@
 
 package org.commonjava.rwx.impl.stax.helper;
 
+import static org.commonjava.rwx.util.LogUtil.trace;
+
+import org.apache.log4j.Logger;
 import org.commonjava.rwx.error.CoercionException;
 import org.commonjava.rwx.error.XmlRpcException;
 import org.commonjava.rwx.impl.TrackingXmlRpcListener;
@@ -33,6 +36,8 @@ import javax.xml.stream.XMLStreamReader;
 public class ValueHelper
     implements XMLStreamConstants
 {
+
+    private static final Logger LOGGER = Logger.getLogger( ValueHelper.class );
 
     private Object value;
 
@@ -69,7 +74,7 @@ public class ValueHelper
             evt = reader.next();
             if ( value == null && evt == CHARACTERS )
             {
-                final String src = reader.getText();
+                final String src = normalize( reader.getText() );
 
                 type = ValueType.STRING;
                 value = src;
@@ -83,11 +88,13 @@ public class ValueHelper
                 }
                 else if ( XmlRpcConstants.STRUCT.equals( tag ) )
                 {
+                    trace( LOGGER, "Handing off to StructHelper at: $1", reader.getLocation() );
                     value = StructHelper.parse( reader, listener, enableEvents );
                     type = ValueType.STRUCT;
                 }
                 else if ( XmlRpcConstants.ARRAY.equals( tag ) )
                 {
+                    trace( LOGGER, "Handing off to ArrayHelper at: $1", reader.getLocation() );
                     value = ArrayHelper.parse( reader, listener, enableEvents );
                     type = ValueType.ARRAY;
                 }
@@ -111,17 +118,19 @@ public class ValueHelper
         return value;
     }
 
+    private String normalize( final String text )
+    {
+        final String result = text.replaceAll( "\\s+", " " );
+
+        return result;
+    }
+
     private void parseSimpleValue( final XMLStreamReader reader, final TrackingXmlRpcListener listener )
         throws XMLStreamException, CoercionException
     {
-        //        while ( reader.hasNext() && reader.next() != XMLStreamReader.START_ELEMENT )
-        //        {
-        //            // NOP
-        //        }
-
         type = ValueType.typeOf( reader.getName().getLocalPart() );
 
-        final String src = reader.getElementText().trim();
+        final String src = normalize( reader.getElementText().trim() );
 
         value = type == null ? src : type.coercion().fromString( src );
     }

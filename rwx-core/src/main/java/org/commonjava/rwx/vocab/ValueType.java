@@ -204,7 +204,10 @@ public enum ValueType
         {
             try
             {
-                return value == null ? null : new String( Base64.encodeBase64( (byte[]) value ) );
+                return value == null ? null
+                                : new String(
+                                              Base64.encodeBase64( value instanceof String ? ( (String) value ).getBytes()
+                                                              : (byte[]) value ) );
             }
             catch ( final ClassCastException e )
             {

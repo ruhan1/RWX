@@ -110,5 +110,9 @@ public class StaxParser
         {
             throw new XmlRpcException( "Failed to parse input: " + e.getMessage(), e );
         }
+        catch ( final RuntimeException e )
+        {
+
+        }
     }
 }

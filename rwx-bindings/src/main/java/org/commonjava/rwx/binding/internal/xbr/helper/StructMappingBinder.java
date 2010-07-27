@@ -33,27 +33,30 @@ public class StructMappingBinder
     implements Binder
 {
 
-    private ObjectRecipe recipe;
+    private final ObjectRecipe recipe;
 
     private FieldBinding currentField;
 
-    private Object result;
-
     private boolean ignore = false;
+
+    private int level = 0;
 
     public StructMappingBinder( final Binder parent, final Class<?> type, final StructMapping mapping,
                                 final XBRBindingContext context )
     {
         super( parent, type, mapping, context );
+        recipe = XBRBindingContext.setupObjectRecipe( mapping );
     }
 
     @Override
     public XmlRpcListener structMember( final String key, final Object value, final ValueType type )
         throws XmlRpcException
     {
-        if ( !ignore && currentField == null )
+        if ( !ignore && currentField == null && value != null )
         {
             final FieldBinding binding = getMapping().getFieldBinding( key );
+
+            // if ignore == false and the current field is null, the binding MUST be non-null.  
             recipe.setProperty( binding.getFieldName(), type.coercion().fromString( (String) value ) );
         }
 
@@ -61,69 +64,100 @@ public class StructMappingBinder
     }
 
     @Override
-    public XmlRpcListener startStructMember( final String key )
+    protected Binder startStructMemberInternal( final String key )
         throws XmlRpcException
     {
-        final FieldBinding binding = getMapping().getFieldBinding( key );
-        if ( binding == null )
+        if ( ignore )
         {
-            ignore = true;
-            return this;
+            level++;
         }
-
-        final Field field = getBindingContext().findField( binding, getType() );
-
-        final Binder binder = getBindingContext().newBinder( this, field );
-        if ( binder != null )
+        else
         {
-            currentField = binding;
-            return binder;
-        }
+            final FieldBinding binding = getMapping().getFieldBinding( key );
+            if ( binding == null )
+            {
+                ignore = true;
+                level = 0;
+                return this;
+            }
 
-        return this;
-    }
+            final Field field = getBindingContext().findField( binding, getType() );
 
-    @Override
-    public XmlRpcListener value( final Object value, final ValueType type )
-        throws XmlRpcException
-    {
-        if ( result != null )
-        {
-            final Binder parent = getParent();
-            parent.value( result, ValueType.STRUCT );
-            return parent;
-        }
-        else if ( currentField != null )
-        {
-            recipe.setProperty( currentField.getFieldName(), value );
+            final Binder binder = getBindingContext().newBinder( this, field );
+            if ( binder != null )
+            {
+                currentField = binding;
+                return binder;
+            }
         }
 
         return this;
     }
 
     @Override
-    public XmlRpcListener startStruct()
+    protected Binder valueInternal( final Object value, final ValueType type )
         throws XmlRpcException
     {
-        recipe = XBRBindingContext.setupObjectRecipe( getMapping() );
-        return this;
-    }
-
-    @Override
-    public XmlRpcListener endStruct()
-        throws XmlRpcException
-    {
-        result = recipe.create();
+        if ( !ignore )
+        {
+            if ( currentField != null )
+            {
+                recipe.setProperty( currentField.getFieldName(), value );
+            }
+        }
 
         return this;
     }
 
     @Override
-    public XmlRpcListener endStructMember()
+    protected Binder startStructInternal()
         throws XmlRpcException
     {
-        currentField = null;
-        ignore = false;
+        if ( ignore )
+        {
+            level++;
+        }
+
+        return this;
+    }
+
+    @Override
+    protected Binder endStructInternal()
+        throws XmlRpcException
+    {
+        if ( ignore )
+        {
+            level--;
+        }
+        else
+        {
+            setValue( recipe.create(), ValueType.STRUCT );
+        }
+
+        return this;
+    }
+
+    @Override
+    protected Binder endStructMemberInternal()
+        throws XmlRpcException
+    {
+        if ( ignore )
+        {
+            if ( level == 0 )
+            {
+                currentField = null;
+                ignore = false;
+            }
+            else
+            {
+                level--;
+            }
+        }
+        else
+        {
+            currentField = null;
+        }
+
         return this;
     }
 

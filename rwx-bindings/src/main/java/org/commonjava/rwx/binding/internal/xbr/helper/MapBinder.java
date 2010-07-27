@@ -29,39 +29,27 @@ public class MapBinder
     implements Binder
 {
 
-    private MapRecipe recipe;
-
-    private final Class<?> mapType;
+    private final MapRecipe recipe;
 
     private String currentMember;
-
-    private Object result;
 
     public MapBinder( final Binder parent, final Class<?> mapType, final Class<?> valueType,
                       final XBRBindingContext context )
     {
         super( parent, valueType, context );
-        this.mapType = mapType;
-    }
-
-    @Override
-    public XmlRpcListener endStruct()
-        throws XmlRpcException
-    {
-        result = recipe.create();
-        return this;
-    }
-
-    @Override
-    public XmlRpcListener startStruct()
-        throws XmlRpcException
-    {
         recipe = new MapRecipe( mapType );
+    }
+
+    @Override
+    protected Binder endStructInternal()
+        throws XmlRpcException
+    {
+        setValue( recipe.create(), ValueType.STRUCT );
         return this;
     }
 
     @Override
-    public XmlRpcListener startStructMember( final String key )
+    protected Binder startStructMemberInternal( final String key )
         throws XmlRpcException
     {
         final Binder binder = getBindingContext().newBinder( this, getType() );
@@ -75,18 +63,14 @@ public class MapBinder
     }
 
     @Override
-    public XmlRpcListener value( final Object value, final ValueType type )
+    protected Binder valueInternal( final Object value, final ValueType type )
         throws XmlRpcException
     {
-        if ( result != null )
-        {
-            getParent().value( result, ValueType.STRUCT );
-            return getParent();
-        }
-        else if ( currentMember != null )
+        if ( currentMember != null )
         {
             recipe.put( currentMember, value );
         }
+
         return this;
     }
 
@@ -99,7 +83,7 @@ public class MapBinder
     }
 
     @Override
-    public XmlRpcListener endStructMember()
+    protected Binder endStructMemberInternal()
         throws XmlRpcException
     {
         currentMember = null;

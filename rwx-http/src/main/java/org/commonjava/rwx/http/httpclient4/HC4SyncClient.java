@@ -18,30 +18,28 @@
 package org.commonjava.rwx.http.httpclient4;
 
 import static org.commonjava.rwx.binding.anno.AnnotationUtils.getRequestMethod;
+import static org.commonjava.rwx.util.LogUtil.trace;
 
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringEscapeUtils;
-import org.apache.http.HttpResponse;
-import org.apache.http.StatusLine;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
-import org.apache.http.client.ResponseHandler;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.log4j.Logger;
+import org.commonjava.rwx.binding.VoidResponse;
 import org.commonjava.rwx.binding.spi.Bindery;
 import org.commonjava.rwx.error.XmlRpcException;
 import org.commonjava.rwx.http.SyncXmlRpcClient;
 import org.commonjava.rwx.http.error.XmlRpcTransportException;
-import org.commonjava.rwx.http.util.FinalHolder;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 
 public class HC4SyncClient
     implements SyncXmlRpcClient
 {
+
+    private static final Logger LOGGER = Logger.getLogger( HC4SyncClient.class );
 
     private final HttpClient client;
 
@@ -79,7 +77,7 @@ public class HC4SyncClient
         {
             // TODO: Can't we get around pre-rendering to string?? Maybe not, if we want content-length to be right...
             final String content = bindery.renderString( request );
-            System.out.println( "Sending request:\n\n" + content + "\n\n" );
+            trace( LOGGER, "Sending request:\n\n" + content + "\n\n" );
 
             method.setEntity( new StringEntity( content ) );
         }
@@ -90,49 +88,24 @@ public class HC4SyncClient
 
         try
         {
-            final FinalHolder<XmlRpcException> errorHolder = new FinalHolder<XmlRpcException>();
-            final T response = client.execute( method, new ResponseHandler<T>()
+            if ( Void.class.equals( responseType ) )
             {
-                @Override
-                public T handleResponse( final HttpResponse resp )
-                    throws ClientProtocolException, IOException
-                {
-                    final StatusLine status = resp.getStatusLine();
-                    System.out.println( status );
-                    if ( status.getStatusCode() > 199 && status.getStatusCode() < 203 )
-                    {
-                        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                        IOUtils.copy( resp.getEntity().getContent(), baos );
-                        try
-                        {
-                            final String content =
-                                StringEscapeUtils.unescapeHtml( new String( baos.toByteArray(), "UTF-8" ) );
+                final XmlRpcResponseHandler<VoidResponse> handler =
+                    new XmlRpcResponseHandler<VoidResponse>( bindery, VoidResponse.class );
+                client.execute( method, handler );
 
-                            System.out.println( "Got response: \n\n" + content );
-
-                            return bindery.parse( content, responseType );
-                        }
-                        catch ( final XmlRpcException e )
-                        {
-                            errorHolder.setValue( e );
-                            return null;
-                        }
-                    }
-                    else
-                    {
-                        errorHolder.setValue( new XmlRpcException( "Invalid response status: '" + status + "'." ) );
-                        return null;
-                    }
-                }
-
-            } );
-
-            if ( response == null && errorHolder.hasValue() )
-            {
-                throw errorHolder.getValue();
+                handler.throwExceptions();
+                return null;
             }
+            else
+            {
+                final XmlRpcResponseHandler<T> handler = new XmlRpcResponseHandler<T>( bindery, responseType );
+                final T response = client.execute( method, handler );
 
-            return response;
+                handler.throwExceptions();
+                return response;
+
+            }
         }
         catch ( final ClientProtocolException e )
         {

@@ -38,8 +38,6 @@ public class CollectionBinder
 
     private int currentIndex;
 
-    private Object result;
-
     public CollectionBinder( final Binder parent, final Class<?> collectionType, final Class<?> valueType,
                              final XBRBindingContext context )
     {
@@ -75,10 +73,10 @@ public class CollectionBinder
     }
 
     @Override
-    public XmlRpcListener endArray()
+    protected Binder endArrayInternal()
         throws XmlRpcException
     {
-        result = create();
+        setValue( create(), ValueType.ARRAY );
 
         return this;
     }
@@ -91,7 +89,7 @@ public class CollectionBinder
     }
 
     @Override
-    public XmlRpcListener startArray()
+    protected Binder startArrayInternal()
         throws XmlRpcException
     {
         values = new ArrayList<Object>();
@@ -99,7 +97,7 @@ public class CollectionBinder
     }
 
     @Override
-    public XmlRpcListener startArrayElement( final int index )
+    protected Binder startArrayElementInternal( final int index )
         throws XmlRpcException
     {
         final Binder binder = getBindingContext().newBinder( this, getType() );
@@ -113,23 +111,19 @@ public class CollectionBinder
     }
 
     @Override
-    public XmlRpcListener value( final Object value, final ValueType type )
+    protected Binder valueInternal( final Object value, final ValueType type )
         throws XmlRpcException
     {
-        if ( result != null )
-        {
-            getParent().value( result, ValueType.ARRAY );
-            return getParent();
-        }
-        else if ( currentIndex > -1 )
+        if ( currentIndex > -1 )
         {
             addValue( currentIndex, value );
         }
+
         return this;
     }
 
     @Override
-    public XmlRpcListener endArrayElement()
+    protected Binder endArrayElementInternal()
         throws XmlRpcException
     {
         currentIndex = -1;

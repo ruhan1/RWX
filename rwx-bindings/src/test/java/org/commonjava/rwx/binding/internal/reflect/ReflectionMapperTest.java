@@ -71,7 +71,7 @@ public class ReflectionMapperTest
         final ReflectionMapper loader = new ReflectionMapper();
         final Map<Class<?>, Mapping<?>> recipes = loader.loadRecipes( SimplePersonRequest.class );
 
-        assertEquals( 1, recipes.size() );
+        assertEquals( 2, recipes.size() );
 
         final Mapping<?> recipe = recipes.get( SimplePersonRequest.class );
         assertTrue( recipe instanceof ArrayMapping );
@@ -89,7 +89,7 @@ public class ReflectionMapperTest
         final ReflectionMapper loader = new ReflectionMapper();
         final Map<Class<?>, Mapping<?>> recipes = loader.loadRecipes( SimpleConverterRequest.class );
 
-        assertEquals( 1, recipes.size() );
+        assertEquals( 2, recipes.size() );
 
         final Mapping<?> recipe = recipes.get( SimpleConverterRequest.class );
         assertTrue( recipe instanceof ArrayMapping );
@@ -109,7 +109,7 @@ public class ReflectionMapperTest
         final ReflectionMapper loader = new ReflectionMapper();
         final Map<Class<?>, Mapping<?>> recipes = loader.loadRecipes( SimpleListRequest.class );
 
-        assertEquals( 1, recipes.size() );
+        assertEquals( 2, recipes.size() );
 
         final Mapping<?> recipe = recipes.get( SimpleListRequest.class );
         assertTrue( recipe instanceof ArrayMapping );
@@ -128,7 +128,7 @@ public class ReflectionMapperTest
         final ReflectionMapper loader = new ReflectionMapper();
         final Map<Class<?>, Mapping<?>> recipes = loader.loadRecipes( SimpleAddressMapResponse.class );
 
-        assertEquals( 2, recipes.size() );
+        assertEquals( 3, recipes.size() );
 
         Mapping<?> recipe = recipes.get( SimpleAddressMapResponse.class );
         assertTrue( recipe instanceof ArrayMapping );
@@ -172,7 +172,7 @@ public class ReflectionMapperTest
         final ReflectionMapper loader = new ReflectionMapper();
         final Map<Class<?>, Mapping<?>> recipes = loader.loadRecipes( SimplePersonResponse.class );
 
-        assertEquals( 1, recipes.size() );
+        assertEquals( 2, recipes.size() );
 
         final Mapping<?> recipe = recipes.get( SimplePersonResponse.class );
         assertTrue( recipe instanceof ArrayMapping );
@@ -194,7 +194,7 @@ public class ReflectionMapperTest
         final ReflectionMapper loader = new ReflectionMapper();
         final Map<Class<?>, Mapping<?>> recipes = loader.loadRecipes( ConstructedPersonRequest.class );
 
-        assertEquals( 1, recipes.size() );
+        assertEquals( 2, recipes.size() );
 
         final Mapping<?> recipe = recipes.get( ConstructedPersonRequest.class );
         assertTrue( recipe instanceof ArrayMapping );
@@ -216,7 +216,7 @@ public class ReflectionMapperTest
         final ReflectionMapper loader = new ReflectionMapper();
         final Map<Class<?>, Mapping<?>> recipes = loader.loadRecipes( ConstructedPersonResponse.class );
 
-        assertEquals( 1, recipes.size() );
+        assertEquals( 2, recipes.size() );
 
         final Mapping<?> recipe = recipes.get( ConstructedPersonResponse.class );
         assertTrue( recipe instanceof ArrayMapping );
@@ -299,7 +299,7 @@ public class ReflectionMapperTest
         final ReflectionMapper loader = new ReflectionMapper();
         final Map<Class<?>, Mapping<?>> recipes = loader.loadRecipes( ComposedPersonResponse.class );
 
-        assertEquals( 2, recipes.size() );
+        assertEquals( 3, recipes.size() );
 
         Mapping<?> recipe = recipes.get( ComposedPersonResponse.class );
         assertTrue( recipe instanceof ArrayMapping );
@@ -333,7 +333,7 @@ public class ReflectionMapperTest
         final ReflectionMapper loader = new ReflectionMapper();
         final Map<Class<?>, Mapping<?>> recipes = loader.loadRecipes( ComposedPersonResponseWithFinalFields.class );
 
-        assertEquals( 2, recipes.size() );
+        assertEquals( 3, recipes.size() );
 
         Mapping<?> recipe = recipes.get( ComposedPersonResponseWithFinalFields.class );
         assertTrue( recipe instanceof ArrayMapping );
@@ -367,7 +367,7 @@ public class ReflectionMapperTest
         final ReflectionMapper loader = new ReflectionMapper();
         final Map<Class<?>, Mapping<?>> recipes = loader.loadRecipes( ComposedPersonResponse2.class );
 
-        assertEquals( 2, recipes.size() );
+        assertEquals( 3, recipes.size() );
 
         Mapping<?> recipe = recipes.get( ComposedPersonResponse2.class );
         assertTrue( recipe instanceof ArrayMapping );
@@ -401,7 +401,7 @@ public class ReflectionMapperTest
         final ReflectionMapper loader = new ReflectionMapper();
         final Map<Class<?>, Mapping<?>> recipes = loader.loadRecipes( ComposedPersonResponse3.class );
 
-        assertEquals( 2, recipes.size() );
+        assertEquals( 3, recipes.size() );
 
         Mapping<?> recipe = recipes.get( ComposedPersonResponse3.class );
         assertTrue( recipe instanceof ArrayMapping );
@@ -437,7 +437,7 @@ public class ReflectionMapperTest
         final ReflectionMapper loader = new ReflectionMapper();
         final Map<Class<?>, Mapping<?>> recipes = loader.loadRecipes( ComposedPersonResponse4.class );
 
-        assertEquals( 2, recipes.size() );
+        assertEquals( 3, recipes.size() );
 
         Mapping<?> recipe = recipes.get( ComposedPersonResponse4.class );
         assertTrue( recipe instanceof ArrayMapping );
@@ -472,7 +472,7 @@ public class ReflectionMapperTest
         final ReflectionMapper loader = new ReflectionMapper();
         final Map<Class<?>, Mapping<?>> recipes = loader.loadRecipes( ComposedPersonResponse5.class );
 
-        assertEquals( 2, recipes.size() );
+        assertEquals( 3, recipes.size() );
 
         Mapping<?> recipe = recipes.get( ComposedPersonResponse5.class );
         assertTrue( recipe instanceof ArrayMapping );
@@ -507,7 +507,7 @@ public class ReflectionMapperTest
         final ReflectionMapper loader = new ReflectionMapper();
         final Map<Class<?>, Mapping<?>> recipes = loader.loadRecipes( ComposedPersonResponseWithTwoAddresses.class );
 
-        assertEquals( 2, recipes.size() );
+        assertEquals( 3, recipes.size() );
 
         Mapping<?> recipe = recipes.get( ComposedPersonResponseWithTwoAddresses.class );
         assertTrue( recipe instanceof ArrayMapping );

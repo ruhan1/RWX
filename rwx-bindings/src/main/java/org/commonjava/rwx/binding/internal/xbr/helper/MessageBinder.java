@@ -34,13 +34,16 @@ public class MessageBinder
     implements Binder
 {
 
-    private ObjectRecipe recipe;
+    private final ObjectRecipe recipe;
 
     private FieldBinding currentField;
+
+    private boolean ignore = false;;
 
     public MessageBinder( final Class<?> type, final ArrayMapping mapping, final XBRBindingContext context )
     {
         super( null, type, mapping, context );
+        recipe = XBRBindingContext.setupObjectRecipe( mapping );
     }
 
     public Object create()
@@ -52,7 +55,7 @@ public class MessageBinder
     public XmlRpcListener parameter( final int index, final Object value, final ValueType type )
         throws XmlRpcException
     {
-        if ( currentField == null )
+        if ( !ignore && currentField == null )
         {
             final FieldBinding binding = getMapping().getFieldBinding( index );
             recipe.setProperty( binding.getFieldName(), value );
@@ -62,10 +65,16 @@ public class MessageBinder
     }
 
     @Override
-    public XmlRpcListener startParameter( final int index )
+    protected Binder startParameterInternal( final int index )
         throws XmlRpcException
     {
         final FieldBinding binding = getMapping().getFieldBinding( index );
+        if ( binding == null )
+        {
+            ignore = true;
+            return this;
+        }
+
         final Field field = getBindingContext().findField( binding, getType() );
 
         final Binder binder = getBindingContext().newBinder( this, field );
@@ -79,10 +88,10 @@ public class MessageBinder
     }
 
     @Override
-    public XmlRpcListener value( final Object value, final ValueType type )
+    protected Binder valueInternal( final Object value, final ValueType type )
         throws XmlRpcException
     {
-        if ( currentField != null )
+        if ( !ignore && currentField != null )
         {
             recipe.setProperty( currentField.getFieldName(), value );
         }
@@ -98,26 +107,11 @@ public class MessageBinder
     }
 
     @Override
-    public XmlRpcListener startRequest()
-        throws XmlRpcException
-    {
-        recipe = XBRBindingContext.setupObjectRecipe( getMapping() );
-        return this;
-    }
-
-    @Override
-    public XmlRpcListener startResponse()
-        throws XmlRpcException
-    {
-        recipe = XBRBindingContext.setupObjectRecipe( getMapping() );
-        return this;
-    }
-
-    @Override
-    public XmlRpcListener endParameter()
+    protected Binder endParameterInternal()
         throws XmlRpcException
     {
         currentField = null;
+        ignore = false;
         return this;
     }
 

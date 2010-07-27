@@ -55,7 +55,7 @@ public class FlexibleDateConverter
     }
 
     @Override
-    public XmlRpcListener value( final Object value, final ValueType type )
+    protected Binder valueInternal( final Object value, final ValueType type )
         throws XmlRpcException
     {
         if ( value == null || value.equals( "" ) )

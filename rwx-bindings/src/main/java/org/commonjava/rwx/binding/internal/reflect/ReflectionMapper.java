@@ -21,6 +21,7 @@ import static org.commonjava.rwx.binding.anno.AnnotationUtils.hasAnnotation;
 import static org.commonjava.rwx.binding.anno.AnnotationUtils.isMessage;
 import static org.commonjava.rwx.binding.mapping.MappingUtils.toIntegerArray;
 
+import org.commonjava.rwx.binding.VoidResponse;
 import org.commonjava.rwx.binding.anno.ArrayPart;
 import org.commonjava.rwx.binding.anno.BindVia;
 import org.commonjava.rwx.binding.anno.Contains;
@@ -62,39 +63,48 @@ public class ReflectionMapper
     public synchronized Map<Class<?>, Mapping<?>> loadRecipes( final Class<?>... roots )
         throws BindException
     {
-        final Map<Class<?>, Mapping<?>> recipes = new HashMap<Class<?>, Mapping<?>>();
+        final Map<Class<?>, Mapping<?>> mappings = new HashMap<Class<?>, Mapping<?>>();
+
+        // implicit.
+        processRoot( VoidResponse.class, mappings );
 
         for ( final Class<?> root : roots )
         {
-            Map<Class<?>, Mapping<?>> current;
+            processRoot( root, mappings );
+        }
 
-            final String rootType = root.getName();
-            final WeakReference<Map<Class<?>, Mapping<?>>> ref = ROOT_CACHE.get( rootType );
-            if ( ref != null && ref.get() != null )
+        return mappings;
+    }
+
+    private void processRoot( final Class<?> root, final Map<Class<?>, Mapping<?>> mappings )
+        throws BindException
+    {
+        Map<Class<?>, Mapping<?>> current;
+
+        final String rootType = root.getName();
+        final WeakReference<Map<Class<?>, Mapping<?>>> ref = ROOT_CACHE.get( rootType );
+        if ( ref != null && ref.get() != null )
+        {
+            current = ref.get();
+        }
+        else
+        {
+            current = new HashMap<Class<?>, Mapping<?>>();
+
+            if ( isMessage( root ) )
             {
-                current = ref.get();
+                processArrayPart( root, current );
             }
             else
             {
-                current = new HashMap<Class<?>, Mapping<?>>();
-
-                if ( isMessage( root ) )
-                {
-                    processArrayPart( root, current );
-                }
-                else
-                {
-                    throw new BindException(
-                                             "Invalid message root. Class must be annotated with either @Request or @Response." );
-                }
-
-                ROOT_CACHE.put( rootType, new WeakReference<Map<Class<?>, Mapping<?>>>( current ) );
+                throw new BindException(
+                                         "Invalid message root. Class must be annotated with either @Request or @Response." );
             }
 
-            recipes.putAll( current );
+            ROOT_CACHE.put( rootType, new WeakReference<Map<Class<?>, Mapping<?>>>( current ) );
         }
 
-        return recipes;
+        mappings.putAll( current );
     }
 
     protected ArrayMapping processArrayPart( final Class<?> type, final Map<Class<?>, Mapping<?>> mappings )

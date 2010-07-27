@@ -33,27 +33,30 @@ public class ArrayMappingBinder
     implements Binder
 {
 
-    private ObjectRecipe recipe;
+    private final ObjectRecipe recipe;
 
     private FieldBinding currentField;
 
-    private Object result;
-
     private boolean ignore = false;
+
+    private int level = 0;
 
     public ArrayMappingBinder( final Binder parent, final Class<?> type, final ArrayMapping mapping,
                                final XBRBindingContext context )
     {
         super( parent, type, mapping, context );
+        recipe = XBRBindingContext.setupObjectRecipe( mapping );
     }
 
     @Override
     public XmlRpcListener arrayElement( final int index, final Object value, final ValueType type )
         throws XmlRpcException
     {
-        if ( !ignore && currentField == null )
+        if ( !ignore && currentField == null && value != null )
         {
             final FieldBinding binding = getMapping().getFieldBinding( index );
+
+            // if ignore == false and the current field is null, the binding MUST be non-null.  
             recipe.setProperty( binding.getFieldName(), type.coercion().fromString( (String) value ) );
         }
 
@@ -61,68 +64,98 @@ public class ArrayMappingBinder
     }
 
     @Override
-    public XmlRpcListener startArrayElement( final int index )
+    protected Binder startArrayElementInternal( final int index )
         throws XmlRpcException
     {
-        final FieldBinding binding = getMapping().getFieldBinding( index );
-        if ( binding == null )
+        if ( ignore )
         {
-            ignore = true;
-            return this;
+            level++;
         }
-
-        final Field field = getBindingContext().findField( binding, getType() );
-
-        final Binder binder = getBindingContext().newBinder( this, field );
-        if ( binder != null )
+        else
         {
-            currentField = binding;
-            return binder;
-        }
+            final FieldBinding binding = getMapping().getFieldBinding( index );
+            if ( binding == null )
+            {
+                ignore = true;
+                level = 0;
+                return this;
+            }
 
-        return this;
-    }
+            final Field field = getBindingContext().findField( binding, getType() );
 
-    @Override
-    public XmlRpcListener value( final Object value, final ValueType type )
-        throws XmlRpcException
-    {
-        if ( result != null )
-        {
-            final Binder parent = getParent();
-            parent.value( result, ValueType.ARRAY );
-            return parent;
-        }
-        if ( currentField != null )
-        {
-            recipe.setProperty( currentField.getFieldName(), value );
+            final Binder binder = getBindingContext().newBinder( this, field );
+            if ( binder != null )
+            {
+                currentField = binding;
+                return binder;
+            }
         }
 
         return this;
     }
 
     @Override
-    public XmlRpcListener startArray()
+    protected Binder valueInternal( final Object value, final ValueType type )
         throws XmlRpcException
     {
-        recipe = XBRBindingContext.setupObjectRecipe( getMapping() );
+        if ( !ignore )
+        {
+            if ( currentField != null )
+            {
+                recipe.setProperty( currentField.getFieldName(), value );
+            }
+        }
+
         return this;
     }
 
     @Override
-    public XmlRpcListener endArray()
-        throws XmlRpcException
+    protected Binder startArrayInternal()
     {
-        result = recipe.create();
+        if ( ignore )
+        {
+            level++;
+        }
+
         return this;
     }
 
     @Override
-    public XmlRpcListener endArrayElement()
+    protected Binder endArrayInternal()
         throws XmlRpcException
     {
-        currentField = null;
-        ignore = false;
+        if ( ignore )
+        {
+            level--;
+        }
+        else
+        {
+            setValue( recipe.create(), ValueType.ARRAY );
+        }
+        return this;
+    }
+
+    @Override
+    protected Binder endArrayElementInternal()
+        throws XmlRpcException
+    {
+        if ( ignore )
+        {
+            if ( level == 0 )
+            {
+                currentField = null;
+                ignore = false;
+            }
+            else
+            {
+                level--;
+            }
+        }
+        else
+        {
+            currentField = null;
+        }
+
         return this;
     }
 

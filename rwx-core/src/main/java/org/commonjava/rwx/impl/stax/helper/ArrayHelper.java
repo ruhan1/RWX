@@ -17,6 +17,9 @@
 
 package org.commonjava.rwx.impl.stax.helper;
 
+import static org.commonjava.rwx.util.LogUtil.trace;
+
+import org.apache.log4j.Logger;
 import org.commonjava.rwx.error.XmlRpcException;
 import org.commonjava.rwx.impl.TrackingXmlRpcListener;
 import org.commonjava.rwx.vocab.ValueType;
@@ -32,6 +35,8 @@ import java.util.List;
 public class ArrayHelper
     implements XMLStreamConstants
 {
+
+    private static final Logger LOGGER = Logger.getLogger( ArrayHelper.class );
 
     public static List<Object> parse( final XMLStreamReader reader, final TrackingXmlRpcListener listener )
         throws XMLStreamException, XmlRpcException
@@ -64,6 +69,7 @@ public class ArrayHelper
                         listener.startArrayElement( count );
                     }
 
+                    trace( LOGGER, "Handing off to ValueHelper at: $1", reader.getLocation() );
                     final ValueHelper vh = new ValueHelper();
                     vh.parse( reader, listener );
 

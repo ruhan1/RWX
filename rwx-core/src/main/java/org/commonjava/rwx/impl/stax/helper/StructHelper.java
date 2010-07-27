@@ -17,6 +17,9 @@
 
 package org.commonjava.rwx.impl.stax.helper;
 
+import static org.commonjava.rwx.util.LogUtil.trace;
+
+import org.apache.log4j.Logger;
 import org.commonjava.rwx.error.XmlRpcException;
 import org.commonjava.rwx.impl.TrackingXmlRpcListener;
 import org.commonjava.rwx.vocab.ValueType;
@@ -32,6 +35,8 @@ import java.util.Map;
 public class StructHelper
     implements XMLStreamConstants
 {
+
+    private static final Logger LOGGER = Logger.getLogger( StructHelper.class );
 
     public static Map<String, Object> parse( final XMLStreamReader reader, final TrackingXmlRpcListener handler )
         throws XMLStreamException, XmlRpcException
@@ -94,12 +99,20 @@ public class StructHelper
             }
         }
 
+        if ( name == null )
+        {
+            throw new XmlRpcException( "Invalid struct member. Name is missing. Location: "
+                + reader.getLocation().getLineNumber() + ":" + reader.getLocation().getColumnNumber() );
+        }
+
         if ( reader.nextTag() == START_ELEMENT && XmlRpcConstants.VALUE.equals( reader.getName().getLocalPart() ) )
         {
+            trace( LOGGER, "Handing off to ValueHelper at: $1", reader.getLocation() );
             final ValueHelper vh = new ValueHelper( enableEvents );
             vh.parse( reader, handler );
 
             value = vh.getValue();
+
             vt = vh.getValueType();
 
             values.put( name, value );
@@ -108,17 +121,6 @@ public class StructHelper
                 handler.structMember( name, value, vt );
                 handler.endStructMember();
             }
-        }
-
-        if ( name == null )
-        {
-            throw new XmlRpcException( "Invalid struct member. Name is missing. Location: "
-                + reader.getLocation().getLineNumber() + ":" + reader.getLocation().getColumnNumber() );
-        }
-        else if ( ValueType.NIL != vt && value == null )
-        {
-            throw new XmlRpcException( "Invalid struct member. Value is missing. Location: "
-                + reader.getLocation().getLineNumber() + ":" + reader.getLocation().getColumnNumber() );
         }
     }
 

@@ -37,8 +37,6 @@ public class ListOfStringsConverter
 
     private final List<String> result = new ArrayList<String>();
 
-    private boolean done = false;
-
     public ListOfStringsConverter( final Binder parent, final Class<?> type, final BindingContext context )
     {
         super( parent, type, context );
@@ -69,6 +67,7 @@ public class ListOfStringsConverter
         }
 
         listener.endArray();
+        listener.value( values, ValueType.ARRAY );
     }
 
     @Override
@@ -85,31 +84,18 @@ public class ListOfStringsConverter
     }
 
     @Override
-    public XmlRpcListener endArray()
+    protected Binder endArrayInternal()
         throws XmlRpcException
     {
-        done = true;
+        setValue( result, ValueType.ARRAY );
         return this;
     }
 
     @Override
-    public XmlRpcListener startArray()
+    protected Binder startArrayInternal()
         throws XmlRpcException
     {
         result.clear();
-        return this;
-    }
-
-    @Override
-    public XmlRpcListener value( final Object value, final ValueType type )
-        throws XmlRpcException
-    {
-        if ( done )
-        {
-            getParent().value( result, ValueType.ARRAY );
-            return getParent();
-        }
-
         return this;
     }
 

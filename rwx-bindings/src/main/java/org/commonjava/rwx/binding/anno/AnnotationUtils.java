@@ -17,6 +17,8 @@
 
 package org.commonjava.rwx.binding.anno;
 
+import org.commonjava.rwx.binding.SimpleNoParamsRequest;
+
 import java.lang.annotation.Annotation;
 
 public final class AnnotationUtils
@@ -28,11 +30,18 @@ public final class AnnotationUtils
 
     public static String getRequestMethod( final Object obj )
     {
-        final Class<?> type = ( ( obj instanceof Class<?> ) ? (Class<?>) obj : obj.getClass() );
-        final Request req = type.getAnnotation( Request.class );
-        if ( req != null )
+        if ( obj instanceof SimpleNoParamsRequest )
         {
-            return req.method();
+            return ( (SimpleNoParamsRequest) obj ).getMethodName();
+        }
+        else
+        {
+            final Class<?> type = ( ( obj instanceof Class<?> ) ? (Class<?>) obj : obj.getClass() );
+            final Request req = type.getAnnotation( Request.class );
+            if ( req != null )
+            {
+                return req.method();
+            }
         }
 
         return null;

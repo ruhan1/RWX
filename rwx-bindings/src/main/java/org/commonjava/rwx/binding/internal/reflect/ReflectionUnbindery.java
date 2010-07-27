@@ -21,10 +21,11 @@ import org.commonjava.rwx.binding.mapping.Mapping;
 import org.commonjava.rwx.binding.spi.composed.RenderingBinderyDelegate;
 import org.commonjava.rwx.error.XmlRpcException;
 import org.commonjava.rwx.impl.jdom.JDomRenderer;
+import org.commonjava.rwx.spi.XmlRpcGenerator;
 import org.commonjava.rwx.spi.XmlRpcListener;
+import org.jdom.Document;
 import org.jdom.output.Format;
 import org.jdom.output.XMLOutputter;
-
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -55,11 +56,11 @@ public class ReflectionUnbindery
     public void render( final OutputStream out, final Object value )
         throws XmlRpcException
     {
-        final JDomRenderer renderer = new JDomRenderer();
-        new ReflectionUnbinder( value, recipes ).generate( renderer );
+        final Document doc = renderToDocument( value );
+
         try
         {
-            outputter.output( renderer.getDocument(), out );
+            outputter.output( doc, out );
         }
         catch ( final IOException e )
         {
@@ -71,11 +72,11 @@ public class ReflectionUnbindery
     public void render( final Writer out, final Object value )
         throws XmlRpcException
     {
-        final JDomRenderer renderer = new JDomRenderer();
-        new ReflectionUnbinder( value, recipes ).generate( renderer );
+        final Document doc = renderToDocument( value );
+
         try
         {
-            outputter.output( renderer.getDocument(), out );
+            outputter.output( doc, out );
         }
         catch ( final IOException e )
         {
@@ -87,17 +88,39 @@ public class ReflectionUnbindery
     public void render( final XmlRpcListener out, final Object value )
         throws XmlRpcException
     {
-        new ReflectionUnbinder( value, recipes ).generate( out );
+        if ( value instanceof XmlRpcGenerator )
+        {
+            ( (XmlRpcGenerator) value ).generate( out );
+        }
+        else
+        {
+            new ReflectionUnbinder( value, recipes ).generate( out );
+        }
     }
 
     @Override
     public String renderString( final Object value )
         throws XmlRpcException
     {
-        final JDomRenderer renderer = new JDomRenderer();
-        new ReflectionUnbinder( value, recipes ).generate( renderer );
+        final Document doc = renderToDocument( value );
 
-        return outputter.outputString( renderer.getDocument() );
+        return outputter.outputString( doc );
+    }
+
+    private Document renderToDocument( final Object value )
+        throws XmlRpcException
+    {
+        final JDomRenderer renderer = new JDomRenderer();
+        if ( value instanceof XmlRpcGenerator )
+        {
+            ( (XmlRpcGenerator) value ).generate( renderer );
+        }
+        else
+        {
+            new ReflectionUnbinder( value, recipes ).generate( renderer );
+        }
+
+        return renderer.getDocument();
     }
 
 }
