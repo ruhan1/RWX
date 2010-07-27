@@ -21,7 +21,6 @@ import static org.commonjava.rwx.util.LogUtil.info;
 import static org.commonjava.rwx.util.LogUtil.trace;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.StatusLine;
 import org.apache.http.client.ClientProtocolException;
@@ -30,10 +29,12 @@ import org.apache.log4j.Logger;
 import org.commonjava.rwx.binding.spi.Bindery;
 import org.commonjava.rwx.error.XmlRpcException;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 
 public class XmlRpcResponseHandler<T>
     implements ResponseHandler<T>
@@ -83,28 +84,38 @@ public class XmlRpcResponseHandler<T>
             }
             catch ( final IOException e )
             {
+                // this is an auxilliary function. ignore errors.
             }
             finally
             {
                 IOUtils.closeQuietly( stream );
+                info( LOGGER, "\n\n\nRecorded response to: %s\n\n\n", recording );
             }
 
             try
             {
-                final String content = StringEscapeUtils.unescapeHtml( new String( baos.toByteArray(), "UTF-8" ) );
+                trace( LOGGER, "Got response: \n\n%s", new Object()
+                {
+                    @Override
+                    public String toString()
+                    {
+                        try
+                        {
+                            return new String( baos.toByteArray(), "UTF-8" );
+                        }
+                        catch ( final UnsupportedEncodingException e )
+                        {
+                            return new String( baos.toByteArray() );
+                        }
+                    }
+                } );
 
-                trace( LOGGER, "Got response: \n\n" + content );
-
-                return bindery.parse( content, responseType );
+                return bindery.parse( new ByteArrayInputStream( baos.toByteArray() ), responseType );
             }
             catch ( final XmlRpcException e )
             {
                 error = e;
                 return null;
-            }
-            finally
-            {
-                info( LOGGER, "\n\n\nRecorded response to: " + recording + "\n\n\n" );
             }
         }
         else

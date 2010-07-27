@@ -21,7 +21,7 @@ import org.commonjava.rwx.binding.error.BindException;
 import org.commonjava.rwx.binding.internal.xbr.XBRBindingContext;
 import org.commonjava.rwx.binding.mapping.Mapping;
 import org.commonjava.rwx.binding.spi.Binder;
-import org.commonjava.rwx.binding.spi.value.AbstractValueBinder;
+import org.commonjava.rwx.binding.spi.value.AbstractSimpleValueBinder;
 import org.commonjava.rwx.binding.spi.value.ValueUnbinder;
 import org.commonjava.rwx.error.XmlRpcException;
 import org.commonjava.rwx.spi.XmlRpcListener;
@@ -33,7 +33,7 @@ import java.util.Date;
 import java.util.Map;
 
 public class FlexibleDateConverter
-    extends AbstractValueBinder
+    extends AbstractSimpleValueBinder
     implements ValueUnbinder
 {
 
@@ -55,7 +55,7 @@ public class FlexibleDateConverter
     }
 
     @Override
-    protected Binder valueInternal( final Object value, final ValueType type )
+    public Binder value( final Object value, final ValueType type )
         throws XmlRpcException
     {
         if ( value == null || value.equals( "" ) )

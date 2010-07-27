@@ -74,7 +74,7 @@ public class ValueHelper
             evt = reader.next();
             if ( value == null && evt == CHARACTERS )
             {
-                final String src = normalize( reader.getText() );
+                final String src = reader.getText();
 
                 type = ValueType.STRING;
                 value = src;
@@ -118,19 +118,12 @@ public class ValueHelper
         return value;
     }
 
-    private String normalize( final String text )
-    {
-        final String result = text.replaceAll( "\\s+", " " );
-
-        return result;
-    }
-
     private void parseSimpleValue( final XMLStreamReader reader, final TrackingXmlRpcListener listener )
         throws XMLStreamException, CoercionException
     {
         type = ValueType.typeOf( reader.getName().getLocalPart() );
 
-        final String src = normalize( reader.getElementText().trim() );
+        final String src = reader.getElementText().trim();
 
         value = type == null ? src : type.coercion().fromString( src );
     }
