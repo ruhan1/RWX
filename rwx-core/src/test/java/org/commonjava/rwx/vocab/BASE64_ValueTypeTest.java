@@ -23,9 +23,7 @@ import static org.junit.Assert.fail;
 import org.apache.commons.codec.binary.Base64;
 import org.commonjava.rwx.error.CoercionException;
 import org.commonjava.rwx.testutil.ValueUtils;
-import org.commonjava.rwx.vocab.ValueType;
 import org.junit.Test;
-
 
 import java.text.ParseException;
 import java.util.Arrays;
@@ -61,13 +59,6 @@ public class BASE64_ValueTypeTest
         throws CoercionException, ParseException
     {
         assertByteArray( VALUE, (byte[]) fromString( b64() ) );
-    }
-
-    @Test( expected = CoercionException.class )
-    public void toStringErrorsOutWhenNonBase64PassedIn()
-        throws CoercionException
-    {
-        toString( Long.toString( Long.MAX_VALUE ) );
     }
 
     @Test( expected = CoercionException.class )
