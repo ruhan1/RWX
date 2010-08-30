@@ -31,8 +31,8 @@ import org.commonjava.rwx.binding.testutil.SimpleFinalFieldAddress;
 import org.commonjava.rwx.binding.testutil.SimplePersonRequest;
 import org.commonjava.rwx.error.XmlRpcException;
 import org.commonjava.rwx.error.XmlRpcFaultException;
-import org.commonjava.rwx.impl.estream.EventStreamGenerator;
-import org.commonjava.rwx.impl.estream.EventStreamParser;
+import org.commonjava.rwx.impl.estream.EventStreamGeneratorImpl;
+import org.commonjava.rwx.impl.estream.EventStreamParserImpl;
 import org.junit.Test;
 
 
@@ -71,10 +71,10 @@ public class XBRCompositionBinderyTest
 
         try
         {
-            final EventStreamParser parser = new EventStreamParser();
+            final EventStreamParserImpl parser = new EventStreamParserImpl();
             bindery.render( parser, fault );
 
-            bindery.parse( new EventStreamGenerator( parser.getEvents() ), SimplePersonRequest.class );
+            bindery.parse( new EventStreamGeneratorImpl( parser.getEvents() ), SimplePersonRequest.class );
             fail( "Fault was not thrown from bindery.parse()" );
         }
         catch ( final XmlRpcFaultException e )
@@ -175,10 +175,10 @@ public class XBRCompositionBinderyTest
 
         final XBRCompositionBindery bindery = XBRCompositionBindery.binderyFor( type );
 
-        final EventStreamParser parser = new EventStreamParser();
+        final EventStreamParserImpl parser = new EventStreamParserImpl();
         bindery.render( parser, object );
 
-        final Object result = bindery.parse( new EventStreamGenerator( parser.getEvents() ), type );
+        final Object result = bindery.parse( new EventStreamGeneratorImpl( parser.getEvents() ), type );
 
         assertEquals( object, result );
     }

@@ -20,12 +20,25 @@ package org.commonjava.rwx.binding.anno;
 import org.commonjava.rwx.binding.SimpleNoParamsRequest;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
 
 public final class AnnotationUtils
 {
 
     private AnnotationUtils()
     {
+    }
+
+    public static Class<?> getContainsType( final Field field )
+    {
+        final Contains contains = field == null ? null : field.getAnnotation( Contains.class );
+        return contains == null ? Object.class : contains.value();
+    }
+
+    public static Class<?> getBindViaType( final Field field )
+    {
+        final Converter bindVia = field == null ? null : field.getAnnotation( Converter.class );
+        return bindVia == null ? Object.class : bindVia.value();
     }
 
     public static String getRequestMethod( final Object obj )
@@ -83,6 +96,12 @@ public final class AnnotationUtils
         }
 
         return false;
+    }
+
+    public static <T extends Annotation> T getAnnotation( final Object obj, final Class<T> annoType )
+    {
+        final Class<?> type = obj instanceof Class<?> ? (Class<?>) obj : obj.getClass();
+        return type.getAnnotation( annoType );
     }
 
 }

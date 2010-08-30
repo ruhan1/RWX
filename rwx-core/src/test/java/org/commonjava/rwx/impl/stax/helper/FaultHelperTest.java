@@ -20,9 +20,9 @@ package org.commonjava.rwx.impl.stax.helper;
 import static org.commonjava.rwx.impl.estream.testutil.EventAssertions.assertRecordedEvents;
 
 import org.commonjava.rwx.error.XmlRpcException;
+import org.commonjava.rwx.estream.model.Event;
+import org.commonjava.rwx.estream.model.ResponseEvent;
 import org.commonjava.rwx.impl.TrackingXmlRpcListener;
-import org.commonjava.rwx.impl.estream.model.Event;
-import org.commonjava.rwx.impl.estream.model.ResponseEvent;
 import org.commonjava.rwx.impl.estream.testutil.ExtList;
 import org.commonjava.rwx.impl.estream.testutil.RecordedEvent;
 import org.commonjava.rwx.impl.estream.testutil.RecordingListener;

@@ -19,8 +19,8 @@ package org.commonjava.rwx.impl.estream.model;
 
 import static org.junit.Assert.assertEquals;
 
-import org.commonjava.rwx.impl.estream.model.Event;
-import org.commonjava.rwx.impl.estream.model.StructEvent;
+import org.commonjava.rwx.estream.model.Event;
+import org.commonjava.rwx.estream.model.StructEvent;
 import org.commonjava.rwx.impl.estream.testutil.ExtListOfArrays;
 import org.commonjava.rwx.vocab.EventType;
 import org.commonjava.rwx.vocab.ValueType;

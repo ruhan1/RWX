@@ -24,7 +24,8 @@ import org.commonjava.rwx.vocab.ValueType;
 import org.commonjava.rwx.vocab.XmlRpcConstants;
 import org.jdom.Document;
 import org.jdom.Element;
-
+import org.jdom.output.Format;
+import org.jdom.output.XMLOutputter;
 
 public class JDomRenderer
     extends AbstractXmlRpcListener
@@ -34,9 +35,26 @@ public class JDomRenderer
 
     private Element currentParent;
 
+    private final XMLOutputter outputter;
+
+    public JDomRenderer()
+    {
+        outputter = new XMLOutputter( Format.getCompactFormat() );
+    }
+
+    public JDomRenderer( final XMLOutputter outputter )
+    {
+        this.outputter = outputter;
+    }
+
     public Document getDocument()
     {
         return doc;
+    }
+
+    public String documentToString()
+    {
+        return doc == null ? null : outputter.outputString( doc );
     }
 
     @Override

@@ -41,6 +41,8 @@ public class ValueHelper
 
     private Object value;
 
+    private boolean valueSet = false;
+
     private ValueType type;
 
     private boolean enableEvents = false;
@@ -72,7 +74,7 @@ public class ValueHelper
         do
         {
             evt = reader.next();
-            if ( value == null && evt == CHARACTERS )
+            if ( !valueSet && evt == CHARACTERS )
             {
                 final String src = reader.getText();
 
@@ -126,6 +128,7 @@ public class ValueHelper
         final String src = reader.getElementText().trim();
 
         value = type == null ? src : type.coercion().fromString( src );
+        valueSet = true;
     }
 
 }

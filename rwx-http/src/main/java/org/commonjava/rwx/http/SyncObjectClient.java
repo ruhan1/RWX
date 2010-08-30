@@ -15,18 +15,14 @@
  *  If not, see http://www.gnu.org/licenses/.
  */
 
-package org.commonjava.rwx.binding.spi.value;
+package org.commonjava.rwx.http;
 
-import org.commonjava.rwx.binding.mapping.Mapping;
 import org.commonjava.rwx.error.XmlRpcException;
-import org.commonjava.rwx.spi.XmlRpcListener;
 
-import java.util.Map;
-
-public interface ValueUnbinder
+public interface SyncObjectClient
 {
 
-    void generate( XmlRpcListener listener, Object value, Map<Class<?>, Mapping<?>> recipes )
+    <T> T call( Object request, Class<T> responseType )
         throws XmlRpcException;
 
 }

@@ -33,9 +33,9 @@ import org.commonjava.rwx.binding.testutil.SimplePersonRequest;
 import org.commonjava.rwx.binding.testutil.TestObject;
 import org.commonjava.rwx.error.XmlRpcException;
 import org.commonjava.rwx.error.XmlRpcFaultException;
-import org.commonjava.rwx.impl.estream.EventStreamGenerator;
-import org.commonjava.rwx.impl.estream.model.Event;
-import org.commonjava.rwx.impl.estream.model.ResponseEvent;
+import org.commonjava.rwx.estream.model.Event;
+import org.commonjava.rwx.estream.model.ResponseEvent;
+import org.commonjava.rwx.impl.estream.EventStreamGeneratorImpl;
 import org.commonjava.rwx.impl.estream.testutil.ExtList;
 import org.junit.Test;
 
@@ -76,7 +76,7 @@ public class XBeanRenderingBinderyTest
     {
         final SimpleAddress address = new SimpleAddress();
         final XBeanRenderingBindery bindery = new XBeanRenderingBindery( address.recipes() );
-        bindery.parse( new EventStreamGenerator( address.events() ), SimpleAddress.class );
+        bindery.parse( new EventStreamGeneratorImpl( address.events() ), SimpleAddress.class );
     }
 
     @Test( expected = XmlRpcFaultException.class )
@@ -89,7 +89,7 @@ public class XBeanRenderingBinderyTest
             new ExtList<Event<?>>( new ResponseEvent( true ), new ResponseEvent( 101, "test fault" ),
                                    new ResponseEvent( false ) );
 
-        bindery.parse( new EventStreamGenerator( events ), SimplePersonRequest.class );
+        bindery.parse( new EventStreamGeneratorImpl( events ), SimplePersonRequest.class );
     }
 
     @Test
@@ -128,7 +128,7 @@ public class XBeanRenderingBinderyTest
         throws XmlRpcException
     {
         final XBeanRenderingBindery bindery = new XBeanRenderingBindery( object.recipes() );
-        final T result = (T) bindery.parse( new EventStreamGenerator( object.events() ), object.getClass() );
+        final T result = (T) bindery.parse( new EventStreamGeneratorImpl( object.events() ), object.getClass() );
 
         assertEquals( object, result );
     }

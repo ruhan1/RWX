@@ -21,14 +21,15 @@ import static org.commonjava.rwx.impl.estream.testutil.EventAssertions.assertRec
 import static org.junit.Assert.assertEquals;
 
 import org.commonjava.rwx.error.XmlRpcException;
-import org.commonjava.rwx.impl.estream.EventStreamGenerator;
-import org.commonjava.rwx.impl.estream.model.ArrayEvent;
-import org.commonjava.rwx.impl.estream.model.Event;
-import org.commonjava.rwx.impl.estream.model.ParameterEvent;
-import org.commonjava.rwx.impl.estream.model.RequestEvent;
-import org.commonjava.rwx.impl.estream.model.ResponseEvent;
-import org.commonjava.rwx.impl.estream.model.StructEvent;
-import org.commonjava.rwx.impl.estream.model.ValueEvent;
+import org.commonjava.rwx.estream.EventStreamGenerator;
+import org.commonjava.rwx.estream.model.ArrayEvent;
+import org.commonjava.rwx.estream.model.Event;
+import org.commonjava.rwx.estream.model.ParameterEvent;
+import org.commonjava.rwx.estream.model.RequestEvent;
+import org.commonjava.rwx.estream.model.ResponseEvent;
+import org.commonjava.rwx.estream.model.StructEvent;
+import org.commonjava.rwx.estream.model.ValueEvent;
+import org.commonjava.rwx.impl.estream.EventStreamGeneratorImpl;
 import org.commonjava.rwx.impl.estream.testutil.ExtList;
 import org.commonjava.rwx.impl.estream.testutil.ExtMap;
 import org.commonjava.rwx.impl.estream.testutil.RecordingListener;
@@ -43,7 +44,7 @@ public class EventStreamGeneratorTest
     @Test
     public void addThenClearLeadsToZeroEvents()
     {
-        final EventStreamGenerator gennie = new EventStreamGenerator();
+        final EventStreamGenerator gennie = new EventStreamGeneratorImpl();
 
         assertEquals( 0, gennie.getEvents().size() );
 
@@ -66,7 +67,7 @@ public class EventStreamGeneratorTest
                                    .with( new RequestEvent( false ) );
 
         final RecordingListener listener = new RecordingListener();
-        new EventStreamGenerator( events ).generate( listener );
+        new EventStreamGeneratorImpl( events ).generate( listener );
 
         assertRecordedEvents( events, listener.getRecordedEvents() );
     }
@@ -76,8 +77,8 @@ public class EventStreamGeneratorTest
         throws XmlRpcException
     {
         final RecordingListener listener = new RecordingListener();
-        final EventStreamGenerator gennie =
-            new EventStreamGenerator().add( new RequestEvent( true ) )
+        final EventStreamGeneratorImpl gennie =
+            new EventStreamGeneratorImpl().add( new RequestEvent( true ) )
                                       .add( new RequestEvent( "foo" ) )
                                       .add( new RequestEvent( false ) );
 
@@ -96,7 +97,7 @@ public class EventStreamGeneratorTest
                                    .with( new ResponseEvent( false ) );
 
         final RecordingListener listener = new RecordingListener();
-        new EventStreamGenerator( events ).generate( listener );
+        new EventStreamGeneratorImpl( events ).generate( listener );
 
         assertRecordedEvents( events, listener.getRecordedEvents() );
     }
@@ -118,7 +119,7 @@ public class EventStreamGeneratorTest
                                    .with( new ResponseEvent( false ) );
 
         final RecordingListener listener = new RecordingListener();
-        new EventStreamGenerator( events ).generate( listener );
+        new EventStreamGeneratorImpl( events ).generate( listener );
 
         assertRecordedEvents( events, listener.getRecordedEvents() );
     }
@@ -165,7 +166,7 @@ public class EventStreamGeneratorTest
                                    .with( new ResponseEvent( false ) );
 
         final RecordingListener listener = new RecordingListener();
-        new EventStreamGenerator( events ).generate( listener );
+        new EventStreamGeneratorImpl( events ).generate( listener );
 
         assertRecordedEvents( events, listener.getRecordedEvents() );
     }

@@ -18,7 +18,7 @@
 package org.commonjava.rwx.binding.testutil;
 
 import org.commonjava.rwx.binding.mapping.Mapping;
-import org.commonjava.rwx.impl.estream.model.Event;
+import org.commonjava.rwx.estream.model.Event;
 
 
 import java.util.List;

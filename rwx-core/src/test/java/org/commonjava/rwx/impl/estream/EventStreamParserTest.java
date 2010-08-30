@@ -20,14 +20,14 @@ package org.commonjava.rwx.impl.estream;
 import static org.commonjava.rwx.impl.estream.testutil.EventAssertions.assertEvents;
 
 import org.commonjava.rwx.error.XmlRpcException;
-import org.commonjava.rwx.impl.estream.EventStreamParser;
-import org.commonjava.rwx.impl.estream.model.ArrayEvent;
-import org.commonjava.rwx.impl.estream.model.Event;
-import org.commonjava.rwx.impl.estream.model.ParameterEvent;
-import org.commonjava.rwx.impl.estream.model.RequestEvent;
-import org.commonjava.rwx.impl.estream.model.ResponseEvent;
-import org.commonjava.rwx.impl.estream.model.StructEvent;
-import org.commonjava.rwx.impl.estream.model.ValueEvent;
+import org.commonjava.rwx.estream.model.ArrayEvent;
+import org.commonjava.rwx.estream.model.Event;
+import org.commonjava.rwx.estream.model.ParameterEvent;
+import org.commonjava.rwx.estream.model.RequestEvent;
+import org.commonjava.rwx.estream.model.ResponseEvent;
+import org.commonjava.rwx.estream.model.StructEvent;
+import org.commonjava.rwx.estream.model.ValueEvent;
+import org.commonjava.rwx.impl.estream.EventStreamParserImpl;
 import org.commonjava.rwx.impl.estream.testutil.ExtList;
 import org.commonjava.rwx.vocab.EventType;
 import org.commonjava.rwx.vocab.ValueType;
@@ -47,7 +47,7 @@ public class EventStreamParserTest
                                    .with( new RequestEvent( "foo" ) )
                                    .with( new RequestEvent( false ) );
 
-        final EventStreamParser parser = new EventStreamParser();
+        final EventStreamParserImpl parser = new EventStreamParserImpl();
         parser.startRequest().requestMethod( "foo" ).endRequest();
 
         assertEvents( check, parser.getEvents() );
@@ -66,7 +66,7 @@ public class EventStreamParserTest
                                    .with( new ParameterEvent() )
                                    .with( new RequestEvent( false ) );
 
-        final EventStreamParser parser = new EventStreamParser();
+        final EventStreamParserImpl parser = new EventStreamParserImpl();
         parser.startRequest()
               .requestMethod( "foo" )
               .startParameter( 0 )
@@ -86,7 +86,7 @@ public class EventStreamParserTest
                                    .with( new ResponseEvent( 101, "foo" ) )
                                    .with( new ResponseEvent( false ) );
 
-        final EventStreamParser parser = new EventStreamParser();
+        final EventStreamParserImpl parser = new EventStreamParserImpl();
         parser.startResponse().fault( 101, "foo" ).endResponse();
 
         assertEvents( check, parser.getEvents() );
@@ -104,7 +104,7 @@ public class EventStreamParserTest
                                    .with( new ArrayEvent( EventType.END_ARRAY_ELEMENT ) )
                                    .with( new ArrayEvent( EventType.END_ARRAY ) );
 
-        final EventStreamParser parser = new EventStreamParser();
+        final EventStreamParserImpl parser = new EventStreamParserImpl();
         parser.startArray()
               .startArrayElement( 0 )
               .value( "foo", ValueType.STRING )
@@ -127,7 +127,7 @@ public class EventStreamParserTest
                                    .with( new StructEvent( EventType.END_STRUCT_MEMBER ) )
                                    .with( new StructEvent( EventType.END_STRUCT ) );
 
-        final EventStreamParser parser = new EventStreamParser();
+        final EventStreamParserImpl parser = new EventStreamParserImpl();
         parser.startStruct()
               .startStructMember( "key" )
               .value( "foo", ValueType.STRING )
@@ -155,7 +155,7 @@ public class EventStreamParserTest
                                    .with( new StructEvent( EventType.END_STRUCT_MEMBER ) )
                                    .with( new StructEvent( EventType.END_STRUCT ) );
 
-        final EventStreamParser parser = new EventStreamParser();
+        final EventStreamParserImpl parser = new EventStreamParserImpl();
         parser.startStruct()
               .startStructMember( "key" )
               .startArray()

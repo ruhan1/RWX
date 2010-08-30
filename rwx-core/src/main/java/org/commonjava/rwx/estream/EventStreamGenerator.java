@@ -15,14 +15,21 @@
  *  If not, see http://www.gnu.org/licenses/.
  */
 
-package org.commonjava.rwx.http;
+package org.commonjava.rwx.estream;
 
-import org.commonjava.rwx.error.XmlRpcException;
+import org.commonjava.rwx.estream.model.Event;
+import org.commonjava.rwx.spi.XmlRpcGenerator;
 
-public interface SyncXmlRpcClient
+import java.util.List;
+
+public interface EventStreamGenerator
+    extends XmlRpcGenerator
 {
 
-    <T> T call( Object request, Class<T> responseType )
-        throws XmlRpcException;
+    List<Event<?>> getEvents();
+
+    EventStreamGenerator clear();
+
+    EventStreamGenerator add( final Event<?> event );
 
 }

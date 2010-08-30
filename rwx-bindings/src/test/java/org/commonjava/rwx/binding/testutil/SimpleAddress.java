@@ -23,7 +23,7 @@ import org.commonjava.rwx.binding.anno.StructPart;
 import org.commonjava.rwx.binding.mapping.FieldBinding;
 import org.commonjava.rwx.binding.mapping.Mapping;
 import org.commonjava.rwx.binding.mapping.StructMapping;
-import org.commonjava.rwx.impl.estream.model.Event;
+import org.commonjava.rwx.estream.model.Event;
 import org.commonjava.rwx.impl.estream.testutil.ExtList;
 import org.commonjava.rwx.impl.estream.testutil.ExtMap;
 

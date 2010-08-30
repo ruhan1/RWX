@@ -102,13 +102,20 @@ public enum ValueType
         public String toString( final Object value )
             throws CoercionException
         {
-            return value == null ? null : super.toString( Boolean.valueOf( super.toString( value ) ) );
+            return value == null ? null : Boolean.valueOf( super.toString( value ) ) ? "1" : "0";
         }
 
         @Override
         public Object fromString( final String value )
         {
-            return value == null ? null : Boolean.valueOf( value );
+            if ( value == null )
+            {
+                return null;
+            }
+            else
+            {
+                return "1".equals( value ) || Boolean.valueOf( value );
+            }
         }
     }, Boolean.class, "boolean" ),
 

@@ -20,13 +20,11 @@ package org.commonjava.rwx.binding.internal.xbr;
 import org.apache.xbean.recipe.ConstructionException;
 import org.apache.xbean.recipe.ObjectRecipe;
 import org.apache.xbean.recipe.Option;
-import org.commonjava.rwx.binding.anno.BindVia;
-import org.commonjava.rwx.binding.anno.UnbindVia;
+import org.commonjava.rwx.binding.anno.Converter;
 import org.commonjava.rwx.binding.error.BindException;
 import org.commonjava.rwx.binding.spi.Binder;
 import org.commonjava.rwx.binding.spi.BindingContext;
 import org.commonjava.rwx.binding.spi.value.ValueBinder;
-import org.commonjava.rwx.binding.spi.value.ValueUnbinder;
 
 public final class XBRBinderInstantiator
 {
@@ -45,7 +43,7 @@ public final class XBRBinderInstantiator
     {
     }
 
-    public static ValueBinder newValueBinder( final BindVia bindVia, final Binder parent, final Class<?> type,
+    public static ValueBinder newValueBinder( final Converter bindVia, final Binder parent, final Class<?> type,
                                               final BindingContext context )
         throws BindException
     {
@@ -62,19 +60,18 @@ public final class XBRBinderInstantiator
         }
     }
 
-    public static ValueUnbinder newValueUnbinder( final UnbindVia unbindVia, final Binder parent, final Class<?> type,
-                                                  final BindingContext context )
+    public static ValueBinder newValueUnbinder( final Converter bindVia )
         throws BindException
     {
         try
         {
-            final ObjectRecipe viaRecipe = buildRecipe( unbindVia.value(), parent, type, context );
+            final ObjectRecipe viaRecipe = buildRecipe( bindVia.value(), null, null, null );
 
-            return (ValueUnbinder) viaRecipe.create();
+            return (ValueBinder) viaRecipe.create();
         }
         catch ( final ConstructionException e )
         {
-            throw new BindException( "Cannot create ValueBinder from @BindVia( " + unbindVia.value().getName() + "): "
+            throw new BindException( "Cannot create ValueBinder from @BindVia( " + bindVia.value().getName() + "): "
                 + e.getMessage(), e );
         }
     }

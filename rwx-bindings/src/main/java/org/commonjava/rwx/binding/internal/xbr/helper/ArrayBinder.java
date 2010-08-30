@@ -21,14 +21,17 @@ import org.apache.xbean.recipe.ArrayRecipe;
 import org.commonjava.rwx.binding.internal.xbr.XBRBindingContext;
 import org.commonjava.rwx.binding.spi.Binder;
 
+import java.lang.reflect.Field;
+
 public class ArrayBinder
     extends CollectionBinder
     implements Binder
 {
 
-    public ArrayBinder( final Binder parent, final Class<?> valueType, final XBRBindingContext context )
+    public ArrayBinder( final Binder parent, final Class<?> valueType, final Field field,
+                        final XBRBindingContext context )
     {
-        super( parent, null, valueType, context );
+        super( parent, null, valueType, field, context );
     }
 
     @Override

@@ -18,43 +18,45 @@
 package org.commonjava.rwx.impl.estream;
 
 import org.commonjava.rwx.error.XmlRpcException;
+import org.commonjava.rwx.estream.EventStreamGenerator;
+import org.commonjava.rwx.estream.model.ArrayEvent;
+import org.commonjava.rwx.estream.model.Event;
+import org.commonjava.rwx.estream.model.ParameterEvent;
+import org.commonjava.rwx.estream.model.RequestEvent;
+import org.commonjava.rwx.estream.model.ResponseEvent;
+import org.commonjava.rwx.estream.model.StructEvent;
+import org.commonjava.rwx.estream.model.ValueEvent;
 import org.commonjava.rwx.impl.TrackingXmlRpcListener;
-import org.commonjava.rwx.impl.estream.model.ArrayEvent;
-import org.commonjava.rwx.impl.estream.model.Event;
-import org.commonjava.rwx.impl.estream.model.ParameterEvent;
-import org.commonjava.rwx.impl.estream.model.RequestEvent;
-import org.commonjava.rwx.impl.estream.model.ResponseEvent;
-import org.commonjava.rwx.impl.estream.model.StructEvent;
-import org.commonjava.rwx.impl.estream.model.ValueEvent;
-import org.commonjava.rwx.spi.XmlRpcGenerator;
 import org.commonjava.rwx.spi.XmlRpcListener;
 
 import java.util.LinkedList;
 import java.util.List;
 
-public class EventStreamGenerator
-    implements XmlRpcGenerator
+public class EventStreamGeneratorImpl
+    implements EventStreamGenerator
 {
 
     private final LinkedList<Event<?>> events = new LinkedList<Event<?>>();
 
     private boolean locked = false;
 
-    public EventStreamGenerator()
+    public EventStreamGeneratorImpl()
     {
     }
 
-    public EventStreamGenerator( final List<Event<?>> events )
+    public EventStreamGeneratorImpl( final List<Event<?>> events )
     {
         locked = true;
         this.events.addAll( events );
     }
 
+    @Override
     public List<Event<?>> getEvents()
     {
         return events;
     }
 
+    @Override
     public EventStreamGenerator clear()
     {
         checkLocked();
@@ -63,7 +65,8 @@ public class EventStreamGenerator
         return this;
     }
 
-    public EventStreamGenerator add( final Event<?> event )
+    @Override
+    public EventStreamGeneratorImpl add( final Event<?> event )
     {
         checkLocked();
         events.addLast( event );
@@ -79,7 +82,7 @@ public class EventStreamGenerator
     }
 
     @Override
-    public EventStreamGenerator generate( final XmlRpcListener l )
+    public EventStreamGeneratorImpl generate( final XmlRpcListener l )
         throws XmlRpcException
     {
         final XmlRpcListener listener = new TrackingXmlRpcListener( l );

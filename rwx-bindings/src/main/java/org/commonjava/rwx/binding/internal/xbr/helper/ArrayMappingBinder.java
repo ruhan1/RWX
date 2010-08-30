@@ -57,7 +57,8 @@ public class ArrayMappingBinder
             final FieldBinding binding = getMapping().getFieldBinding( index );
 
             // if ignore == false and the current field is null, the binding MUST be non-null.  
-            recipe.setProperty( binding.getFieldName(), type.coercion().fromString( (String) value ) );
+            recipe.setProperty( binding.getFieldName(),
+                                type.coercion().fromString( value == null ? null : String.valueOf( value ) ) );
         }
 
         return this;

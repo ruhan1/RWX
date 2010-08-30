@@ -28,8 +28,7 @@ import org.apache.xbean.recipe.ObjectRecipe;
 import org.apache.xbean.recipe.Recipe;
 import org.apache.xbean.recipe.Repository;
 import org.commonjava.rwx.binding.anno.ArrayPart;
-import org.commonjava.rwx.binding.anno.BindVia;
-import org.commonjava.rwx.binding.anno.Contains;
+import org.commonjava.rwx.binding.anno.Converter;
 import org.commonjava.rwx.binding.anno.StructPart;
 import org.commonjava.rwx.binding.error.BindException;
 import org.commonjava.rwx.binding.internal.xbr.helper.ArrayBinder;
@@ -190,22 +189,35 @@ public class XBRBindingContext
     public Binder newBinder( final Binder parent, final Class<?> type )
         throws BindException
     {
-        return newBinder( parent, type, null, null );
+        return newBinder( parent, type, null );
     }
 
     public Binder newBinder( final Binder parent, final Field field )
         throws BindException
     {
-        return newBinder( parent, field.getType(), field.getAnnotation( Contains.class ),
-                          field.getAnnotation( BindVia.class ) );
+        return newBinder( parent, field.getType(), field );
     }
 
     @SuppressWarnings( "unchecked" )
-    protected Binder newBinder( final Binder parent, final Class<?> type, final Contains containsAnno,
-                                final BindVia bindVia )
+    protected Binder newBinder( final Binder parent, final Class<?> type, final Field field )
         throws BindException
     {
-        if ( bindVia != null )
+        final Converter bindVia = field == null ? null : field.getAnnotation( Converter.class );
+
+        Binder binder = null;
+        if ( Map.class.isAssignableFrom( type ) )
+        {
+            binder = new MapBinder( parent, type, field, this );
+        }
+        else if ( Collection.class.isAssignableFrom( type ) )
+        {
+            binder = new CollectionBinder( parent, type, field, this );
+        }
+        else if ( type.isArray() && !type.getComponentType().isPrimitive() )
+        {
+            binder = new ArrayBinder( parent, type.getComponentType(), field, this );
+        }
+        else if ( bindVia != null )
         {
             return XBRBinderInstantiator.newValueBinder( bindVia, parent, type, this );
         }
@@ -219,31 +231,19 @@ public class XBRBindingContext
             }
             else if ( hasAnnotation( type, ArrayPart.class ) )
             {
-                return new ArrayMappingBinder( parent, type, (ArrayMapping) mapping, this );
+                binder = new ArrayMappingBinder( parent, type, (ArrayMapping) mapping, this );
             }
             else if ( hasAnnotation( type, StructPart.class ) )
             {
-                return new StructMappingBinder( parent, type, (StructMapping) mapping, this );
+                binder = new StructMappingBinder( parent, type, (StructMapping) mapping, this );
             }
             else
             {
                 throw new BindException( "Unknown Mapping: " + mapping );
             }
-        }
-        else if ( Map.class.isAssignableFrom( type ) )
-        {
-            return new MapBinder( parent, type, containsAnno == null ? Object.class : containsAnno.value(), this );
-        }
-        else if ( Collection.class.isAssignableFrom( type ) )
-        {
-            return new CollectionBinder( parent, type, containsAnno == null ? Object.class : containsAnno.value(), this );
-        }
-        else if ( type.isArray() )
-        {
-            return new ArrayBinder( parent, type.getComponentType(), this );
+
         }
 
-        return null;
+        return binder;
     }
-
 }

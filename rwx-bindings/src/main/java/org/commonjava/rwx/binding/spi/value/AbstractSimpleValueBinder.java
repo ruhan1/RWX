@@ -59,70 +59,70 @@ public abstract class AbstractSimpleValueBinder
     }
 
     @Override
-    public final XmlRpcListener endArray()
+    public XmlRpcListener endArray()
         throws XmlRpcException
     {
         throw forbidden();
     }
 
     @Override
-    public final XmlRpcListener endArrayElement()
+    public XmlRpcListener endArrayElement()
         throws XmlRpcException
     {
         throw forbidden();
     }
 
     @Override
-    public final XmlRpcListener endStruct()
+    public XmlRpcListener endStruct()
         throws XmlRpcException
     {
         throw forbidden();
     }
 
     @Override
-    public final XmlRpcListener endStructMember()
+    public XmlRpcListener endStructMember()
         throws XmlRpcException
     {
         throw forbidden();
     }
 
     @Override
-    public final XmlRpcListener startArray()
+    public XmlRpcListener startArray()
         throws XmlRpcException
     {
         throw forbidden();
     }
 
     @Override
-    public final XmlRpcListener startArrayElement( final int index )
+    public XmlRpcListener startArrayElement( final int index )
         throws XmlRpcException
     {
         throw forbidden();
     }
 
     @Override
-    public final XmlRpcListener startStruct()
+    public XmlRpcListener startStruct()
         throws XmlRpcException
     {
         throw forbidden();
     }
 
     @Override
-    public final XmlRpcListener startStructMember( final String key )
+    public XmlRpcListener startStructMember( final String key )
         throws XmlRpcException
     {
         throw forbidden();
     }
 
     @Override
-    public final XmlRpcListener endParameter()
+    public XmlRpcListener endParameter()
         throws XmlRpcException
     {
         throw forbidden();
     }
 
     @Override
-    public final XmlRpcListener startParameter( final int index )
+    public XmlRpcListener startParameter( final int index )
         throws XmlRpcException
     {
         throw forbidden();

@@ -15,12 +15,12 @@
  *  If not, see http://www.gnu.org/licenses/.
  */
 
-package org.commonjava.rwx.impl.estream.model;
+package org.commonjava.rwx.estream.model;
 
 import org.commonjava.rwx.vocab.EventType;
 import org.commonjava.rwx.vocab.ValueType;
 
-public class ArrayEvent
+public class ParameterEvent
     implements Event<Integer>
 {
 
@@ -32,36 +32,31 @@ public class ArrayEvent
 
     private final ValueType valueType;
 
-    public ArrayEvent( final EventType eventType )
+    public ParameterEvent()
     {
-        if ( EventType.START_ARRAY != eventType && EventType.END_ARRAY != eventType
-            && EventType.END_ARRAY_ELEMENT != eventType )
-        {
-            throw new IllegalArgumentException( "Event type must be start/end for array or complex array element." );
-        }
+        eventType = EventType.END_PARAMETER;
 
-        this.eventType = eventType;
         index = -1;
         value = null;
         valueType = null;
     }
 
-    public ArrayEvent( final int index )
+    public ParameterEvent( final int index )
     {
-        eventType = EventType.START_ARRAY_ELEMENT;
+        eventType = EventType.START_PARAMETER;
 
         this.index = index;
         value = null;
         valueType = null;
     }
 
-    public ArrayEvent( final int index, final Object value, final ValueType valueType )
+    public ParameterEvent( final int index, final Object value, final ValueType valueType )
     {
         this.index = index;
         this.value = value;
         this.valueType = valueType;
 
-        eventType = EventType.ARRAY_ELEMENT;
+        eventType = EventType.PARAMETER;
     }
 
     @Override
@@ -111,7 +106,7 @@ public class ArrayEvent
     @Override
     public String toString()
     {
-        return "ArrayEvent [eventType=" + eventType + ", index=" + index + ", value=" + value + ", valueType="
+        return "ParameterEvent [eventType=" + eventType + ", index=" + index + ", value=" + value + ", valueType="
             + valueType + "]";
     }
 
@@ -142,7 +137,7 @@ public class ArrayEvent
         {
             return false;
         }
-        final ArrayEvent other = (ArrayEvent) obj;
+        final ParameterEvent other = (ParameterEvent) obj;
         if ( eventType == null )
         {
             if ( other.eventType != null )
@@ -182,5 +177,4 @@ public class ArrayEvent
         }
         return true;
     }
-
 }

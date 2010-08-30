@@ -17,13 +17,18 @@
 
 package org.commonjava.rwx.binding.internal.xbr.helper;
 
+import static org.commonjava.rwx.binding.anno.AnnotationUtils.getContainsType;
+
 import org.apache.xbean.recipe.CollectionRecipe;
+import org.commonjava.rwx.binding.anno.Converter;
+import org.commonjava.rwx.binding.internal.xbr.XBRBinderInstantiator;
 import org.commonjava.rwx.binding.internal.xbr.XBRBindingContext;
 import org.commonjava.rwx.binding.spi.Binder;
 import org.commonjava.rwx.error.XmlRpcException;
 import org.commonjava.rwx.spi.XmlRpcListener;
 import org.commonjava.rwx.vocab.ValueType;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -38,10 +43,21 @@ public class CollectionBinder
 
     private int currentIndex;
 
-    public CollectionBinder( final Binder parent, final Class<?> collectionType, final Class<?> valueType,
+    private final Converter bindVia;
+
+    public CollectionBinder( final Binder parent, final Class<?> collectionType, final Field field,
                              final XBRBindingContext context )
     {
+        super( parent, getContainsType( field ), context );
+        bindVia = field == null ? null : field.getAnnotation( Converter.class );
+        this.collectionType = collectionType;
+    }
+
+    public CollectionBinder( final Binder parent, final Class<?> collectionType, final Class<?> valueType,
+                             final Field field, final XBRBindingContext context )
+    {
         super( parent, valueType, context );
+        bindVia = field == null ? null : field.getAnnotation( Converter.class );
         this.collectionType = collectionType;
     }
 
@@ -100,7 +116,16 @@ public class CollectionBinder
     protected Binder startArrayElementInternal( final int index )
         throws XmlRpcException
     {
-        final Binder binder = getBindingContext().newBinder( this, getType() );
+        final Binder binder;
+        if ( bindVia != null )
+        {
+            binder = XBRBinderInstantiator.newValueBinder( bindVia, this, getType(), getBindingContext() );
+        }
+        else
+        {
+            binder = getBindingContext().newBinder( this, getType() );
+        }
+
         if ( binder != null )
         {
             currentIndex = index;

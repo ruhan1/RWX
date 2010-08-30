@@ -21,9 +21,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
 import org.commonjava.rwx.error.CoercionException;
-import org.commonjava.rwx.vocab.ValueType;
 import org.junit.Test;
-
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -44,10 +42,10 @@ public class BOOLEAN_ValueTypeTest
     public void toStringStandardConversions()
         throws CoercionException
     {
-        assertEquals( "true", toString( new Boolean( true ) ) );
-        assertEquals( "true", toString( true ) );
-        assertEquals( "false", toString( new Boolean( false ) ) );
-        assertEquals( "false", toString( false ) );
+        assertEquals( "1", toString( new Boolean( true ) ) );
+        assertEquals( "1", toString( true ) );
+        assertEquals( "0", toString( new Boolean( false ) ) );
+        assertEquals( "0", toString( false ) );
     }
 
     @Override
@@ -55,8 +53,8 @@ public class BOOLEAN_ValueTypeTest
     public void fromStringStandardConversions()
         throws CoercionException
     {
-        assertEquals( true, fromString( "true" ) );
-        assertEquals( false, fromString( "false" ) );
+        assertEquals( true, fromString( "1" ) );
+        assertEquals( false, fromString( "0" ) );
         assertEquals( false, fromString( "foo" ) );
     }
 
@@ -64,7 +62,7 @@ public class BOOLEAN_ValueTypeTest
     public void toStringReturnFalseWhenNonBooleanPassedIn()
         throws CoercionException
     {
-        assertEquals( "false", toString( new ArrayList<Integer>() ) );
+        assertEquals( "0", toString( new ArrayList<Integer>() ) );
     }
 
     @Test

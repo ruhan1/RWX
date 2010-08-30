@@ -17,11 +17,11 @@
 
 package org.commonjava.rwx.binding.testutil.recipe;
 
-import org.commonjava.rwx.impl.estream.model.ArrayEvent;
-import org.commonjava.rwx.impl.estream.model.Event;
-import org.commonjava.rwx.impl.estream.model.ParameterEvent;
-import org.commonjava.rwx.impl.estream.model.StructEvent;
-import org.commonjava.rwx.impl.estream.model.ValueEvent;
+import org.commonjava.rwx.estream.model.ArrayEvent;
+import org.commonjava.rwx.estream.model.Event;
+import org.commonjava.rwx.estream.model.ParameterEvent;
+import org.commonjava.rwx.estream.model.StructEvent;
+import org.commonjava.rwx.estream.model.ValueEvent;
 import org.commonjava.rwx.impl.estream.testutil.ExtList;
 import org.commonjava.rwx.impl.estream.testutil.ExtMap;
 import org.commonjava.rwx.vocab.EventType;

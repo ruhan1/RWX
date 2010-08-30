@@ -19,7 +19,7 @@ package org.commonjava.rwx.impl.estream.testutil;
 
 import static org.junit.Assert.fail;
 
-import org.commonjava.rwx.impl.estream.model.Event;
+import org.commonjava.rwx.estream.model.Event;
 
 
 import java.util.ArrayList;

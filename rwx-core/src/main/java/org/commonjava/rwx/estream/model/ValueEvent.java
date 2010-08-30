@@ -15,7 +15,7 @@
  *  If not, see http://www.gnu.org/licenses/.
  */
 
-package org.commonjava.rwx.impl.estream.model;
+package org.commonjava.rwx.estream.model;
 
 import org.commonjava.rwx.vocab.EventType;
 import org.commonjava.rwx.vocab.ValueType;

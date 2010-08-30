@@ -18,7 +18,6 @@
 package org.commonjava.rwx.binding.mapping;
 
 import org.commonjava.rwx.binding.spi.value.ValueBinder;
-import org.commonjava.rwx.binding.spi.value.ValueUnbinder;
 
 import java.io.Externalizable;
 import java.io.IOException;
@@ -38,8 +37,6 @@ public class FieldBinding
 
     private Class<? extends ValueBinder> valueBinder;
 
-    private Class<? extends ValueUnbinder> valueUnbinder;
-
     public FieldBinding( final String name, final Class<?> type )
     {
         this.name = name;
@@ -55,17 +52,6 @@ public class FieldBinding
     public Class<? extends ValueBinder> getValueBinderType()
     {
         return valueBinder;
-    }
-
-    public FieldBinding withValueUnbinderType( final Class<? extends ValueUnbinder> valueUnbinder )
-    {
-        this.valueUnbinder = valueUnbinder;
-        return this;
-    }
-
-    public Class<? extends ValueUnbinder> getValueUnbinderType()
-    {
-        return valueUnbinder;
     }
 
     public String getFieldName()
@@ -97,8 +83,7 @@ public class FieldBinding
     @Override
     public String toString()
     {
-        return "FieldBinding [name=" + name + ", type=" + type + ", valueBinder=" + valueBinder + ", valueUnbinder="
-            + valueUnbinder + "]";
+        return "FieldBinding [name=" + name + ", type=" + type + ", valueBinder=" + valueBinder + "]";
     }
 
 }

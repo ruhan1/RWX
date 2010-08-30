@@ -99,7 +99,6 @@ public class ReflectionMapperTest
 
         assertEquals( "userIds", ar.getFieldBinding( 0 ).getFieldName() );
         assertEquals( ListOfStringsConverter.class, ar.getFieldBinding( 0 ).getValueBinderType() );
-        assertEquals( ListOfStringsConverter.class, ar.getFieldBinding( 0 ).getValueUnbinderType() );
     }
 
     @Test

@@ -15,18 +15,18 @@
  *  If not, see http://www.gnu.org/licenses/.
  */
 
-package org.commonjava.rwx.binding.spi.value;
+package org.commonjava.rwx.binding.anno;
 
-import org.commonjava.rwx.binding.mapping.Mapping;
-import org.commonjava.rwx.binding.spi.Binder;
-import org.commonjava.rwx.error.XmlRpcException;
-import org.commonjava.rwx.spi.XmlRpcListener;
+import org.commonjava.rwx.binding.spi.value.ValueBinder;
 
-import java.util.Map;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-public interface ValueBinder
-    extends XmlRpcListener, Binder
+@Target( ElementType.FIELD )
+@Retention( RetentionPolicy.RUNTIME )
+public @interface Converter
 {
-    void generate( XmlRpcListener listener, Object value, Map<Class<?>, Mapping<?>> recipes )
-        throws XmlRpcException;
+    Class<? extends ValueBinder> value();
 }

@@ -15,18 +15,17 @@
  *  If not, see http://www.gnu.org/licenses/.
  */
 
-package org.commonjava.rwx.binding.anno;
+package org.commonjava.rwx.estream;
 
-import org.commonjava.rwx.binding.spi.value.ValueBinder;
+import org.commonjava.rwx.estream.model.Event;
+import org.commonjava.rwx.spi.XmlRpcListener;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.util.List;
 
-@Target( ElementType.FIELD )
-@Retention( RetentionPolicy.RUNTIME )
-public @interface BindVia
+public interface EventStreamParser
+    extends XmlRpcListener
 {
-    Class<? extends ValueBinder> value();
+
+    List<Event<?>> getEvents();
+
 }

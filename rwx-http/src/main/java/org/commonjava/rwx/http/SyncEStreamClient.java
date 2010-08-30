@@ -15,18 +15,19 @@
  *  If not, see http://www.gnu.org/licenses/.
  */
 
-package org.commonjava.rwx.binding.anno;
+package org.commonjava.rwx.http;
 
-import org.commonjava.rwx.binding.spi.value.ValueUnbinder;
+import org.commonjava.rwx.error.XmlRpcException;
+import org.commonjava.rwx.estream.EventStreamGenerator;
+import org.commonjava.rwx.estream.model.Event;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.util.List;
 
-@Target( ElementType.FIELD )
-@Retention( RetentionPolicy.RUNTIME )
-public @interface UnbindVia
+public interface SyncEStreamClient
 {
-    Class<? extends ValueUnbinder> value();
+    List<Event<?>> call( List<Event<?>> requestEvents, boolean expectVoidResponse )
+        throws XmlRpcException;
+
+    List<Event<?>> call( EventStreamGenerator requestGenerator, boolean expectVoidResponse )
+        throws XmlRpcException;
 }

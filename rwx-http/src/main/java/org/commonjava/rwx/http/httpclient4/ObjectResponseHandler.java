@@ -36,11 +36,11 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 
-public class XmlRpcResponseHandler<T>
+public class ObjectResponseHandler<T>
     implements ResponseHandler<T>
 {
 
-    private static final Logger LOGGER = Logger.getLogger( XmlRpcResponseHandler.class );
+    private static final Logger LOGGER = Logger.getLogger( ObjectResponseHandler.class );
 
     private XmlRpcException error;
 
@@ -48,7 +48,7 @@ public class XmlRpcResponseHandler<T>
 
     private final Class<T> responseType;
 
-    public XmlRpcResponseHandler( final Bindery bindery, final Class<T> responseType )
+    public ObjectResponseHandler( final Bindery bindery, final Class<T> responseType )
     {
         this.bindery = bindery;
         this.responseType = responseType;

@@ -20,9 +20,7 @@ package org.commonjava.rwx.vocab;
 import static org.junit.Assert.assertNull;
 
 import org.commonjava.rwx.error.CoercionException;
-import org.commonjava.rwx.vocab.ValueType;
 import org.junit.Test;
-
 
 public abstract class AbstractValueTypeTest
 {
@@ -50,7 +48,8 @@ public abstract class AbstractValueTypeTest
     public final void fromStringReturnNullWhenInputIsNull()
         throws Throwable
     {
-        assertNull( fromString( null ) );
+        final Object result = fromString( null );
+        assertNull( "Expected null result. Got: '" + result + "'", result );
     }
 
     protected abstract ValueType type();

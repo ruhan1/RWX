@@ -25,11 +25,11 @@ import org.commonjava.rwx.binding.anno.Response;
 import org.commonjava.rwx.binding.mapping.ArrayMapping;
 import org.commonjava.rwx.binding.mapping.FieldBinding;
 import org.commonjava.rwx.binding.mapping.Mapping;
-import org.commonjava.rwx.impl.estream.model.Event;
-import org.commonjava.rwx.impl.estream.model.ParameterEvent;
-import org.commonjava.rwx.impl.estream.model.ResponseEvent;
-import org.commonjava.rwx.impl.estream.model.StructEvent;
-import org.commonjava.rwx.impl.estream.model.ValueEvent;
+import org.commonjava.rwx.estream.model.Event;
+import org.commonjava.rwx.estream.model.ParameterEvent;
+import org.commonjava.rwx.estream.model.ResponseEvent;
+import org.commonjava.rwx.estream.model.StructEvent;
+import org.commonjava.rwx.estream.model.ValueEvent;
 import org.commonjava.rwx.impl.estream.testutil.ExtList;
 import org.commonjava.rwx.impl.estream.testutil.ExtMap;
 import org.commonjava.rwx.vocab.EventType;
@@ -85,9 +85,8 @@ public class SimpleAddressMapResponse
 
             check.withAll( entry.getValue().events() );
 
-            check.withAll( new ValueEvent( entry.getValue(), ValueType.STRUCT ), new StructEvent( entry.getKey(),
-                                                                                                  entry.getValue(),
-                                                                                                  ValueType.STRUCT ),
+            check.withAll( new ValueEvent( entry.getValue(), ValueType.STRUCT ),
+                           new StructEvent( entry.getKey(), entry.getValue(), ValueType.STRUCT ),
                            new StructEvent( EventType.END_STRUCT_MEMBER ) );
 
         }

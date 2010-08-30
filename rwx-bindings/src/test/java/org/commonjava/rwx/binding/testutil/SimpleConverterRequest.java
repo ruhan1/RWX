@@ -19,19 +19,18 @@ package org.commonjava.rwx.binding.testutil;
 
 import static org.commonjava.rwx.binding.testutil.recipe.RecipeEventUtils.endParameter;
 
-import org.commonjava.rwx.binding.anno.BindVia;
+import org.commonjava.rwx.binding.anno.Converter;
 import org.commonjava.rwx.binding.anno.DataIndex;
 import org.commonjava.rwx.binding.anno.Request;
-import org.commonjava.rwx.binding.anno.UnbindVia;
 import org.commonjava.rwx.binding.convert.ListOfStringsConverter;
 import org.commonjava.rwx.binding.mapping.ArrayMapping;
 import org.commonjava.rwx.binding.mapping.FieldBinding;
 import org.commonjava.rwx.binding.mapping.Mapping;
-import org.commonjava.rwx.impl.estream.model.ArrayEvent;
-import org.commonjava.rwx.impl.estream.model.Event;
-import org.commonjava.rwx.impl.estream.model.ParameterEvent;
-import org.commonjava.rwx.impl.estream.model.RequestEvent;
-import org.commonjava.rwx.impl.estream.model.ValueEvent;
+import org.commonjava.rwx.estream.model.ArrayEvent;
+import org.commonjava.rwx.estream.model.Event;
+import org.commonjava.rwx.estream.model.ParameterEvent;
+import org.commonjava.rwx.estream.model.RequestEvent;
+import org.commonjava.rwx.estream.model.ValueEvent;
 import org.commonjava.rwx.impl.estream.testutil.ExtList;
 import org.commonjava.rwx.vocab.EventType;
 import org.commonjava.rwx.vocab.ValueType;
@@ -47,8 +46,7 @@ public class SimpleConverterRequest
 {
 
     @DataIndex( 0 )
-    @BindVia( ListOfStringsConverter.class )
-    @UnbindVia( ListOfStringsConverter.class )
+    @Converter( ListOfStringsConverter.class )
     private List<String> userIds = Arrays.asList( new String[] { "foo", "bar" } );
 
     public List<String> getUserIds()
@@ -68,8 +66,7 @@ public class SimpleConverterRequest
         final ArrayMapping recipe = new ArrayMapping( SimpleConverterRequest.class, new Integer[0] );
 
         final FieldBinding binding =
-            new FieldBinding( "userIds", List.class ).withValueBinderType( ListOfStringsConverter.class )
-                                                     .withValueUnbinderType( ListOfStringsConverter.class );
+            new FieldBinding( "userIds", List.class ).withValueBinderType( ListOfStringsConverter.class );
 
         recipe.addFieldBinding( 0, binding );
         recipes.put( SimpleConverterRequest.class, recipe );

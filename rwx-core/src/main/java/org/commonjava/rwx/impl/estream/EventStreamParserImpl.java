@@ -18,138 +18,139 @@
 package org.commonjava.rwx.impl.estream;
 
 import org.commonjava.rwx.error.XmlRpcException;
-import org.commonjava.rwx.impl.estream.model.ArrayEvent;
-import org.commonjava.rwx.impl.estream.model.Event;
-import org.commonjava.rwx.impl.estream.model.ParameterEvent;
-import org.commonjava.rwx.impl.estream.model.RequestEvent;
-import org.commonjava.rwx.impl.estream.model.ResponseEvent;
-import org.commonjava.rwx.impl.estream.model.StructEvent;
-import org.commonjava.rwx.impl.estream.model.ValueEvent;
-import org.commonjava.rwx.spi.XmlRpcListener;
+import org.commonjava.rwx.estream.EventStreamParser;
+import org.commonjava.rwx.estream.model.ArrayEvent;
+import org.commonjava.rwx.estream.model.Event;
+import org.commonjava.rwx.estream.model.ParameterEvent;
+import org.commonjava.rwx.estream.model.RequestEvent;
+import org.commonjava.rwx.estream.model.ResponseEvent;
+import org.commonjava.rwx.estream.model.StructEvent;
+import org.commonjava.rwx.estream.model.ValueEvent;
 import org.commonjava.rwx.vocab.EventType;
 import org.commonjava.rwx.vocab.ValueType;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class EventStreamParser
-    implements XmlRpcListener
+public class EventStreamParserImpl
+    implements EventStreamParser
 {
 
     private final List<Event<?>> events = new ArrayList<Event<?>>();
 
+    @Override
     public List<Event<?>> getEvents()
     {
         return events;
     }
 
     @Override
-    public EventStreamParser arrayElement( final int index, final Object value, final ValueType type )
+    public EventStreamParserImpl arrayElement( final int index, final Object value, final ValueType type )
     {
         events.add( new ArrayEvent( index, value, type ) );
         return this;
     }
 
     @Override
-    public EventStreamParser endArray()
+    public EventStreamParserImpl endArray()
     {
         events.add( new ArrayEvent( EventType.END_ARRAY ) );
         return this;
     }
 
     @Override
-    public EventStreamParser endParameter()
+    public EventStreamParserImpl endParameter()
     {
         events.add( new ParameterEvent() );
         return this;
     }
 
     @Override
-    public EventStreamParser endRequest()
+    public EventStreamParserImpl endRequest()
     {
         events.add( new RequestEvent( false ) );
         return this;
     }
 
     @Override
-    public EventStreamParser endResponse()
+    public EventStreamParserImpl endResponse()
     {
         events.add( new ResponseEvent( false ) );
         return this;
     }
 
     @Override
-    public EventStreamParser endStruct()
+    public EventStreamParserImpl endStruct()
     {
         events.add( new StructEvent( EventType.END_STRUCT ) );
         return this;
     }
 
     @Override
-    public EventStreamParser fault( final int code, final String message )
+    public EventStreamParserImpl fault( final int code, final String message )
     {
         events.add( new ResponseEvent( code, message ) );
         return this;
     }
 
     @Override
-    public EventStreamParser parameter( final int index, final Object value, final ValueType type )
+    public EventStreamParserImpl parameter( final int index, final Object value, final ValueType type )
     {
         events.add( new ParameterEvent( index, value, type ) );
         return this;
     }
 
     @Override
-    public EventStreamParser requestMethod( final String methodName )
+    public EventStreamParserImpl requestMethod( final String methodName )
     {
         events.add( new RequestEvent( methodName ) );
         return this;
     }
 
     @Override
-    public EventStreamParser startArray()
+    public EventStreamParserImpl startArray()
     {
         events.add( new ArrayEvent( EventType.START_ARRAY ) );
         return this;
     }
 
     @Override
-    public EventStreamParser startParameter( final int index )
+    public EventStreamParserImpl startParameter( final int index )
     {
         events.add( new ParameterEvent( index ) );
         return this;
     }
 
     @Override
-    public EventStreamParser startRequest()
+    public EventStreamParserImpl startRequest()
     {
         events.add( new RequestEvent( true ) );
         return this;
     }
 
     @Override
-    public EventStreamParser startResponse()
+    public EventStreamParserImpl startResponse()
     {
         events.add( new ResponseEvent( true ) );
         return this;
     }
 
     @Override
-    public EventStreamParser startStruct()
+    public EventStreamParserImpl startStruct()
     {
         events.add( new StructEvent( EventType.START_STRUCT ) );
         return this;
     }
 
     @Override
-    public EventStreamParser structMember( final String key, final Object value, final ValueType type )
+    public EventStreamParserImpl structMember( final String key, final Object value, final ValueType type )
     {
         events.add( new StructEvent( key, value, type ) );
         return this;
     }
 
     @Override
-    public EventStreamParser endArrayElement()
+    public EventStreamParserImpl endArrayElement()
         throws XmlRpcException
     {
         events.add( new ArrayEvent( EventType.END_ARRAY_ELEMENT ) );
@@ -157,7 +158,7 @@ public class EventStreamParser
     }
 
     @Override
-    public EventStreamParser endStructMember()
+    public EventStreamParserImpl endStructMember()
         throws XmlRpcException
     {
         events.add( new StructEvent( EventType.END_STRUCT_MEMBER ) );
@@ -165,7 +166,7 @@ public class EventStreamParser
     }
 
     @Override
-    public EventStreamParser startArrayElement( final int index )
+    public EventStreamParserImpl startArrayElement( final int index )
         throws XmlRpcException
     {
         events.add( new ArrayEvent( index ) );
@@ -173,7 +174,7 @@ public class EventStreamParser
     }
 
     @Override
-    public EventStreamParser startStructMember( final String key )
+    public EventStreamParserImpl startStructMember( final String key )
         throws XmlRpcException
     {
         events.add( new StructEvent( key ) );
@@ -181,7 +182,7 @@ public class EventStreamParser
     }
 
     @Override
-    public EventStreamParser value( final Object value, final ValueType type )
+    public EventStreamParserImpl value( final Object value, final ValueType type )
         throws XmlRpcException
     {
         events.add( new ValueEvent( value, type ) );

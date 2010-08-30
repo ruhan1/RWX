@@ -17,7 +17,7 @@
 
 package org.commonjava.rwx.http.httpclient4;
 
-import static org.commonjava.rwx.binding.anno.AnnotationUtils.getRequestMethod;
+import static org.commonjava.rwx.estream.EStreamUtils.getRequestMethod;
 import static org.commonjava.rwx.util.LogUtil.trace;
 
 import org.apache.http.client.ClientProtocolException;
@@ -26,49 +26,57 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.log4j.Logger;
-import org.commonjava.rwx.binding.VoidResponse;
-import org.commonjava.rwx.binding.spi.Bindery;
 import org.commonjava.rwx.error.XmlRpcException;
-import org.commonjava.rwx.http.SyncXmlRpcClient;
+import org.commonjava.rwx.estream.EventStreamGenerator;
+import org.commonjava.rwx.estream.model.Event;
+import org.commonjava.rwx.http.SyncEStreamClient;
 import org.commonjava.rwx.http.error.XmlRpcTransportException;
+import org.commonjava.rwx.impl.estream.EventStreamGeneratorImpl;
+import org.commonjava.rwx.impl.jdom.JDomRenderer;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.util.List;
 
-public class HC4SyncClient
-    implements SyncXmlRpcClient
+public class HC4SyncEStreamClient
+    implements SyncEStreamClient
 {
 
-    private static final Logger LOGGER = Logger.getLogger( HC4SyncClient.class );
+    private static final Logger LOGGER = Logger.getLogger( HC4SyncEStreamClient.class );
 
     private final HttpClient client;
 
     private final CharSequence url;
 
-    private final Bindery bindery;
-
-    public HC4SyncClient( final CharSequence url, final Bindery bindery )
+    public HC4SyncEStreamClient( final CharSequence url )
     {
         this.url = url;
-        this.bindery = bindery;
         client = new DefaultHttpClient();
     }
 
-    public HC4SyncClient( final HttpClient client, final CharSequence url, final Bindery bindery )
+    public HC4SyncEStreamClient( final HttpClient client, final CharSequence url )
     {
         this.client = client;
         this.url = url;
-        this.bindery = bindery;
     }
 
     @Override
-    public <T> T call( final Object request, final Class<T> responseType )
+    public List<Event<?>> call( final List<Event<?>> events, final boolean expectVoidResponse )
         throws XmlRpcException
     {
-        final String methodName = getRequestMethod( request );
+        return call( new EventStreamGeneratorImpl( events ), expectVoidResponse );
+    }
+
+    @Override
+    public List<Event<?>> call( final EventStreamGenerator requestGenerator, final boolean expectVoidResponse )
+        throws XmlRpcException
+    {
+        final List<Event<?>> events = requestGenerator.getEvents();
+
+        final String methodName = getRequestMethod( events );
         if ( methodName == null )
         {
-            throw new XmlRpcTransportException( "Request value is not annotated with @Request.", request );
+            throw new XmlRpcTransportException( "Request value is not annotated with @Request.", events );
         }
 
         final HttpPost method = new HttpPost( url.toString() );
@@ -76,22 +84,24 @@ public class HC4SyncClient
         try
         {
             // TODO: Can't we get around pre-rendering to string?? Maybe not, if we want content-length to be right...
-            final String content = bindery.renderString( request );
+            final JDomRenderer renderer = new JDomRenderer();
+            requestGenerator.generate( renderer );
+
+            final String content = renderer.documentToString();
             trace( LOGGER, "Sending request:\n\n" + content + "\n\n" );
 
             method.setEntity( new StringEntity( content ) );
         }
         catch ( final UnsupportedEncodingException e )
         {
-            throw new XmlRpcTransportException( "Call failed: " + methodName, request, e );
+            throw new XmlRpcTransportException( "Call failed: " + methodName, events, e );
         }
 
         try
         {
-            if ( Void.class.equals( responseType ) )
+            if ( expectVoidResponse )
             {
-                final XmlRpcResponseHandler<VoidResponse> handler =
-                    new XmlRpcResponseHandler<VoidResponse>( bindery, VoidResponse.class );
+                final EStreamResponseHandler handler = new EStreamResponseHandler();
                 client.execute( method, handler );
 
                 handler.throwExceptions();
@@ -99,21 +109,20 @@ public class HC4SyncClient
             }
             else
             {
-                final XmlRpcResponseHandler<T> handler = new XmlRpcResponseHandler<T>( bindery, responseType );
-                final T response = client.execute( method, handler );
+                final EStreamResponseHandler handler = new EStreamResponseHandler();
+                final List<Event<?>> responseEvents = client.execute( method, handler );
 
                 handler.throwExceptions();
-                return response;
-
+                return responseEvents;
             }
         }
         catch ( final ClientProtocolException e )
         {
-            throw new XmlRpcTransportException( "Call failed: " + methodName, request, e );
+            throw new XmlRpcTransportException( "Call failed: " + methodName, events, e );
         }
         catch ( final IOException e )
         {
-            throw new XmlRpcTransportException( "Call failed: " + methodName, request, e );
+            throw new XmlRpcTransportException( "Call failed: " + methodName, events, e );
         }
     }
 

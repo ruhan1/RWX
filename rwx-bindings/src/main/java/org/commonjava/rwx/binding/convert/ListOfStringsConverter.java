@@ -21,7 +21,6 @@ import org.commonjava.rwx.binding.mapping.Mapping;
 import org.commonjava.rwx.binding.spi.Binder;
 import org.commonjava.rwx.binding.spi.BindingContext;
 import org.commonjava.rwx.binding.spi.value.AbstractValueBinder;
-import org.commonjava.rwx.binding.spi.value.ValueUnbinder;
 import org.commonjava.rwx.error.XmlRpcException;
 import org.commonjava.rwx.spi.XmlRpcListener;
 import org.commonjava.rwx.vocab.ValueType;
@@ -32,7 +31,6 @@ import java.util.Map;
 
 public class ListOfStringsConverter
     extends AbstractValueBinder
-    implements ValueUnbinder
 {
 
     private final List<String> result = new ArrayList<String>();

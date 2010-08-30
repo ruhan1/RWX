@@ -24,16 +24,16 @@ import static org.commonjava.rwx.binding.anno.AnnotationUtils.isRequest;
 import static org.commonjava.rwx.binding.anno.AnnotationUtils.isResponse;
 
 import org.commonjava.rwx.binding.anno.ArrayPart;
+import org.commonjava.rwx.binding.anno.Converter;
 import org.commonjava.rwx.binding.anno.Contains;
 import org.commonjava.rwx.binding.anno.StructPart;
-import org.commonjava.rwx.binding.anno.UnbindVia;
 import org.commonjava.rwx.binding.error.BindException;
 import org.commonjava.rwx.binding.internal.xbr.XBRBinderInstantiator;
 import org.commonjava.rwx.binding.mapping.ArrayMapping;
 import org.commonjava.rwx.binding.mapping.FieldBinding;
 import org.commonjava.rwx.binding.mapping.Mapping;
 import org.commonjava.rwx.binding.mapping.StructMapping;
-import org.commonjava.rwx.binding.spi.value.ValueUnbinder;
+import org.commonjava.rwx.binding.spi.value.ValueBinder;
 import org.commonjava.rwx.error.XmlRpcException;
 import org.commonjava.rwx.error.XmlRpcFaultException;
 import org.commonjava.rwx.spi.XmlRpcGenerator;
@@ -42,6 +42,7 @@ import org.commonjava.rwx.vocab.ValueType;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -294,10 +295,10 @@ public class ReflectionUnbinder
             Object value = field.get( parent );
             final ValueType type = typeOf( value, binding );
 
-            final UnbindVia converter = field.getAnnotation( UnbindVia.class );
+            final Converter converter = field.getAnnotation( Converter.class );
             if ( converter != null )
             {
-                final ValueUnbinder vc = XBRBinderInstantiator.newValueUnbinder( converter, null, null, null );
+                final ValueBinder vc = XBRBinderInstantiator.newValueUnbinder( converter );
                 vc.generate( listener, value, recipesByClass );
             }
             else if ( recipesByClass.containsKey( binding.getFieldType() ) )
@@ -325,7 +326,8 @@ public class ReflectionUnbinder
                 {
                     fireMapEvents( value, binding.getFieldName(), contains, listener );
                 }
-                else if ( Collection.class.isAssignableFrom( binding.getFieldType() ) )
+                else if ( binding.getFieldType().isArray()
+                    || Collection.class.isAssignableFrom( binding.getFieldType() ) )
                 {
                     fireCollectionEvents( value, binding.getFieldName(), contains, listener );
                 }
@@ -429,8 +431,18 @@ public class ReflectionUnbinder
 
         listener.startArray();
 
+        Collection<Object> vals;
+        if ( values != null && values.getClass().isArray() )
+        {
+            vals = Arrays.asList( (Object[]) values );
+        }
+        else
+        {
+            vals = (Collection<Object>) values;
+        }
+
         int i = 0;
-        for ( Object entry : (Collection<Object>) values )
+        for ( Object entry : vals )
         {
             final Class<?> type = entry.getClass();
 

@@ -23,7 +23,7 @@ import static org.commonjava.rwx.binding.mapping.MappingUtils.toIntegerArray;
 
 import org.commonjava.rwx.binding.VoidResponse;
 import org.commonjava.rwx.binding.anno.ArrayPart;
-import org.commonjava.rwx.binding.anno.BindVia;
+import org.commonjava.rwx.binding.anno.Converter;
 import org.commonjava.rwx.binding.anno.Contains;
 import org.commonjava.rwx.binding.anno.DataIndex;
 import org.commonjava.rwx.binding.anno.DataKey;
@@ -34,7 +34,6 @@ import org.commonjava.rwx.binding.anno.KeyRefs;
 import org.commonjava.rwx.binding.anno.Request;
 import org.commonjava.rwx.binding.anno.Response;
 import org.commonjava.rwx.binding.anno.StructPart;
-import org.commonjava.rwx.binding.anno.UnbindVia;
 import org.commonjava.rwx.binding.error.BindException;
 import org.commonjava.rwx.binding.mapping.ArrayMapping;
 import org.commonjava.rwx.binding.mapping.FieldBinding;
@@ -207,16 +206,10 @@ public class ReflectionMapper
 
         final FieldBinding binding = new FieldBinding( name, type );
 
-        final BindVia bindVia = field.getAnnotation( BindVia.class );
+        final Converter bindVia = field.getAnnotation( Converter.class );
         if ( bindVia != null )
         {
             binding.withValueBinderType( bindVia.value() );
-        }
-
-        final UnbindVia unbindVia = field.getAnnotation( UnbindVia.class );
-        if ( unbindVia != null )
-        {
-            binding.withValueUnbinderType( unbindVia.value() );
         }
 
         final Contains contains = field.getAnnotation( Contains.class );
@@ -264,14 +257,8 @@ public class ReflectionMapper
 
         final FieldBinding binding = new FieldBinding( name, type );
 
-        final BindVia bindVia = field.getAnnotation( BindVia.class );
+        final Converter bindVia = field.getAnnotation( Converter.class );
         if ( bindVia != null )
-        {
-            binding.withValueBinderType( bindVia.value() );
-        }
-
-        final UnbindVia unbindVia = field.getAnnotation( UnbindVia.class );
-        if ( unbindVia != null )
         {
             binding.withValueBinderType( bindVia.value() );
         }
