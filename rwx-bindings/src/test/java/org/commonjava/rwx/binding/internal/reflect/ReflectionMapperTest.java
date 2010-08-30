@@ -23,7 +23,6 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
-import org.commonjava.rwx.binding.convert.ListOfStringsConverter;
 import org.commonjava.rwx.binding.error.BindException;
 import org.commonjava.rwx.binding.mapping.ArrayMapping;
 import org.commonjava.rwx.binding.mapping.FieldBinding;
@@ -55,6 +54,7 @@ import org.commonjava.rwx.binding.testutil.SimplePersonRequest;
 import org.commonjava.rwx.binding.testutil.SimplePersonResponse;
 import org.commonjava.rwx.binding.testutil.StructAddressWithIgnored;
 import org.commonjava.rwx.binding.testutil.StructAddressWithTransient;
+import org.commonjava.rwx.binding.testutil.TestDateConverter;
 import org.commonjava.rwx.binding.testutil.TransientDataIndexRequest;
 import org.junit.Test;
 
@@ -97,8 +97,8 @@ public class ReflectionMapperTest
         final ArrayMapping ar = (ArrayMapping) recipe;
         assertEquals( 1, ar.getFieldBindings().size() );
 
-        assertEquals( "userIds", ar.getFieldBinding( 0 ).getFieldName() );
-        assertEquals( ListOfStringsConverter.class, ar.getFieldBinding( 0 ).getValueBinderType() );
+        assertEquals( "date", ar.getFieldBinding( 0 ).getFieldName() );
+        assertEquals( TestDateConverter.class, ar.getFieldBinding( 0 ).getValueBinderType() );
     }
 
     @Test

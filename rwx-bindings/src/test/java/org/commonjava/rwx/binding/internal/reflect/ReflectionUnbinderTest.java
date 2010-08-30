@@ -39,6 +39,7 @@ import org.commonjava.rwx.impl.estream.testutil.RecordedEvent;
 import org.commonjava.rwx.impl.estream.testutil.RecordingListener;
 import org.junit.Test;
 
+import java.text.ParseException;
 import java.util.HashMap;
 import java.util.List;
 
@@ -79,7 +80,7 @@ public class ReflectionUnbinderTest
 
     @Test
     public void simpleConverterRequest()
-        throws XmlRpcException
+        throws XmlRpcException, ParseException
     {
         assertUnbind( new SimpleConverterRequest() );
     }

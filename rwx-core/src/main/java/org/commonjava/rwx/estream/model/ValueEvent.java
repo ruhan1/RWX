@@ -77,7 +77,8 @@ public class ValueEvent
     @Override
     public String toString()
     {
-        return "ValueEvent [type=" + type + ", value=" + value + "]";
+        return "ValueEvent [type=" + type + ", value=" + value + " (type: "
+            + ( value == null ? "null" : value.getClass().getName() ) + ")]";
     }
 
     @Override

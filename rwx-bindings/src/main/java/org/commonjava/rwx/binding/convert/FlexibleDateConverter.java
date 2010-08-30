@@ -18,9 +18,9 @@
 package org.commonjava.rwx.binding.convert;
 
 import org.commonjava.rwx.binding.error.BindException;
-import org.commonjava.rwx.binding.internal.xbr.XBRBindingContext;
 import org.commonjava.rwx.binding.mapping.Mapping;
 import org.commonjava.rwx.binding.spi.Binder;
+import org.commonjava.rwx.binding.spi.BindingContext;
 import org.commonjava.rwx.binding.spi.value.AbstractSimpleValueBinder;
 import org.commonjava.rwx.error.XmlRpcException;
 import org.commonjava.rwx.spi.XmlRpcListener;
@@ -37,10 +37,10 @@ public class FlexibleDateConverter
 
     private static final String STANDARD_FORMAT = "yyyyMMdd'T'HHmmss";
 
-    private static final String[] FORMATS = { STANDARD_FORMAT, "EEE MMM d HH:mm:ss z yyyy",
+    private static final String[] FORMATS = { STANDARD_FORMAT, "yyyy-MM-dd HH:mm:ssZ", "EEE MMM d HH:mm:ss z yyyy",
         "EEE, d MMM yyyy HH:mm:ss Z", "yyyy-MM-dd HH:mm:ss.S", };
 
-    public FlexibleDateConverter( final Binder parent, final Class<?> type, final XBRBindingContext context )
+    public FlexibleDateConverter( final Binder parent, final Class<?> type, final BindingContext context )
     {
         super( parent, type, context );
     }

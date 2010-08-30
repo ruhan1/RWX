@@ -55,7 +55,7 @@ public final class XBRBinderInstantiator
         }
         catch ( final ConstructionException e )
         {
-            throw new BindException( "Cannot create ValueBinder from @BindVia( " + bindVia.value().getName() + "): "
+            throw new BindException( "Cannot create ValueBinder from @Converter( " + bindVia.value().getName() + "): "
                 + e.getMessage(), e );
         }
     }
@@ -78,6 +78,7 @@ public final class XBRBinderInstantiator
 
     private static ObjectRecipe buildRecipe( final Class<?> binderType, final Binder parent, final Class<?> boundType,
                                              final BindingContext context )
+        throws BindException
     {
         final ObjectRecipe viaRecipe = new ObjectRecipe( binderType );
 
@@ -91,9 +92,8 @@ public final class XBRBinderInstantiator
         }
         catch ( final NoSuchMethodException e )
         {
-            // default to an empty constructor...
-            viaRecipe.setConstructorArgNames( new String[0] );
-            viaRecipe.setConstructorArgTypes( new Class<?>[0] );
+            throw new BindException( "Cannot create ValueBinder from @BindVia( " + binderType.getName() + "): "
+                + e.getMessage(), e );
         }
 
         viaRecipe.allow( Option.IGNORE_MISSING_PROPERTIES );

@@ -17,25 +17,23 @@
 
 package org.commonjava.rwx.binding.testutil;
 
-import static org.commonjava.rwx.binding.testutil.recipe.RecipeEventUtils.endParameter;
+import static org.commonjava.rwx.binding.testutil.recipe.RecipeEventUtils.endParameterWithConversion;
 
 import org.commonjava.rwx.binding.anno.Converter;
 import org.commonjava.rwx.binding.anno.DataIndex;
 import org.commonjava.rwx.binding.anno.Request;
-import org.commonjava.rwx.binding.convert.ListOfStringsConverter;
 import org.commonjava.rwx.binding.mapping.ArrayMapping;
 import org.commonjava.rwx.binding.mapping.FieldBinding;
 import org.commonjava.rwx.binding.mapping.Mapping;
-import org.commonjava.rwx.estream.model.ArrayEvent;
 import org.commonjava.rwx.estream.model.Event;
 import org.commonjava.rwx.estream.model.ParameterEvent;
 import org.commonjava.rwx.estream.model.RequestEvent;
-import org.commonjava.rwx.estream.model.ValueEvent;
 import org.commonjava.rwx.impl.estream.testutil.ExtList;
-import org.commonjava.rwx.vocab.EventType;
 import org.commonjava.rwx.vocab.ValueType;
 
-import java.util.Arrays;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -46,17 +44,23 @@ public class SimpleConverterRequest
 {
 
     @DataIndex( 0 )
-    @Converter( ListOfStringsConverter.class )
-    private List<String> userIds = Arrays.asList( new String[] { "foo", "bar" } );
+    @Converter( TestDateConverter.class )
+    private Date date;
 
-    public List<String> getUserIds()
+    public SimpleConverterRequest()
+        throws ParseException
     {
-        return userIds;
+        date = new SimpleDateFormat( "yyyy-MM-dd HH:mm:ss" ).parse( "2010-08-30 12:01:32" );
     }
 
-    public void setUserIds( final List<String> userIds )
+    public void setDate( final Date date )
     {
-        this.userIds = userIds;
+        this.date = date;
+    }
+
+    public Date getDate()
+    {
+        return date;
     }
 
     public Map<Class<?>, Mapping<?>> recipes()
@@ -66,7 +70,7 @@ public class SimpleConverterRequest
         final ArrayMapping recipe = new ArrayMapping( SimpleConverterRequest.class, new Integer[0] );
 
         final FieldBinding binding =
-            new FieldBinding( "userIds", List.class ).withValueBinderType( ListOfStringsConverter.class );
+            new FieldBinding( "date", Date.class ).withValueBinderType( TestDateConverter.class );
 
         recipe.addFieldBinding( 0, binding );
         recipes.put( SimpleConverterRequest.class, recipe );
@@ -81,18 +85,9 @@ public class SimpleConverterRequest
         check.withAll( new RequestEvent( true ), new RequestEvent( "getPerson" ) );
 
         check.with( new ParameterEvent( 0 ) );
-        check.with( new ArrayEvent( EventType.START_ARRAY ) );
 
-        for ( int i = 0; i < userIds.size(); i++ )
-        {
-            check.with( new ArrayEvent( i ) );
-            check.with( new ValueEvent( userIds.get( i ), ValueType.STRING ) );
-            check.with( new ArrayEvent( i, userIds.get( i ), ValueType.STRING ) );
-            check.with( new ArrayEvent( EventType.END_ARRAY_ELEMENT ) );
-        }
-
-        check.with( new ArrayEvent( EventType.END_ARRAY ) );
-        check.withAll( endParameter( 0, userIds, ValueType.ARRAY ) );
+        final String dateStr = "2010-08-30 12:01:32";
+        check.withAll( endParameterWithConversion( 0, dateStr, ValueType.DATETIME, date, ValueType.DATETIME ) );
         check.with( new RequestEvent( false ) );
 
         return check;
@@ -103,7 +98,7 @@ public class SimpleConverterRequest
     {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ( ( userIds == null ) ? 0 : userIds.hashCode() );
+        result = prime * result + ( ( date == null ) ? 0 : date.hashCode() );
         return result;
     }
 
@@ -123,18 +118,24 @@ public class SimpleConverterRequest
             return false;
         }
         final SimpleConverterRequest other = (SimpleConverterRequest) obj;
-        if ( userIds == null )
+        if ( date == null )
         {
-            if ( other.userIds != null )
+            if ( other.date != null )
             {
                 return false;
             }
         }
-        else if ( !userIds.equals( other.userIds ) )
+        else if ( !date.equals( other.date ) )
         {
             return false;
         }
         return true;
+    }
+
+    @Override
+    public String toString()
+    {
+        return "SimpleConverterRequest [date=" + date + "]";
     }
 
 }

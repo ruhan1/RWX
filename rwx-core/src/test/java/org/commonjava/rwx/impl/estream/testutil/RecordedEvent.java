@@ -62,8 +62,8 @@ public final class RecordedEvent
     @Override
     public String toString()
     {
-        return "RecordedEvent [eventType=" + eventType + ", key=" + key + ", value=" + value + ", valueType="
-            + valueType + "]";
+        return "RecordedEvent [eventType=" + eventType + ", key=" + key + ", value=" + value + "(type: "
+            + ( value == null ? "null" : value.getClass().getName() ) + "), valueType=" + valueType + "]";
     }
 
     @Override

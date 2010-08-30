@@ -39,6 +39,8 @@ import org.commonjava.rwx.impl.estream.EventStreamGeneratorImpl;
 import org.commonjava.rwx.impl.estream.testutil.ExtList;
 import org.junit.Test;
 
+import java.text.ParseException;
+
 public class XBeanRenderingBinderyTest
 {
 
@@ -51,7 +53,7 @@ public class XBeanRenderingBinderyTest
 
     @Test
     public void simpleConverterRequest()
-        throws XmlRpcException
+        throws XmlRpcException, ParseException
     {
         assertBindings( new SimpleConverterRequest() );
     }

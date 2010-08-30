@@ -27,7 +27,6 @@ import org.commonjava.rwx.impl.estream.testutil.ExtMap;
 import org.commonjava.rwx.vocab.EventType;
 import org.commonjava.rwx.vocab.ValueType;
 
-
 import java.util.Collection;
 import java.util.Map;
 
@@ -45,6 +44,15 @@ public final class RecipeEventUtils
         result.withAll( endParameter( key, value, type ) );
 
         return result;
+    }
+
+    public static Collection<Event<?>> endParameterWithConversion( final int key, final Object value,
+                                                                   final ValueType type, final Object convertedValue,
+                                                                   final ValueType convertedValueType )
+    {
+        return new ExtList<Event<?>>( new ValueEvent( value, type ), new ParameterEvent( key, convertedValue,
+                                                                                         convertedValueType ),
+                                      new ParameterEvent() );
     }
 
     public static Collection<Event<?>> endParameter( final int key, final Object value, final ValueType type )
