@@ -93,12 +93,14 @@ public class ValueHelper
                     trace( LOGGER, "Handing off to StructHelper at: $1", reader.getLocation() );
                     value = StructHelper.parse( reader, listener, enableEvents );
                     type = ValueType.STRUCT;
+                    valueSet = true;
                 }
                 else if ( XmlRpcConstants.ARRAY.equals( tag ) )
                 {
                     trace( LOGGER, "Handing off to ArrayHelper at: $1", reader.getLocation() );
                     value = ArrayHelper.parse( reader, listener, enableEvents );
                     type = ValueType.ARRAY;
+                    valueSet = true;
                 }
                 else
                 {
