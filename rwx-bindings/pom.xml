@@ -20,7 +20,7 @@
   <parent>
     <artifactId>rwx-parent</artifactId>
     <groupId>org.commonjava.rwx</groupId>
-    <version>0.3-SNAPSHOT</version>
+    <version>0.2-SNAPSHOT</version>
   </parent>
   
   <artifactId>rwx-bindings</artifactId>
