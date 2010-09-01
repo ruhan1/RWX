@@ -43,13 +43,13 @@ public class HC4SyncObjectClient
 
     private final HttpClient client;
 
-    private final CharSequence url;
+    private final String url;
 
     private final Bindery bindery;
 
     public HC4SyncObjectClient( final CharSequence url, final Bindery bindery )
     {
-        this.url = url;
+        this.url = url.toString();
         this.bindery = bindery;
         client = new DefaultHttpClient();
     }
@@ -57,7 +57,7 @@ public class HC4SyncObjectClient
     public HC4SyncObjectClient( final HttpClient client, final CharSequence url, final Bindery bindery )
     {
         this.client = client;
-        this.url = url;
+        this.url = url.toString();
         this.bindery = bindery;
     }
 

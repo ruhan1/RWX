@@ -102,7 +102,22 @@ public enum ValueType
         public String toString( final Object value )
             throws CoercionException
         {
-            return value == null ? null : Boolean.valueOf( super.toString( value ) ) ? "1" : "0";
+            if ( value == null )
+            {
+                return null;
+            }
+            else
+            {
+                final String s = super.toString( value );
+                if ( "1".equals( s ) || "0".equals( s ) )
+                {
+                    return s;
+                }
+                else
+                {
+                    return Boolean.valueOf( s ) ? "1" : "0";
+                }
+            }
         }
 
         @Override

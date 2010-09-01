@@ -46,18 +46,18 @@ public class HC4SyncEStreamClient
 
     private final HttpClient client;
 
-    private final CharSequence url;
+    private final String url;
 
     public HC4SyncEStreamClient( final CharSequence url )
     {
-        this.url = url;
+        this.url = url.toString();
         client = new DefaultHttpClient();
     }
 
     public HC4SyncEStreamClient( final HttpClient client, final CharSequence url )
     {
         this.client = client;
-        this.url = url;
+        this.url = url.toString();
     }
 
     @Override
