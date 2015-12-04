@@ -25,7 +25,9 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.commonjava.rwx.binding.VoidResponse;
 import org.commonjava.rwx.binding.spi.Bindery;
 import org.commonjava.rwx.error.XmlRpcException;
+import org.commonjava.rwx.http.RequestModifier;
 import org.commonjava.rwx.http.SyncObjectClient;
+import org.commonjava.rwx.http.UrlBuilder;
 import org.commonjava.rwx.http.error.XmlRpcTransportException;
 import org.commonjava.util.jhttpc.HttpFactory;
 import org.commonjava.util.jhttpc.JHttpCException;
@@ -42,7 +44,7 @@ import java.util.Arrays;
 import static org.commonjava.rwx.binding.anno.AnnotationUtils.getRequestMethod;
 
 public class HC4SyncObjectClient
-    implements SyncObjectClient
+        implements SyncObjectClient
 {
 
     private final Bindery bindery;
@@ -53,7 +55,8 @@ public class HC4SyncObjectClient
 
     private final String[] extraPath;
 
-    public HC4SyncObjectClient( final HttpFactory httpFactory, final Bindery bindery, final SiteConfig siteConfig, String...extraPath )
+    public HC4SyncObjectClient( final HttpFactory httpFactory, final Bindery bindery, final SiteConfig siteConfig,
+                                String... extraPath )
     {
         this.httpFactory = httpFactory;
         this.siteConfig = siteConfig;
@@ -63,7 +66,15 @@ public class HC4SyncObjectClient
 
     @Override
     public <T> T call( final Object request, final Class<T> responseType )
-        throws XmlRpcException
+            throws XmlRpcException
+    {
+        return call( request, responseType, null, null );
+    }
+
+    @Override
+    public <T> T call( final Object request, final Class<T> responseType, final UrlBuilder urlBuilder,
+                       final RequestModifier requestModifier )
+            throws XmlRpcException
     {
         final String methodName = getRequestMethod( request );
         if ( methodName == null )
@@ -74,8 +85,19 @@ public class HC4SyncObjectClient
         final HttpPost method;
         try
         {
-            method = new HttpPost( UrlUtils.buildUrl( siteConfig.getUri(), extraPath ) );
+            String url = UrlUtils.buildUrl( siteConfig.getUri(), extraPath );
+            if ( urlBuilder != null )
+            {
+                url = urlBuilder.buildUrl( url );
+            }
+
+            method = new HttpPost( url );
             method.setHeader( "Content-Type", "text/xml" );
+
+            if ( requestModifier != null )
+            {
+                requestModifier.modifyRequest( method );
+            }
 
             // TODO: Can't we get around pre-rendering to string?? Maybe not, if we want content-length to be right...
             final String content = bindery.renderString( request );

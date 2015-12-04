@@ -28,4 +28,7 @@ public interface SyncObjectClient
     <T> T call( Object request, Class<T> responseType )
             throws XmlRpcException;
 
+    <T> T call( Object request, Class<T> responseType, UrlBuilder urlBuilder, RequestModifier requestModifier )
+            throws XmlRpcException;
+
 }

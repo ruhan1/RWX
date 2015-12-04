@@ -26,4 +26,6 @@ public interface EventStreamParser
 
     List<Event<?>> getEvents();
 
+    void clearEvents();
+
 }
