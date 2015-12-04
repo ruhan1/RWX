@@ -27,7 +27,7 @@ import org.jdom.output.XMLOutputter;
 
 import java.util.Map;
 
-public final class XBRCompositionBindery
+public class XBRCompositionBindery
     extends CompositionBindery
 {
 
