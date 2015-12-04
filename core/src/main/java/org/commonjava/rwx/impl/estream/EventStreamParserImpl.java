@@ -43,6 +43,12 @@ public class EventStreamParserImpl
     }
 
     @Override
+    public void clearEvents()
+    {
+        events.clear();
+    }
+
+    @Override
     public EventStreamParserImpl arrayElement( final int index, final Object value, final ValueType type )
     {
         events.add( new ArrayEvent( index, value, type ) );

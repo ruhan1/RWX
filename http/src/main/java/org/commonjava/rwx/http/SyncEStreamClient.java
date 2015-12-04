@@ -30,6 +30,12 @@ public interface SyncEStreamClient
     List<Event<?>> call( List<Event<?>> requestEvents, boolean expectVoidResponse )
         throws XmlRpcException;
 
+    List<Event<?>> call( List<Event<?>> requestEvents, boolean expectVoidResponse, UrlBuilder urlBuilder, RequestModifier requestModifier )
+            throws XmlRpcException;
+
     List<Event<?>> call( EventStreamGenerator requestGenerator, boolean expectVoidResponse )
         throws XmlRpcException;
+
+    List<Event<?>> call( EventStreamGenerator requestGenerator, boolean expectVoidResponse, UrlBuilder urlBuilder, RequestModifier requestModifier )
+            throws XmlRpcException;
 }

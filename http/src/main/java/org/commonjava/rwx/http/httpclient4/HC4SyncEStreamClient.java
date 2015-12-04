@@ -25,7 +25,9 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.commonjava.rwx.error.XmlRpcException;
 import org.commonjava.rwx.estream.EventStreamGenerator;
 import org.commonjava.rwx.estream.model.Event;
+import org.commonjava.rwx.http.RequestModifier;
 import org.commonjava.rwx.http.SyncEStreamClient;
+import org.commonjava.rwx.http.UrlBuilder;
 import org.commonjava.rwx.http.error.XmlRpcTransportException;
 import org.commonjava.rwx.impl.estream.EventStreamGeneratorImpl;
 import org.commonjava.rwx.impl.jdom.JDomRenderer;
@@ -45,7 +47,7 @@ import java.util.List;
 import static org.commonjava.rwx.estream.EStreamUtils.getRequestMethod;
 
 public class HC4SyncEStreamClient
-    implements SyncEStreamClient
+        implements SyncEStreamClient
 {
 
     private HttpFactory httpFactory;
@@ -54,7 +56,7 @@ public class HC4SyncEStreamClient
 
     private String[] extraPath;
 
-    public HC4SyncEStreamClient( final HttpFactory httpFactory, final SiteConfig siteConfig, String...extraPath )
+    public HC4SyncEStreamClient( final HttpFactory httpFactory, final SiteConfig siteConfig, String... extraPath )
     {
         this.httpFactory = httpFactory;
         this.siteConfig = siteConfig;
@@ -63,14 +65,30 @@ public class HC4SyncEStreamClient
 
     @Override
     public List<Event<?>> call( final List<Event<?>> events, final boolean expectVoidResponse )
-        throws XmlRpcException
+            throws XmlRpcException
     {
-        return call( new EventStreamGeneratorImpl( events ), expectVoidResponse );
+        return call( events, expectVoidResponse, null, null );
+    }
+
+    @Override
+    public List<Event<?>> call( final List<Event<?>> events, final boolean expectVoidResponse, UrlBuilder urlBuilder,
+                                RequestModifier requestModifier )
+            throws XmlRpcException
+    {
+        return call( new EventStreamGeneratorImpl( events ), expectVoidResponse, urlBuilder, requestModifier );
     }
 
     @Override
     public List<Event<?>> call( final EventStreamGenerator requestGenerator, final boolean expectVoidResponse )
-        throws XmlRpcException
+            throws XmlRpcException
+    {
+        return call( requestGenerator, expectVoidResponse, null, null );
+    }
+
+    @Override
+    public List<Event<?>> call( final EventStreamGenerator requestGenerator, final boolean expectVoidResponse,
+                                UrlBuilder urlBuilder, RequestModifier requestModifier )
+            throws XmlRpcException
     {
         final List<Event<?>> events = requestGenerator.getEvents();
 
@@ -84,8 +102,19 @@ public class HC4SyncEStreamClient
         final HttpPost method;
         try
         {
-            method = new HttpPost( UrlUtils.buildUrl( siteConfig.getUri(), extraPath ) );
+            String url = UrlUtils.buildUrl( siteConfig.getUri(), extraPath );
+            if ( urlBuilder != null )
+            {
+                url = urlBuilder.buildUrl( url );
+            }
+
+            method = new HttpPost( url );
             method.setHeader( "Content-Type", "text/xml" );
+
+            if ( requestModifier != null )
+            {
+                requestModifier.modifyRequest( method );
+            }
 
             // TODO: Can't we get around pre-rendering to string?? Maybe not, if we want content-length to be right...
             final JDomRenderer renderer = new JDomRenderer();
