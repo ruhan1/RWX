@@ -34,6 +34,7 @@ import org.commonjava.rwx.binding.mapping.FieldBinding;
 import org.commonjava.rwx.binding.mapping.Mapping;
 import org.commonjava.rwx.binding.mapping.StructMapping;
 import org.commonjava.rwx.binding.spi.value.ValueBinder;
+import org.commonjava.rwx.error.CoercionException;
 import org.commonjava.rwx.error.XmlRpcException;
 import org.commonjava.rwx.error.XmlRpcFaultException;
 import org.commonjava.rwx.spi.XmlRpcGenerator;
@@ -151,7 +152,7 @@ public class ReflectionUnbinder
 
         if ( recipe == null )
         {
-            throw new BindException( "Cannot find recipe for array value: " + type );
+            throw new BindException( "Cannot find recipe for array value: " + type.getName() );
         }
 
         final Map<Integer, FieldBinding> bindings = new TreeMap<Integer, FieldBinding>( recipe.getFieldBindings() );
@@ -189,7 +190,7 @@ public class ReflectionUnbinder
 
         if ( recipe == null )
         {
-            throw new BindException( "Cannot find recipe for array value: " + type );
+            throw new BindException( "Cannot find recipe for array value: " + type.getName() );
         }
 
         listener.startStruct();
@@ -265,7 +266,7 @@ public class ReflectionUnbinder
                 else
                 {
                     throw new BindException( "Unknown recipe reference type: " + binding.getFieldType() + "\nField: "
-                        + binding.getFieldName() );
+                        + binding.getFieldName() + "\nClass: " + cls.getName() );
                 }
             }
             else
@@ -450,6 +451,11 @@ public class ReflectionUnbinder
             {
                 final FieldBinding binding = new FieldBinding( fieldName + "<Map-Value>", type );
                 vt = typeOf( entry, binding );
+            }
+
+            if ( vt == null )
+            {
+                throw new CoercionException( "Cannot find suitable coercion for type: " + (contains == null ? "Un-annotated collection" : contains.value()) );
             }
 
             listener.startArrayElement( i );

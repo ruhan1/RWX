@@ -53,14 +53,14 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 public class ReflectionMapper
-    implements Mapper
+        implements Mapper
 {
 
     private static final Map<String, WeakReference<Map<Class<?>, Mapping<?>>>> ROOT_CACHE =
-        new HashMap<String, WeakReference<Map<Class<?>, Mapping<?>>>>();
+            new HashMap<String, WeakReference<Map<Class<?>, Mapping<?>>>>();
 
     public synchronized Map<Class<?>, Mapping<?>> loadRecipes( final Class<?>... roots )
-        throws BindException
+            throws BindException
     {
         final Map<Class<?>, Mapping<?>> mappings = new HashMap<Class<?>, Mapping<?>>();
 
@@ -76,7 +76,7 @@ public class ReflectionMapper
     }
 
     private void processRoot( final Class<?> root, final Map<Class<?>, Mapping<?>> mappings )
-        throws BindException
+            throws BindException
     {
         Map<Class<?>, Mapping<?>> current;
 
@@ -97,7 +97,7 @@ public class ReflectionMapper
             else
             {
                 throw new BindException(
-                                         "Invalid message root. Class must be annotated with either @Request or @Response." );
+                        "Invalid message root: " + root.getName() + " Class must be annotated with either @Request or @Response." );
             }
 
             ROOT_CACHE.put( rootType, new WeakReference<Map<Class<?>, Mapping<?>>>( current ) );
@@ -107,7 +107,7 @@ public class ReflectionMapper
     }
 
     protected ArrayMapping processArrayPart( final Class<?> type, final Map<Class<?>, Mapping<?>> mappings )
-        throws BindException
+            throws BindException
     {
         final String typeName = type.getName();
         int[] ctorIndices = new int[0];
@@ -136,13 +136,13 @@ public class ReflectionMapper
                 {
                     if ( taken.contains( di.value() ) )
                     {
-                        throw new BindException( "More than one field declares data-index: " + di.value() + " in: "
-                            + typeName );
+                        throw new BindException(
+                                "More than one field declares data-index: " + di.value() + ". Type: " + typeName );
                     }
 
                     if ( Modifier.isTransient( field.getModifiers() ) )
                     {
-                        throw new BindException( "Fields annotated with @DataIndex cannot be marked as transient!" );
+                        throw new BindException( "Fields annotated with @DataIndex cannot be marked as transient! Type: " + typeName );
                     }
                     else
                     {
@@ -180,7 +180,7 @@ public class ReflectionMapper
 
     protected void addFieldBinding( final ArrayMapping recipe, final int index, final Field field,
                                     final int[] ctorIndices, final Map<Class<?>, Mapping<?>> mappings )
-        throws BindException
+            throws BindException
     {
         if ( Modifier.isFinal( field.getModifiers() ) )
         {
@@ -197,7 +197,8 @@ public class ReflectionMapper
             if ( !found )
             {
                 throw new BindException(
-                                         "Fields annotated with @DataIndex cannot be marked as final unless they're included in the @IndexRefs constructor annotation!" );
+                        "Fields annotated with @DataIndex cannot be marked as final unless they're included in the @IndexRefs constructor annotation! Type: "
+                                + recipe.getObjectType().getName() );
             }
         }
 
@@ -227,11 +228,13 @@ public class ReflectionMapper
 
     protected void addFieldBinding( final StructMapping recipe, final String key, final Field field,
                                     final String[] ctorKeys, final Map<Class<?>, Mapping<?>> mappings )
-        throws BindException
+            throws BindException
     {
         if ( Modifier.isTransient( field.getModifiers() ) )
         {
-            throw new BindException( "Fields annotated with @DataKey cannot be marked as transient!" );
+            throw new BindException(
+                    "Fields annotated with @DataKey cannot be marked as transient! Type: " + recipe.getObjectType()
+                                                                                                   .getName() );
         }
         else if ( Modifier.isFinal( field.getModifiers() ) )
         {
@@ -248,7 +251,8 @@ public class ReflectionMapper
             if ( !found )
             {
                 throw new BindException(
-                                         "Fields annotated with @DataKey cannot be marked as final unless they're included in the @KeyRefs constructor annotation!" );
+                        "Fields annotated with @DataKey cannot be marked as final unless they're included in the @KeyRefs constructor annotation! Type: "
+                                + recipe.getObjectType().getName() );
             }
         }
 
@@ -278,7 +282,7 @@ public class ReflectionMapper
 
     @SuppressWarnings( "unchecked" )
     protected void processSupplementalMappings( final Class<?> type, final Map<Class<?>, Mapping<?>> mappings )
-        throws BindException
+            throws BindException
     {
         final ImportMappings extraMappings = type.getAnnotation( ImportMappings.class );
         if ( extraMappings != null )
@@ -298,7 +302,7 @@ public class ReflectionMapper
                     }
                     else
                     {
-                        throw new BindException( "Imported class is not a valid message-part: " + cls.getName() );
+                        throw new BindException( "Imported class is not a valid message-part: " + cls.getName() + ". Declared in: " + type.getName() );
                     }
                 }
             }
@@ -306,7 +310,7 @@ public class ReflectionMapper
     }
 
     protected Mapping<?> processBindingTarget( final Class<?> type, final Map<Class<?>, Mapping<?>> mappings )
-        throws BindException
+            throws BindException
     {
         if ( type.getAnnotation( ArrayPart.class ) != null )
         {
@@ -321,7 +325,7 @@ public class ReflectionMapper
     }
 
     protected StructMapping processStructPart( final Class<?> type, final Map<Class<?>, Mapping<?>> mappings )
-        throws BindException
+            throws BindException
     {
         final String typeName = type.getName();
         String[] ctorKeys = new String[0];
@@ -350,8 +354,8 @@ public class ReflectionMapper
                 {
                     if ( takenKeys.contains( dk.value() ) )
                     {
-                        throw new BindException( "More than one field declares data-key: " + dk.value() + " in: "
-                            + typeName );
+                        throw new BindException(
+                                "More than one field declares data-key: " + dk.value() + ". Type: " + typeName );
                     }
 
                     addFieldBinding( mapping, dk.value(), field, ctorKeys, mappings );
@@ -375,7 +379,7 @@ public class ReflectionMapper
             final String name = field.getName();
             if ( takenKeys.contains( name ) )
             {
-                throw new BindException( "More than one field declares data-key: " + name + " in: " + typeName );
+                throw new BindException( "More than one field declares data-key: " + name + ". Type: " + typeName );
             }
 
             if ( !Modifier.isTransient( field.getModifiers() ) )
