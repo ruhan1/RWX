@@ -21,6 +21,8 @@ import org.commonjava.rwx.error.XmlRpcException;
 import org.commonjava.rwx.spi.AbstractXmlRpcListener;
 import org.commonjava.rwx.spi.XmlRpcListener;
 import org.commonjava.rwx.vocab.ValueType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public abstract class AbstractBinder
     extends AbstractXmlRpcListener
@@ -162,6 +164,8 @@ public abstract class AbstractBinder
     public final XmlRpcListener startStructMember( final String key )
         throws XmlRpcException
     {
+        Logger logger = LoggerFactory.getLogger( getClass() );
+        logger.trace( "Start struct member: {}", key );
         return increment( startStructMemberInternal( key ) );
     }
 
@@ -188,6 +192,8 @@ public abstract class AbstractBinder
     public final XmlRpcListener value( final Object v, final ValueType t )
         throws XmlRpcException
     {
+        Logger logger = LoggerFactory.getLogger( getClass() );
+        logger.trace( "Got {} value: {}", t, v );
         if ( count < 1 )
         {
             parent.value( value, valueType );
@@ -195,6 +201,7 @@ public abstract class AbstractBinder
         }
         else
         {
+            logger.trace( "Handing off to internal value call." );
             return valueInternal( v, t );
         }
     }

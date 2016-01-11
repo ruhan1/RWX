@@ -37,6 +37,7 @@ import org.commonjava.rwx.error.XmlRpcException;
 import org.commonjava.rwx.error.XmlRpcFaultException;
 import org.commonjava.rwx.spi.XmlRpcGenerator;
 import org.commonjava.rwx.spi.XmlRpcListener;
+import org.commonjava.rwx.util.ValueCoercion;
 import org.commonjava.rwx.vocab.ValueType;
 
 import java.lang.reflect.Field;
@@ -332,7 +333,12 @@ public class ReflectionUnbinder
                 }
                 else
                 {
-                    value = type.coercion().toString( value );
+                    ValueCoercion coercion = type.coercion();
+                    if ( coercion == null )
+                    {
+                        throw new XmlRpcException( "Cannot render {} (type: {}) to string. It has no corresponding coercion, and isn't an @ArrayPart or a @StructPart!" );
+                    }
+                    value = coercion.toString( value );
                 }
 
                 listener.value( value, type );

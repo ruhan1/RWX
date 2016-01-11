@@ -23,6 +23,8 @@ import org.commonjava.rwx.binding.spi.Binder;
 import org.commonjava.rwx.error.XmlRpcException;
 import org.commonjava.rwx.spi.XmlRpcListener;
 import org.commonjava.rwx.vocab.ValueType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Field;
 
@@ -43,6 +45,8 @@ public class StructMappingBinder
                                 final XBRBindingContext context )
     {
         super( parent, type, mapping, context );
+        Logger logger = LoggerFactory.getLogger( getClass() );
+        logger.trace( "Setting up struct mapping binder for: {}", type.getName() );
         recipe = XBRBindingContext.setupObjectRecipe( mapping );
     }
 
@@ -50,6 +54,10 @@ public class StructMappingBinder
     public XmlRpcListener structMember( final String key, final Object value, final ValueType type )
         throws XmlRpcException
     {
+        Logger logger = LoggerFactory.getLogger( getClass() );
+        logger.trace( "Struct key: {} of type: {} with value: {} (class: {})", key, type, value,
+                      value == null ? "NULL" : value.getClass().getName() );
+
         if ( !ignore && currentField == null && value != null )
         {
             final FieldBinding binding = getMapping().getFieldBinding( key );

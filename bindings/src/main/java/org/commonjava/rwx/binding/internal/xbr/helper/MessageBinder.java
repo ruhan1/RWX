@@ -24,6 +24,8 @@ import org.commonjava.rwx.error.XmlRpcException;
 import org.commonjava.rwx.error.XmlRpcFaultException;
 import org.commonjava.rwx.spi.XmlRpcListener;
 import org.commonjava.rwx.vocab.ValueType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Field;
 
@@ -66,9 +68,13 @@ public class MessageBinder
     protected Binder startParameterInternal( final int index )
         throws XmlRpcException
     {
+        Logger logger = LoggerFactory.getLogger( getClass() );
+        logger.trace( "Start parameter: {}", index );
+
         final FieldBinding binding = getMapping().getFieldBinding( index );
         if ( binding == null )
         {
+            logger.trace( "No field binding for: {}", index );
             ignore = true;
             return this;
         }
@@ -79,6 +85,7 @@ public class MessageBinder
         if ( binder != null )
         {
             currentField = binding;
+            logger.trace( "Current param binder: {}", currentField );
             return binder;
         }
 

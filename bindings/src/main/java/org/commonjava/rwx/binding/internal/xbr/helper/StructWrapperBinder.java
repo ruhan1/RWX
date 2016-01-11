@@ -23,6 +23,8 @@ import org.commonjava.rwx.binding.spi.Binder;
 import org.commonjava.rwx.error.XmlRpcException;
 import org.commonjava.rwx.spi.XmlRpcListener;
 import org.commonjava.rwx.vocab.ValueType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class StructWrapperBinder
     extends AbstractBinder
@@ -34,6 +36,8 @@ public class StructWrapperBinder
     public StructWrapperBinder( final Binder parent, final Class<?> valueType, final XBRBindingContext context )
     {
         super( parent, valueType, context );
+        Logger logger = LoggerFactory.getLogger( getClass() );
+        logger.trace( "Setting up struct wrapper binder for: {}", valueType.getName() );
     }
 
     @Override
@@ -50,8 +54,10 @@ public class StructWrapperBinder
     public XmlRpcListener structMember( final String key, final Object value, final ValueType type )
         throws XmlRpcException
     {
-        if ( value == null )
+        if ( value != null )
         {
+            Logger logger = LoggerFactory.getLogger( getClass() );
+            logger.trace( "Setting value: {}" );
             this.value = value;
         }
 
