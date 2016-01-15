@@ -177,6 +177,8 @@ public abstract class AbstractBinder
 
     private final Binder decrement( final Binder binder )
     {
+        Logger logger = LoggerFactory.getLogger( getClass() );
+        logger.trace( "Decrementing count: {} to {} with binder: {}", count, (count-1), binder );
         count--;
 
         return binder;
@@ -184,12 +186,14 @@ public abstract class AbstractBinder
 
     private final Binder increment( final Binder binder )
     {
+        Logger logger = LoggerFactory.getLogger( getClass() );
+        logger.trace( "Incrementing count: {} to {} with binder: {}\nFrom: {}", count, (count+1), binder, Thread.currentThread().getStackTrace()[2] );
         count++;
         return binder;
     }
 
     @Override
-    public final XmlRpcListener value( final Object v, final ValueType t )
+    public XmlRpcListener value( final Object v, final ValueType t )
         throws XmlRpcException
     {
         Logger logger = LoggerFactory.getLogger( getClass() );

@@ -85,7 +85,7 @@ public class MessageBinder
         if ( binder != null )
         {
             currentField = binding;
-            logger.trace( "Current param binder: {}", currentField );
+            logger.trace( "Current param binder: {} for field: {}", currentField, field );
             return binder;
         }
 

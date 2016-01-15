@@ -26,6 +26,8 @@ import org.commonjava.rwx.estream.model.StructEvent;
 import org.commonjava.rwx.estream.model.ValueEvent;
 import org.commonjava.rwx.impl.TrackingXmlRpcListener;
 import org.commonjava.rwx.spi.XmlRpcListener;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -90,6 +92,9 @@ public class EventStreamGeneratorImpl
         {
             for ( final Event<?> e : events )
             {
+                Logger logger = LoggerFactory.getLogger( getClass() );
+                logger.trace( "Firing: {} into listener: {}", e, listener );
+
                 switch ( e.getEventType() )
                 {
                     case VALUE:

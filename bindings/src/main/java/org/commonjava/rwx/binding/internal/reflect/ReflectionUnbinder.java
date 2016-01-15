@@ -24,6 +24,7 @@ import static org.commonjava.rwx.binding.anno.AnnotationUtils.isResponse;
 import org.commonjava.rwx.binding.anno.ArrayPart;
 import org.commonjava.rwx.binding.anno.Converter;
 import org.commonjava.rwx.binding.anno.Contains;
+import org.commonjava.rwx.binding.anno.SkipNull;
 import org.commonjava.rwx.binding.anno.StructPart;
 import org.commonjava.rwx.binding.error.BindException;
 import org.commonjava.rwx.binding.internal.xbr.XBRBinderInstantiator;
@@ -35,10 +36,14 @@ import org.commonjava.rwx.binding.spi.value.ValueBinder;
 import org.commonjava.rwx.error.CoercionException;
 import org.commonjava.rwx.error.XmlRpcException;
 import org.commonjava.rwx.error.XmlRpcFaultException;
+import org.commonjava.rwx.impl.stax.helper.ValueHelper;
 import org.commonjava.rwx.spi.XmlRpcGenerator;
 import org.commonjava.rwx.spi.XmlRpcListener;
+import org.commonjava.rwx.util.LambdaHolder;
 import org.commonjava.rwx.util.ValueCoercion;
 import org.commonjava.rwx.vocab.ValueType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -51,7 +56,7 @@ import java.util.Map;
 import java.util.TreeMap;
 
 public class ReflectionUnbinder
-    implements XmlRpcGenerator
+        implements XmlRpcGenerator
 {
 
     private final Map<Class<?>, ValueType> typeCache = new HashMap<Class<?>, ValueType>();
@@ -61,7 +66,7 @@ public class ReflectionUnbinder
     private final Object message;
 
     public ReflectionUnbinder( final Object message, final Map<Class<?>, Mapping<?>> recipes )
-        throws BindException
+            throws BindException
     {
         this.message = message;
         recipesByClass = recipes;
@@ -70,7 +75,7 @@ public class ReflectionUnbinder
     @SuppressWarnings( "unchecked" )
     @Override
     public ReflectionUnbinder generate( final XmlRpcListener listener )
-        throws XmlRpcException
+            throws XmlRpcException
     {
         if ( message instanceof XmlRpcFaultException )
         {
@@ -121,7 +126,7 @@ public class ReflectionUnbinder
 
     @SuppressWarnings( "unchecked" )
     private void fireMessageEvents( final XmlRpcListener listener )
-        throws XmlRpcException
+            throws XmlRpcException
     {
         final Class<?> messageCls = message.getClass();
         final Mapping<Integer> recipe = (Mapping<Integer>) recipesByClass.get( messageCls );
@@ -133,20 +138,53 @@ public class ReflectionUnbinder
 
         final Map<Integer, FieldBinding> bindings = new TreeMap<Integer, FieldBinding>( recipe.getFieldBindings() );
 
-        for ( final Map.Entry<Integer, FieldBinding> entry : bindings.entrySet() )
-        {
-            listener.startParameter( entry.getKey() );
-            final Object value = fireValueEvents( entry.getValue(), message, listener );
+        LambdaHolder<XmlRpcException> holder = new LambdaHolder<>();
+        bindings.forEach( ( index, fieldBinding ) -> {
+            try
+            {
+                fireValueEvents( fieldBinding, message, listener, ( val, t ) -> {
+                    try
+                    {
+                        listener.startParameter( index );
+                        return true;
+                    }
+                    catch ( XmlRpcException e )
+                    {
+                        holder.set( e );
+                    }
+                    return false;
+                }, ( val, t ) -> {
+                    try
+                    {
+                        listener.parameter( index, val, t );
+                        listener.endParameter();
+                        return true;
+                    }
+                    catch ( XmlRpcException e )
+                    {
+                        holder.set( e );
+                    }
+                    return false;
+                } );
+            }
+            catch ( XmlRpcException e )
+            {
+                holder.set( e );
+            }
+        } );
 
-            listener.parameter( entry.getKey(), value, typeOf( value, entry.getValue() ) );
-            listener.endParameter();
+        if ( holder.has() )
+        {
+            throw holder.get();
         }
     }
 
     @SuppressWarnings( "unchecked" )
     private List<Object> fireArrayEvents( final Class<?> type, final Object part, final XmlRpcListener listener )
-        throws XmlRpcException
+            throws XmlRpcException
     {
+        Logger logger = LoggerFactory.getLogger( getClass() );
+        logger.trace( "Getting mapping recipe for: {}", type.getSimpleName() );
         final Mapping<Integer> recipe = (Mapping<Integer>) recipesByClass.get( type );
 
         if ( recipe == null )
@@ -159,21 +197,52 @@ public class ReflectionUnbinder
         listener.startArray();
 
         final List<Object> result = new ArrayList<Object>();
-        for ( final Map.Entry<Integer, FieldBinding> entry : bindings.entrySet() )
-        {
-            listener.startArrayElement( entry.getKey() );
 
-            final Object value = fireValueEvents( entry.getValue(), part, listener );
-
-            while ( result.size() < entry.getKey() )
+        LambdaHolder<XmlRpcException> holder = new LambdaHolder<>();
+        bindings.forEach( ( index, fieldBinding ) -> {
+            try
             {
-                result.add( null );
+                Object arrayEntry = fireValueEvents( fieldBinding, part, listener, ( val, t ) -> {
+                    try
+                    {
+                        listener.startArrayElement( index );
+                        return true;
+                    }
+                    catch ( XmlRpcException e )
+                    {
+                        holder.set( e );
+                    }
+                    return false;
+                }, ( val, t ) -> {
+                    try
+                    {
+                        while ( result.size() < index )
+                        {
+                            result.add( null );
+                        }
+
+                        result.add( val );
+
+                        listener.arrayElement( index, val, t );
+                        listener.endArrayElement();
+                        return true;
+                    }
+                    catch ( XmlRpcException e )
+                    {
+                        holder.set( e );
+                    }
+                    return false;
+                } );
             }
+            catch ( XmlRpcException e )
+            {
+                holder.set( e );
+            }
+        } );
 
-            result.add( value );
-
-            listener.arrayElement( entry.getKey(), value, typeOf( value, entry.getValue() ) );
-            listener.endArrayElement();
+        if ( holder.has() )
+        {
+            throw holder.get();
         }
 
         listener.endArray();
@@ -182,8 +251,9 @@ public class ReflectionUnbinder
     }
 
     @SuppressWarnings( "unchecked" )
-    private Map<String, Object> fireStructEvents( final Class<?> type, final Object part, final XmlRpcListener listener )
-        throws XmlRpcException
+    private Map<String, Object> fireStructEvents( final Class<?> type, final Object part,
+                                                  final XmlRpcListener listener )
+            throws XmlRpcException
     {
         final Mapping<String> recipe = (Mapping<String>) recipesByClass.get( type );
 
@@ -194,17 +264,49 @@ public class ReflectionUnbinder
 
         listener.startStruct();
 
+        LambdaHolder<XmlRpcException> holder = new LambdaHolder<>();
+        Map<String, FieldBinding> bindings = recipe.getFieldBindings();
+
         final Map<String, Object> result = new LinkedHashMap<String, Object>();
-        for ( final Map.Entry<String, FieldBinding> entry : recipe.getFieldBindings().entrySet() )
+        bindings.forEach( ( memberName, fieldBinding ) -> {
+            try
+            {
+                Object arrayEntry = fireValueEvents( fieldBinding, part, listener, ( val, t ) -> {
+                    try
+                    {
+                        listener.startStructMember( memberName );
+                        return true;
+                    }
+                    catch ( XmlRpcException e )
+                    {
+                        holder.set( e );
+                    }
+                    return false;
+                }, ( val, t ) -> {
+                    try
+                    {
+                        result.put( memberName, val );
+
+                        listener.structMember( memberName, val, t );
+                        listener.endStructMember();
+                        return true;
+                    }
+                    catch ( XmlRpcException e )
+                    {
+                        holder.set( e );
+                    }
+                    return false;
+                } );
+            }
+            catch ( XmlRpcException e )
+            {
+                holder.set( e );
+            }
+        } );
+
+        if ( holder.has() )
         {
-            listener.startStructMember( entry.getKey() );
-
-            final Object value = fireValueEvents( entry.getValue(), part, listener );
-
-            result.put( entry.getKey(), value );
-
-            listener.structMember( entry.getKey(), value, typeOf( value, entry.getValue() ) );
-            listener.endStructMember();
+            throw holder.get();
         }
 
         listener.endStruct();
@@ -239,7 +341,7 @@ public class ReflectionUnbinder
     }
 
     private ValueType typeOf( final Object value, final FieldBinding binding )
-        throws BindException
+            throws BindException
     {
         if ( value == null )
         {
@@ -265,7 +367,7 @@ public class ReflectionUnbinder
                 else
                 {
                     throw new BindException( "Unknown recipe reference type: " + binding.getFieldType() + "\nField: "
-                        + binding.getFieldName() + "\nClass: " + cls.getName() );
+                                                     + binding.getFieldName() + "\nClass: " + cls.getName() );
                 }
             }
             else
@@ -282,8 +384,14 @@ public class ReflectionUnbinder
         return type;
     }
 
-    private Object fireValueEvents( final FieldBinding binding, final Object parent, final XmlRpcListener listener )
-        throws XmlRpcException
+    public interface EventCallback
+    {
+        boolean call( Object val, ValueType type );
+    }
+
+    private Object fireValueEvents( final FieldBinding binding, final Object parent, final XmlRpcListener listener,
+                                    EventCallback before, EventCallback after )
+            throws XmlRpcException
     {
         final Class<?> parentCls = parent.getClass();
         try
@@ -293,9 +401,29 @@ public class ReflectionUnbinder
             field.setAccessible( true );
 
             Object value = field.get( parent );
+
+            if ( isSuppressedNull( field, parentCls, value ) )
+            {
+                return null;
+            }
+
             final ValueType type = typeOf( value, binding );
 
-            final Converter converter = field.getAnnotation( Converter.class );
+            if ( before != null )
+            {
+                if ( !before.call( value, type ) )
+                {
+                    return null;
+                }
+            }
+
+            Converter converter = field.getAnnotation( Converter.class );
+            if ( converter == null )
+            {
+                Class<?> fieldType = field.getType();
+                converter = fieldType.getAnnotation( Converter.class );
+            }
+
             if ( converter != null )
             {
                 final ValueBinder vc = XBRBinderInstantiator.newValueUnbinder( converter );
@@ -314,7 +442,7 @@ public class ReflectionUnbinder
                 else
                 {
                     throw new BindException( "Unknown recipe reference type: " + binding.getFieldType() + "\nField: "
-                        + binding.getFieldName() + "\nClass: " + parentCls.getName() );
+                                                     + binding.getFieldName() + "\nClass: " + parentCls.getName() );
                 }
 
                 listener.value( value, type );
@@ -326,8 +454,8 @@ public class ReflectionUnbinder
                 {
                     fireMapEvents( value, binding.getFieldName(), contains, listener );
                 }
-                else if ( binding.getFieldType().isArray()
-                    || Collection.class.isAssignableFrom( binding.getFieldType() ) )
+                else if ( binding.getFieldType().isArray() || Collection.class.isAssignableFrom(
+                        binding.getFieldType() ) )
                 {
                     fireCollectionEvents( value, binding.getFieldName(), contains, listener );
                 }
@@ -336,7 +464,8 @@ public class ReflectionUnbinder
                     ValueCoercion coercion = type.coercion();
                     if ( coercion == null )
                     {
-                        throw new XmlRpcException( "Cannot render {} (type: {}) to string. It has no corresponding coercion, and isn't an @ArrayPart or a @StructPart!" );
+                        throw new XmlRpcException(
+                                "Cannot render {} (type: {}) to string. It has no corresponding coercion, and isn't an @ArrayPart or a @StructPart!" );
                     }
                     value = coercion.toString( value );
                 }
@@ -344,17 +473,39 @@ public class ReflectionUnbinder
                 listener.value( value, type );
             }
 
+            if ( after != null )
+            {
+                if ( !after.call( value, type ) )
+                {
+                    return null;
+                }
+            }
+
             return value;
         }
         catch ( final IllegalAccessException e )
         {
-            throw new BindException( "Cannot retrieve field: " + binding.getFieldName() + " in class: "
-                + parentCls.getName() + "\nError: " + e.getMessage(), e );
+            throw new BindException(
+                    "Cannot retrieve field: " + binding.getFieldName() + " in class: " + parentCls.getName()
+                            + "\nError: " + e.getMessage(), e );
         }
     }
 
+    private boolean isSuppressedNull( Field field, Class<?> cls, Object value )
+    {
+        if ( value == null )
+        {
+            if ( field.getAnnotation( SkipNull.class ) != null || cls.getAnnotation( SkipNull.class ) != null )
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     private Field findField( final FieldBinding binding, final Class<?> parentCls )
-        throws BindException
+            throws BindException
     {
         Field field = null;
         Class<?> fieldOwner = parentCls;
@@ -374,8 +525,9 @@ public class ReflectionUnbinder
 
         if ( field == null )
         {
-            throw new BindException( "Cannot find field: " + binding.getFieldName()
-                + " in class (or parent classes of): " + parentCls.getName() );
+            throw new BindException(
+                    "Cannot find field: " + binding.getFieldName() + " in class (or parent classes of): "
+                            + parentCls.getName() );
         }
 
         return field;
@@ -384,7 +536,7 @@ public class ReflectionUnbinder
     @SuppressWarnings( "unchecked" )
     private void fireMapEvents( final Object values, final String fieldName, final Contains contains,
                                 final XmlRpcListener listener )
-        throws XmlRpcException
+            throws XmlRpcException
     {
         ValueType vt = typeOf( contains );
 
@@ -430,7 +582,7 @@ public class ReflectionUnbinder
     @SuppressWarnings( "unchecked" )
     private void fireCollectionEvents( final Object values, final String fieldName, final Contains contains,
                                        final XmlRpcListener listener )
-        throws XmlRpcException
+            throws XmlRpcException
     {
         ValueType vt = typeOf( contains );
 
@@ -459,7 +611,9 @@ public class ReflectionUnbinder
 
             if ( vt == null )
             {
-                throw new CoercionException( "Cannot find suitable coercion for type: " + (contains == null ? "Un-annotated collection" : contains.value()) );
+                throw new CoercionException( "Cannot find suitable coercion for type: " + ( contains == null ?
+                        "Un-annotated collection" :
+                        contains.value() ) );
             }
 
             listener.startArrayElement( i );

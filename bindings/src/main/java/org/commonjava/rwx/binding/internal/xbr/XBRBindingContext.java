@@ -26,6 +26,7 @@ import org.apache.xbean.recipe.ObjectRecipe;
 import org.apache.xbean.recipe.Recipe;
 import org.apache.xbean.recipe.Repository;
 import org.commonjava.rwx.binding.anno.ArrayPart;
+import org.commonjava.rwx.binding.anno.Contains;
 import org.commonjava.rwx.binding.anno.Converter;
 import org.commonjava.rwx.binding.anno.StructPart;
 import org.commonjava.rwx.binding.error.BindException;
@@ -41,6 +42,8 @@ import org.commonjava.rwx.binding.mapping.Mapping;
 import org.commonjava.rwx.binding.mapping.StructMapping;
 import org.commonjava.rwx.binding.spi.Binder;
 import org.commonjava.rwx.binding.spi.BindingContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Field;
 import java.util.Collection;
@@ -200,10 +203,25 @@ public class XBRBindingContext
     protected Binder newBinder( final Binder parent, final Class<?> type, final Field field )
         throws BindException
     {
-        final Converter bindVia = field == null ? null : field.getAnnotation( Converter.class );
+        Converter bindVia = null;
+        if ( field != null )
+        {
+            bindVia = field.getAnnotation( Converter.class );
+            if ( bindVia == null )
+            {
+                bindVia = field.getType().getAnnotation( Converter.class );
+            }
+        }
+
+        Logger logger = LoggerFactory.getLogger( getClass() );
+        logger.trace( "Using ValueBinder: {} for field: {}", bindVia, field );
 
         Binder binder = null;
-        if ( Map.class.isAssignableFrom( type ) )
+        if ( bindVia != null && field.getAnnotation( Contains.class ) == null )
+        {
+            return XBRBinderInstantiator.newValueBinder( bindVia, parent, type, this );
+        }
+        else if ( Map.class.isAssignableFrom( type ) )
         {
             binder = new MapBinder( parent, type, field, this );
         }

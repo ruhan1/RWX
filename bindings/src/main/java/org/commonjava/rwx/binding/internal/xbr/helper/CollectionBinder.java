@@ -47,7 +47,16 @@ public class CollectionBinder
                              final XBRBindingContext context )
     {
         super( parent, getContainsType( field ), context );
-        bindVia = field == null ? null : field.getAnnotation( Converter.class );
+        Converter bv = null;
+        if ( field != null )
+        {
+            bv = field.getAnnotation( Converter.class );
+            if ( bv == null )
+            {
+                bv = field.getType().getAnnotation( Converter.class );
+            }
+        }
+        this.bindVia = bv;
         this.collectionType = collectionType;
     }
 
@@ -55,7 +64,16 @@ public class CollectionBinder
                              final Field field, final XBRBindingContext context )
     {
         super( parent, valueType, context );
-        bindVia = field == null ? null : field.getAnnotation( Converter.class );
+        Converter bv = null;
+        if ( field != null )
+        {
+            bv = field.getAnnotation( Converter.class );
+            if ( bv == null )
+            {
+                bv = field.getType().getAnnotation( Converter.class );
+            }
+        }
+        this.bindVia = bv;
         this.collectionType = collectionType;
     }
 

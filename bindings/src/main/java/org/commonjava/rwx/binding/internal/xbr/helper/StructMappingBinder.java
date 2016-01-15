@@ -20,6 +20,7 @@ import org.commonjava.rwx.binding.internal.xbr.XBRBindingContext;
 import org.commonjava.rwx.binding.mapping.FieldBinding;
 import org.commonjava.rwx.binding.mapping.StructMapping;
 import org.commonjava.rwx.binding.spi.Binder;
+import org.commonjava.rwx.binding.spi.value.ValueBinder;
 import org.commonjava.rwx.error.XmlRpcException;
 import org.commonjava.rwx.spi.XmlRpcListener;
 import org.commonjava.rwx.vocab.ValueType;
@@ -74,6 +75,7 @@ public class StructMappingBinder
     protected Binder startStructMemberInternal( final String key )
         throws XmlRpcException
     {
+        Logger logger = LoggerFactory.getLogger( getClass() );
         if ( ignore )
         {
             level++;
@@ -85,19 +87,22 @@ public class StructMappingBinder
             {
                 ignore = true;
                 level = 0;
+                logger.trace( "No field binding for: {}. Returning this binder.", key );
                 return this;
             }
 
             final Field field = getBindingContext().findField( binding, getType() );
 
-            final Binder binder = getBindingContext().newBinder( this, field );
+            Binder binder = getBindingContext().newBinder( this, field );
             if ( binder != null )
             {
                 currentField = binding;
+                logger.trace( "Current member binder: {} for field: {}", currentField, field );
                 return binder;
             }
         }
 
+        logger.trace( "Ignored field, or no binding available for: {}. Returning this binder.", key );
         return this;
     }
 

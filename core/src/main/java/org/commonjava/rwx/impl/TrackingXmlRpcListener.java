@@ -18,6 +18,8 @@ package org.commonjava.rwx.impl;
 import org.commonjava.rwx.error.XmlRpcException;
 import org.commonjava.rwx.spi.XmlRpcListener;
 import org.commonjava.rwx.vocab.ValueType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.function.Supplier;
 
@@ -179,6 +181,10 @@ public class TrackingXmlRpcListener
         XmlRpcListener next = supplier.execute();
         last = current;
         current = next;
+
+        Logger logger = LoggerFactory.getLogger( getClass() );
+        logger.trace( "Recording potential binder change.\nNew current binder: {}\nLast binder: {}\nFrom: {}", current,
+                      last, Thread.currentThread().getStackTrace()[1] );
 
         return next;
     }

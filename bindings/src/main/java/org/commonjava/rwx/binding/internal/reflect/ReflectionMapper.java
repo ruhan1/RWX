@@ -38,6 +38,8 @@ import org.commonjava.rwx.binding.mapping.FieldBinding;
 import org.commonjava.rwx.binding.mapping.Mapping;
 import org.commonjava.rwx.binding.mapping.StructMapping;
 import org.commonjava.rwx.binding.spi.Mapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Constructor;
@@ -205,9 +207,16 @@ public class ReflectionMapper
 
         final FieldBinding binding = new FieldBinding( name, type );
 
-        final Converter bindVia = field.getAnnotation( Converter.class );
+        Converter bindVia = field.getAnnotation( Converter.class );
+        if ( bindVia == null )
+        {
+            bindVia = type.getAnnotation( Converter.class );
+        }
+
         if ( bindVia != null )
         {
+            Logger logger = LoggerFactory.getLogger( getClass() );
+            logger.trace( "Adding ValueBinder: {} for: {} in: {}", bindVia.value().getName(), field, field.getDeclaringClass().getName() );
             binding.withValueBinderType( bindVia.value() );
         }
 
@@ -228,6 +237,9 @@ public class ReflectionMapper
                                     final String[] ctorKeys, final Map<Class<?>, Mapping<?>> mappings )
             throws BindException
     {
+        Logger logger = LoggerFactory.getLogger( getClass() );
+        logger.trace( "Creating binding for field: {}", field );
+
         if ( Modifier.isTransient( field.getModifiers() ) )
         {
             throw new BindException(
@@ -259,9 +271,15 @@ public class ReflectionMapper
 
         final FieldBinding binding = new FieldBinding( name, type );
 
-        final Converter bindVia = field.getAnnotation( Converter.class );
+        Converter bindVia = field.getAnnotation( Converter.class );
+        if ( bindVia == null )
+        {
+            bindVia = type.getAnnotation( Converter.class );
+        }
+
         if ( bindVia != null )
         {
+            logger.trace( "Adding ValueBinder: {} for: {} in: {}", bindVia.value().getName(), field, field.getDeclaringClass().getName() );
             binding.withValueBinderType( bindVia.value() );
         }
 

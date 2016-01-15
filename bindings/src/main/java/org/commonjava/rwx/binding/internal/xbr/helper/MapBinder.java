@@ -47,7 +47,16 @@ public class MapBinder
     {
         super( parent, getContainsType( field ), context );
         recipe = new MapRecipe( mapType );
-        bindVia = field == null ? null : field.getAnnotation( Converter.class );
+        Converter bv = null;
+        if ( field != null )
+        {
+            bv = field.getAnnotation( Converter.class );
+            if ( bv == null )
+            {
+                bv = field.getType().getAnnotation( Converter.class );
+            }
+        }
+        this.bindVia = bv;
     }
 
     @Override
