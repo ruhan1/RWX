@@ -13,30 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.commonjava.rwx.vocab;
+package org.commonjava.rwx.util;
 
-import org.commonjava.rwx.error.CoercionException;
-import org.commonjava.rwx.vocab.ValueType;
-import org.junit.Test;
-
-
-import java.util.ArrayList;
-
-public class ARRAY_ValueTypeTest
+/**
+ * Created by jdcasey on 1/14/16.
+ */
+public class LambdaHolder<T>
 {
+    private T value;
 
-    @Test( expected = CoercionException.class )
-    public void toStringThrowsError()
-        throws CoercionException
+    public T get()
     {
-        ValueType.ARRAY.coercion().toString( new ArrayList<Object>() );
+        return value;
     }
 
-    @Test( expected = CoercionException.class )
-    public void fromStringThrowsError()
-        throws CoercionException
+    public void set( T value )
     {
-        ValueType.ARRAY.coercion().fromString( "foo" );
+        this.value = value;
     }
 
+    public boolean has()
+    {
+        return value != null;
+    }
 }

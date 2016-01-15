@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2012 Red Hat, Inc. (jdcasey@commonjava.org)
+ * Copyright (C) 2010 Red Hat, Inc. (jdcasey@commonjava.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,8 @@ import org.commonjava.rwx.estream.model.StructEvent;
 import org.commonjava.rwx.estream.model.ValueEvent;
 import org.commonjava.rwx.impl.TrackingXmlRpcListener;
 import org.commonjava.rwx.spi.XmlRpcListener;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -90,6 +92,9 @@ public class EventStreamGeneratorImpl
         {
             for ( final Event<?> e : events )
             {
+                Logger logger = LoggerFactory.getLogger( getClass() );
+                logger.trace( "Firing: {} into listener: {}", e, listener );
+
                 switch ( e.getEventType() )
                 {
                     case VALUE:

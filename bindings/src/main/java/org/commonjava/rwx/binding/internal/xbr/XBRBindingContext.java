@@ -1,20 +1,18 @@
-/*
- *  Copyright (c) 2010 Red Hat, Inc.
- *  
- *  This program is licensed to you under Version 3 only of the GNU
- *  General Public License as published by the Free Software 
- *  Foundation. This program is distributed in the hope that it will be 
- *  useful, but WITHOUT ANY WARRANTY; without even the implied 
- *  warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR 
- *  PURPOSE.
- *  
- *  See the GNU General Public License Version 3 for more details.
- *  You should have received a copy of the GNU General Public License 
- *  Version 3 along with this program. 
- *  
- *  If not, see http://www.gnu.org/licenses/.
+/**
+ * Copyright (C) 2010 Red Hat, Inc. (jdcasey@commonjava.org)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
-
 package org.commonjava.rwx.binding.internal.xbr;
 
 import static org.commonjava.rwx.binding.anno.AnnotationUtils.hasAnnotation;
@@ -28,6 +26,7 @@ import org.apache.xbean.recipe.ObjectRecipe;
 import org.apache.xbean.recipe.Recipe;
 import org.apache.xbean.recipe.Repository;
 import org.commonjava.rwx.binding.anno.ArrayPart;
+import org.commonjava.rwx.binding.anno.Contains;
 import org.commonjava.rwx.binding.anno.Converter;
 import org.commonjava.rwx.binding.anno.StructPart;
 import org.commonjava.rwx.binding.error.BindException;
@@ -43,6 +42,8 @@ import org.commonjava.rwx.binding.mapping.Mapping;
 import org.commonjava.rwx.binding.mapping.StructMapping;
 import org.commonjava.rwx.binding.spi.Binder;
 import org.commonjava.rwx.binding.spi.BindingContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Field;
 import java.util.Collection;
@@ -202,10 +203,25 @@ public class XBRBindingContext
     protected Binder newBinder( final Binder parent, final Class<?> type, final Field field )
         throws BindException
     {
-        final Converter bindVia = field == null ? null : field.getAnnotation( Converter.class );
+        Converter bindVia = null;
+        if ( field != null )
+        {
+            bindVia = field.getAnnotation( Converter.class );
+            if ( bindVia == null )
+            {
+                bindVia = field.getType().getAnnotation( Converter.class );
+            }
+        }
+
+        Logger logger = LoggerFactory.getLogger( getClass() );
+        logger.trace( "Using ValueBinder: {} for field: {}", bindVia, field );
 
         Binder binder = null;
-        if ( Map.class.isAssignableFrom( type ) )
+        if ( bindVia != null && field.getAnnotation( Contains.class ) == null )
+        {
+            return XBRBinderInstantiator.newValueBinder( bindVia, parent, type, this );
+        }
+        else if ( Map.class.isAssignableFrom( type ) )
         {
             binder = new MapBinder( parent, type, field, this );
         }

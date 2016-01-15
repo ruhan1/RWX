@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2012 Red Hat, Inc. (jdcasey@commonjava.org)
+ * Copyright (C) 2010 Red Hat, Inc. (jdcasey@commonjava.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -85,7 +85,8 @@ public enum ValueType
         {
             try
             {
-                return value == null ? null : Integer.parseInt( value );
+                String val = value == null ? null : value.trim();
+                return val == null || val.length() < 1 ? null : Integer.parseInt( val );
             }
             catch ( final NumberFormatException e )
             {
@@ -106,7 +107,7 @@ public enum ValueType
             }
             else
             {
-                final String s = super.toString( value );
+                final String s = super.toString( value ).trim();
                 if ( "1".equals( s ) || "0".equals( s ) )
                 {
                     return s;
@@ -127,7 +128,8 @@ public enum ValueType
             }
             else
             {
-                return "1".equals( value ) || Boolean.valueOf( value );
+                String val = value.trim();
+                return "1".equals( val ) || Boolean.valueOf( val );
             }
         }
     }, Boolean.class, "boolean" ),
@@ -137,7 +139,7 @@ public enum ValueType
         @Override
         public Object fromString( final String value )
         {
-            return value;
+            return value == null ? null : value.trim();
         }
     }, String.class, "string" ),
 
@@ -149,7 +151,8 @@ public enum ValueType
         {
             try
             {
-                return value == null ? null : Double.parseDouble( value );
+                String val = value == null ? null : value.trim();
+                return val == null || val.length() < 1 ? null : Double.parseDouble( val );
             }
             catch ( final NumberFormatException e )
             {
@@ -174,7 +177,8 @@ public enum ValueType
         {
             try
             {
-                return value == null ? null : new SimpleDateFormat( FORMAT ).parse( value );
+                String val = value == null ? null : value.trim();
+                return val == null ? null : new SimpleDateFormat( FORMAT ).parse( value );
             }
             catch ( final ParseException e )
             {
@@ -209,7 +213,7 @@ public enum ValueType
                 return null;
             }
 
-            final byte[] result = Base64.decodeBase64( value );
+            final byte[] result = Base64.decodeBase64( value.trim() );
             if ( result.length < 1 && value.length() > 0 && !value.equals( "==" ) && !value.equals( "=" ) )
             {
                 throw new CoercionException( "Invalid Base64 input: " + value );

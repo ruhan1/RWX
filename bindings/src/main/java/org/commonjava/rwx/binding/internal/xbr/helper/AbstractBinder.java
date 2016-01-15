@@ -1,20 +1,18 @@
-/*
- *  Copyright (c) 2010 Red Hat, Inc.
- *  
- *  This program is licensed to you under Version 3 only of the GNU
- *  General Public License as published by the Free Software 
- *  Foundation. This program is distributed in the hope that it will be 
- *  useful, but WITHOUT ANY WARRANTY; without even the implied 
- *  warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR 
- *  PURPOSE.
- *  
- *  See the GNU General Public License Version 3 for more details.
- *  You should have received a copy of the GNU General Public License 
- *  Version 3 along with this program. 
- *  
- *  If not, see http://www.gnu.org/licenses/.
+/**
+ * Copyright (C) 2010 Red Hat, Inc. (jdcasey@commonjava.org)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
-
 package org.commonjava.rwx.binding.internal.xbr.helper;
 
 import org.commonjava.rwx.binding.spi.Binder;
@@ -23,6 +21,8 @@ import org.commonjava.rwx.error.XmlRpcException;
 import org.commonjava.rwx.spi.AbstractXmlRpcListener;
 import org.commonjava.rwx.spi.XmlRpcListener;
 import org.commonjava.rwx.vocab.ValueType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public abstract class AbstractBinder
     extends AbstractXmlRpcListener
@@ -164,6 +164,8 @@ public abstract class AbstractBinder
     public final XmlRpcListener startStructMember( final String key )
         throws XmlRpcException
     {
+        Logger logger = LoggerFactory.getLogger( getClass() );
+        logger.trace( "Start struct member: {}", key );
         return increment( startStructMemberInternal( key ) );
     }
 
@@ -175,6 +177,8 @@ public abstract class AbstractBinder
 
     private final Binder decrement( final Binder binder )
     {
+        Logger logger = LoggerFactory.getLogger( getClass() );
+        logger.trace( "Decrementing count: {} to {} with binder: {}", count, (count-1), binder );
         count--;
 
         return binder;
@@ -182,14 +186,18 @@ public abstract class AbstractBinder
 
     private final Binder increment( final Binder binder )
     {
+        Logger logger = LoggerFactory.getLogger( getClass() );
+        logger.trace( "Incrementing count: {} to {} with binder: {}\nFrom: {}", count, (count+1), binder, Thread.currentThread().getStackTrace()[2] );
         count++;
         return binder;
     }
 
     @Override
-    public final XmlRpcListener value( final Object v, final ValueType t )
+    public XmlRpcListener value( final Object v, final ValueType t )
         throws XmlRpcException
     {
+        Logger logger = LoggerFactory.getLogger( getClass() );
+        logger.trace( "Got {} value: {}", t, v );
         if ( count < 1 )
         {
             parent.value( value, valueType );
@@ -197,6 +205,7 @@ public abstract class AbstractBinder
         }
         else
         {
+            logger.trace( "Handing off to internal value call." );
             return valueInternal( v, t );
         }
     }

@@ -1,20 +1,18 @@
-/*
- *  Copyright (c) 2010 Red Hat, Inc.
- *  
- *  This program is licensed to you under Version 3 only of the GNU
- *  General Public License as published by the Free Software 
- *  Foundation. This program is distributed in the hope that it will be 
- *  useful, but WITHOUT ANY WARRANTY; without even the implied 
- *  warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR 
- *  PURPOSE.
- *  
- *  See the GNU General Public License Version 3 for more details.
- *  You should have received a copy of the GNU General Public License 
- *  Version 3 along with this program. 
- *  
- *  If not, see http://www.gnu.org/licenses/.
+/**
+ * Copyright (C) 2010 Red Hat, Inc. (jdcasey@commonjava.org)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
-
 package org.commonjava.rwx.binding.internal.xbr.helper;
 
 import org.apache.xbean.recipe.ObjectRecipe;
@@ -22,9 +20,12 @@ import org.commonjava.rwx.binding.internal.xbr.XBRBindingContext;
 import org.commonjava.rwx.binding.mapping.FieldBinding;
 import org.commonjava.rwx.binding.mapping.StructMapping;
 import org.commonjava.rwx.binding.spi.Binder;
+import org.commonjava.rwx.binding.spi.value.ValueBinder;
 import org.commonjava.rwx.error.XmlRpcException;
 import org.commonjava.rwx.spi.XmlRpcListener;
 import org.commonjava.rwx.vocab.ValueType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Field;
 
@@ -45,6 +46,8 @@ public class StructMappingBinder
                                 final XBRBindingContext context )
     {
         super( parent, type, mapping, context );
+        Logger logger = LoggerFactory.getLogger( getClass() );
+        logger.trace( "Setting up struct mapping binder for: {}", type.getName() );
         recipe = XBRBindingContext.setupObjectRecipe( mapping );
     }
 
@@ -52,6 +55,10 @@ public class StructMappingBinder
     public XmlRpcListener structMember( final String key, final Object value, final ValueType type )
         throws XmlRpcException
     {
+        Logger logger = LoggerFactory.getLogger( getClass() );
+        logger.trace( "Struct key: {} of type: {} with value: {} (class: {})", key, type, value,
+                      value == null ? "NULL" : value.getClass().getName() );
+
         if ( !ignore && currentField == null && value != null )
         {
             final FieldBinding binding = getMapping().getFieldBinding( key );
@@ -68,6 +75,7 @@ public class StructMappingBinder
     protected Binder startStructMemberInternal( final String key )
         throws XmlRpcException
     {
+        Logger logger = LoggerFactory.getLogger( getClass() );
         if ( ignore )
         {
             level++;
@@ -79,19 +87,22 @@ public class StructMappingBinder
             {
                 ignore = true;
                 level = 0;
+                logger.trace( "No field binding for: {}. Returning this binder.", key );
                 return this;
             }
 
             final Field field = getBindingContext().findField( binding, getType() );
 
-            final Binder binder = getBindingContext().newBinder( this, field );
+            Binder binder = getBindingContext().newBinder( this, field );
             if ( binder != null )
             {
                 currentField = binding;
+                logger.trace( "Current member binder: {} for field: {}", currentField, field );
                 return binder;
             }
         }
 
+        logger.trace( "Ignored field, or no binding available for: {}. Returning this binder.", key );
         return this;
     }
 

@@ -13,30 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.commonjava.rwx.vocab;
+package org.commonjava.rwx.binding.anno;
 
-import org.commonjava.rwx.error.CoercionException;
-import org.commonjava.rwx.vocab.ValueType;
-import org.junit.Test;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-
-import java.util.ArrayList;
-
-public class ARRAY_ValueTypeTest
+/**
+ * Created by jdcasey on 1/14/16.
+ */
+@Target( {ElementType.FIELD, ElementType.METHOD, ElementType.TYPE} )
+@Retention( RetentionPolicy.RUNTIME )
+public @interface SkipNull
 {
-
-    @Test( expected = CoercionException.class )
-    public void toStringThrowsError()
-        throws CoercionException
-    {
-        ValueType.ARRAY.coercion().toString( new ArrayList<Object>() );
-    }
-
-    @Test( expected = CoercionException.class )
-    public void fromStringThrowsError()
-        throws CoercionException
-    {
-        ValueType.ARRAY.coercion().fromString( "foo" );
-    }
-
 }

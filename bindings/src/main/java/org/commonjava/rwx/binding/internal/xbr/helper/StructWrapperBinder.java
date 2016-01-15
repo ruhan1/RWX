@@ -1,20 +1,18 @@
-/*
- *  Copyright (c) 2010 Red Hat, Inc.
- *  
- *  This program is licensed to you under Version 3 only of the GNU
- *  General Public License as published by the Free Software 
- *  Foundation. This program is distributed in the hope that it will be 
- *  useful, but WITHOUT ANY WARRANTY; without even the implied 
- *  warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR 
- *  PURPOSE.
- *  
- *  See the GNU General Public License Version 3 for more details.
- *  You should have received a copy of the GNU General Public License 
- *  Version 3 along with this program. 
- *  
- *  If not, see http://www.gnu.org/licenses/.
+/**
+ * Copyright (C) 2010 Red Hat, Inc. (jdcasey@commonjava.org)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
-
 package org.commonjava.rwx.binding.internal.xbr.helper;
 
 import static org.commonjava.rwx.binding.anno.AnnotationUtils.hasAnnotation;
@@ -25,6 +23,8 @@ import org.commonjava.rwx.binding.spi.Binder;
 import org.commonjava.rwx.error.XmlRpcException;
 import org.commonjava.rwx.spi.XmlRpcListener;
 import org.commonjava.rwx.vocab.ValueType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class StructWrapperBinder
     extends AbstractBinder
@@ -36,6 +36,8 @@ public class StructWrapperBinder
     public StructWrapperBinder( final Binder parent, final Class<?> valueType, final XBRBindingContext context )
     {
         super( parent, valueType, context );
+        Logger logger = LoggerFactory.getLogger( getClass() );
+        logger.trace( "Setting up struct wrapper binder for: {}", valueType.getName() );
     }
 
     @Override
@@ -52,8 +54,10 @@ public class StructWrapperBinder
     public XmlRpcListener structMember( final String key, final Object value, final ValueType type )
         throws XmlRpcException
     {
-        if ( value == null )
+        if ( value != null )
         {
+            Logger logger = LoggerFactory.getLogger( getClass() );
+            logger.trace( "Setting value: {}" );
             this.value = value;
         }
 
