@@ -15,6 +15,8 @@
  */
 package org.commonjava.rwx.http;
 
+import org.commonjava.rwx.error.XmlRpcException;
+
 import java.net.MalformedURLException;
 
 /**
@@ -22,5 +24,5 @@ import java.net.MalformedURLException;
  */
 public interface UrlBuilder
 {
-    String buildUrl( String baseUrl ) throws MalformedURLException;
+    UrlBuildResult buildUrl( String baseUrl ) throws MalformedURLException;
 }

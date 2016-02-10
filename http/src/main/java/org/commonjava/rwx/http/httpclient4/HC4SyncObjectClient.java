@@ -86,7 +86,7 @@ public class HC4SyncObjectClient
             String url = UrlUtils.buildUrl( siteConfig.getUri(), extraPath );
             if ( urlBuilder != null )
             {
-                url = urlBuilder.buildUrl( url );
+                url = urlBuilder.buildUrl( url ).throwError().get();
             }
 
             method = new HttpPost( url );
