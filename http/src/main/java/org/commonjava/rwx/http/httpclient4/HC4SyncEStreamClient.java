@@ -103,7 +103,7 @@ public class HC4SyncEStreamClient
             String url = UrlUtils.buildUrl( siteConfig.getUri(), extraPath );
             if ( urlBuilder != null )
             {
-                url = urlBuilder.buildUrl( url );
+                url = urlBuilder.buildUrl( url ).throwError().get();
             }
 
             method = new HttpPost( url );
