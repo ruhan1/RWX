@@ -37,7 +37,7 @@
   <properties>
     <projectOwner>Red Hat, Inc.</projectOwner>
     
-    <jhttpcVersion>1.1-SNAPSHOT</jhttpcVersion>
+    <jhttpcVersion>1.1.2</jhttpcVersion>
     <javaVersion>1.8</javaVersion>
     <httpcVersion>4.4</httpcVersion>
 
