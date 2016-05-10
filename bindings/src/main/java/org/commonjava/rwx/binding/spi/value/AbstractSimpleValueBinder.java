@@ -26,8 +26,6 @@ public abstract class AbstractSimpleValueBinder
     implements ValueBinder
 {
 
-    private static final String MESSAGE = "Not supported in simple binder: ";
-
     private final Class<?> type;
 
     private final BindingContext context;
@@ -124,11 +122,6 @@ public abstract class AbstractSimpleValueBinder
         throws XmlRpcException
     {
         throw forbidden();
-    }
-
-    private XmlRpcException forbidden()
-    {
-        return new XmlRpcException( MESSAGE + getClass().getName() );
     }
 
 }

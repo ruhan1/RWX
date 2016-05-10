@@ -22,8 +22,15 @@ public abstract class AbstractXmlRpcListener
     implements XmlRpcListener
 {
 
+    private final String MESSAGE = "Not supported in binder: " + getClass().getName();
+
     protected AbstractXmlRpcListener()
     {
+    }
+
+    protected XmlRpcException forbidden()
+    {
+        return new XmlRpcException( MESSAGE );
     }
 
     @Override
