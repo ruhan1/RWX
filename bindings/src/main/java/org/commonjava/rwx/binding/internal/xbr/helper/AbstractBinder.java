@@ -164,13 +164,43 @@ public abstract class AbstractBinder
     public final XmlRpcListener startStructMember( final String key )
         throws XmlRpcException
     {
-        Logger logger = LoggerFactory.getLogger( getClass() );
-        logger.trace( "Start struct member: {}", key );
         return increment( startStructMemberInternal( key ) );
     }
 
     protected Binder startStructMemberInternal( final String key )
         throws XmlRpcException
+    {
+        return this;
+    }
+
+    @Override
+    public XmlRpcListener structMember( String k, Object v, ValueType t )
+            throws XmlRpcException
+    {
+        Logger logger = LoggerFactory.getLogger( getClass() );
+        logger.trace( "Got member: '{}' with {} value: {}", k, t, v );
+        logger.trace( "Handing off to internal value call." );
+        return structMemberInternal( k, v, t );
+    }
+
+    protected Binder structMemberInternal( String key, Object v, ValueType t )
+            throws XmlRpcException
+    {
+        return this;
+    }
+
+    @Override
+    public XmlRpcListener arrayElement( int i, Object v, ValueType t )
+            throws XmlRpcException
+    {
+        Logger logger = LoggerFactory.getLogger( getClass() );
+        logger.trace( "Got array[{}] {} value: {}", i, t, v );
+        logger.trace( "Handing off to internal value call." );
+        return arrayElementInternal( i, v, t );
+    }
+
+    protected Binder arrayElementInternal( int i, Object v, ValueType t )
+            throws XmlRpcException
     {
         return this;
     }

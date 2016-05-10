@@ -23,6 +23,7 @@ import org.commonjava.rwx.binding.spi.Binder;
 import org.commonjava.rwx.binding.spi.value.ValueBinder;
 import org.commonjava.rwx.error.XmlRpcException;
 import org.commonjava.rwx.spi.XmlRpcListener;
+import org.commonjava.rwx.util.ValueCoercion;
 import org.commonjava.rwx.vocab.ValueType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -61,11 +62,14 @@ public class StructMappingBinder
 
         if ( !ignore && currentField == null && value != null )
         {
-            final FieldBinding binding = getMapping().getFieldBinding( key );
+            StructMapping mapping = getMapping();
+            final FieldBinding binding = mapping.getFieldBinding( key );
 
-            // if ignore == false and the current field is null, the binding MUST be non-null.  
-            recipe.setProperty( binding.getFieldName(),
-                                type.coercion().fromString( value == null ? null : String.valueOf( value ) ) );
+            // if ignore == false and the current field is null, the binding MUST be non-null.
+            String fieldName = binding.getFieldName();
+            ValueCoercion coercion = type.coercion();
+            recipe.setProperty( fieldName,
+                                coercion.fromString( value == null ? null : String.valueOf( value ) ) );
         }
 
         return this;
