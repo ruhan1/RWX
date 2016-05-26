@@ -25,6 +25,7 @@ import org.commonjava.rwx.binding.spi.Bindery;
 import org.commonjava.rwx.error.XmlRpcException;
 import org.commonjava.rwx.http.RequestModifier;
 import org.commonjava.rwx.http.SyncObjectClient;
+import org.commonjava.rwx.http.UrlBuildResult;
 import org.commonjava.rwx.http.UrlBuilder;
 import org.commonjava.rwx.http.error.XmlRpcTransportException;
 import org.commonjava.util.jhttpc.HttpFactory;
@@ -83,11 +84,19 @@ public class HC4SyncObjectClient
         final HttpPost method;
         try
         {
+            Logger logger = LoggerFactory.getLogger( getClass() );
+
             String url = UrlUtils.buildUrl( siteConfig.getUri(), extraPath );
+            logger.trace( "Unadorned URL: '{}'", url );
+
             if ( urlBuilder != null )
             {
-                url = urlBuilder.buildUrl( url ).throwError().get();
+                UrlBuildResult buildResult = urlBuilder.buildUrl( url );
+                logger.trace( "UrlBuilder ({}) result: {}", urlBuilder.getClass().getName(), buildResult );
+                url = buildResult.throwError().get();
             }
+
+            logger.trace( "POSTing {} request to: '{}'", methodName, url );
 
             method = new HttpPost( url );
             method.setHeader( "Content-Type", "text/xml" );
@@ -100,7 +109,6 @@ public class HC4SyncObjectClient
             // TODO: Can't we get around pre-rendering to string?? Maybe not, if we want content-length to be right...
             final String content = bindery.renderString( request );
 
-            Logger logger = LoggerFactory.getLogger( getClass() );
             logger.trace( "Sending request:\n\n" + content + "\n\n" );
 
             method.setEntity( new StringEntity( content ) );

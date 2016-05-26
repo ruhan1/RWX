@@ -21,6 +21,8 @@ import org.commonjava.rwx.binding.spi.BindingContext;
 import org.commonjava.rwx.error.XmlRpcException;
 import org.commonjava.rwx.spi.XmlRpcListener;
 import org.commonjava.rwx.vocab.ValueType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public abstract class CustomValueBinder
     extends AbstractBinder
@@ -42,10 +44,14 @@ public abstract class CustomValueBinder
     public final XmlRpcListener value( Object v, ValueType t )
             throws XmlRpcException
     {
+        Logger logger = LoggerFactory.getLogger( getClass() );
+        logger.trace( "Got value: {} (class: {}), with type: {}", v, (v == null ? "NULL" : v.getClass().getName()), t );
+
         ValueType type = getResultType(v, t);
         Object result = getResult( v, t );
 
         Binder parent = getParent();
+        logger.trace( "Assigning value: {} with type: {} in parent: {}", result, type, parent );
         parent.value( result, type );
 
         return parent;

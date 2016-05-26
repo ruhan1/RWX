@@ -15,15 +15,19 @@
  */
 package org.commonjava.rwx.binding.internal.reflect;
 
+import org.apache.commons.lang.StringUtils;
 import org.commonjava.rwx.binding.mapping.Mapping;
 import org.commonjava.rwx.binding.spi.composed.RenderingBinderyDelegate;
 import org.commonjava.rwx.error.XmlRpcException;
+import org.commonjava.rwx.impl.TrackingXmlRpcListener;
 import org.commonjava.rwx.impl.jdom.JDomRenderer;
 import org.commonjava.rwx.spi.XmlRpcGenerator;
 import org.commonjava.rwx.spi.XmlRpcListener;
 import org.jdom.Document;
 import org.jdom.output.Format;
 import org.jdom.output.XMLOutputter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -109,14 +113,23 @@ public class ReflectionUnbindery
         throws XmlRpcException
     {
         final JDomRenderer renderer = new JDomRenderer();
+        TrackingXmlRpcListener tracker = new TrackingXmlRpcListener( renderer );
         if ( value instanceof XmlRpcGenerator )
         {
-            ( (XmlRpcGenerator) value ).generate( renderer );
+            ( (XmlRpcGenerator) value ).generate( tracker );
         }
         else
         {
-            new ReflectionUnbinder( value, recipes ).generate( renderer );
+            new ReflectionUnbinder( value, recipes ).generate( tracker );
         }
+
+        Logger logger = LoggerFactory.getLogger( getClass() );
+        logger.trace( "Message call trace:\n\n  {}\n\n", new Object(){
+            public String toString()
+            {
+                return StringUtils.join( tracker.getCalls(), "\n  " );
+            }
+        } );
 
         return renderer.getDocument();
     }

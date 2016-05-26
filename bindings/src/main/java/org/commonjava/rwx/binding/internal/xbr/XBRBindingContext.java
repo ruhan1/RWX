@@ -76,10 +76,14 @@ public class XBRBindingContext
 
             final Map<? extends Object, FieldBinding> bindings = recipe.getFieldBindings();
 
+            Logger logger = LoggerFactory.getLogger( getClass() );
+            logger.debug( "Processing recipe: {}", recipe.getObjectType() );
+
             final Object[] ctorKeys = recipe.getConstructorKeys();
             final String[] ctorArgs = new String[ctorKeys.length];
             for ( int i = 0; i < ctorKeys.length; i++ )
             {
+                logger.debug( "Getting field binding: {}", ctorKeys[i] );
                 final FieldBinding binding = bindings.get( ctorKeys[i] );
                 ctorArgs[i] = binding.getFieldName();
             }
