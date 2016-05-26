@@ -127,35 +127,42 @@ public class ReflectionMapper
 
         final SortedSet<Integer> taken = new TreeSet<Integer>();
         final Set<Field> noDecl = new HashSet<Field>();
-        for ( final Field field : type.getDeclaredFields() )
-        {
-            if ( field.getAnnotation( Ignored.class ) == null )
-            {
-                final DataIndex di = field.getAnnotation( DataIndex.class );
-                if ( di != null )
-                {
-                    if ( taken.contains( di.value() ) )
-                    {
-                        throw new BindException(
-                                "More than one field declares data-index: " + di.value() + ". Type: " + typeName );
-                    }
 
-                    if ( Modifier.isTransient( field.getModifiers() ) )
+        Class<?> t = type;
+        do
+        {
+            for ( final Field field : t.getDeclaredFields() )
+            {
+                if ( field.getAnnotation( Ignored.class ) == null )
+                {
+                    final DataIndex di = field.getAnnotation( DataIndex.class );
+                    if ( di != null )
                     {
-                        throw new BindException( "Fields annotated with @DataIndex cannot be marked as transient! Type: " + typeName );
+                        if ( taken.contains( di.value() ) )
+                        {
+                            throw new BindException(
+                                    "More than one field declares data-index: " + di.value() + ". Type: " + typeName );
+                        }
+
+                        if ( Modifier.isTransient( field.getModifiers() ) )
+                        {
+                            throw new BindException( "Fields annotated with @DataIndex cannot be marked as transient! Type: " + typeName );
+                        }
+                        else
+                        {
+                            addFieldBinding( mapping, di.value(), field, ctorIndices, mappings );
+                            taken.add( di.value() );
+                        }
                     }
                     else
                     {
-                        addFieldBinding( mapping, di.value(), field, ctorIndices, mappings );
-                        taken.add( di.value() );
+                        noDecl.add( field );
                     }
                 }
-                else
-                {
-                    noDecl.add( field );
-                }
             }
+            t = t.getSuperclass();
         }
+        while( t != null );
 
         // FIXME: Add logged warnings!!
         // TODO: Validate @IndexRefs against acutal discovered @DataIndex annotation values.
@@ -361,28 +368,34 @@ public class ReflectionMapper
 
         final Set<String> takenKeys = new HashSet<String>();
         final Set<Field> noDecl = new HashSet<Field>();
-        for ( final Field field : type.getDeclaredFields() )
+        Class<?> t = type;
+        do
         {
-            if ( field.getAnnotation( Ignored.class ) == null )
+            for ( final Field field : t.getDeclaredFields() )
             {
-                final DataKey dk = field.getAnnotation( DataKey.class );
-                if ( dk != null )
+                if ( field.getAnnotation( Ignored.class ) == null )
                 {
-                    if ( takenKeys.contains( dk.value() ) )
+                    final DataKey dk = field.getAnnotation( DataKey.class );
+                    if ( dk != null )
                     {
-                        throw new BindException(
-                                "More than one field declares data-key: " + dk.value() + ". Type: " + typeName );
-                    }
+                        if ( takenKeys.contains( dk.value() ) )
+                        {
+                            throw new BindException(
+                                    "More than one field declares data-key: " + dk.value() + ". Type: " + typeName );
+                        }
 
-                    addFieldBinding( mapping, dk.value(), field, ctorKeys, mappings );
-                    takenKeys.add( dk.value() );
-                }
-                else
-                {
-                    noDecl.add( field );
+                        addFieldBinding( mapping, dk.value(), field, ctorKeys, mappings );
+                        takenKeys.add( dk.value() );
+                    }
+                    else
+                    {
+                        noDecl.add( field );
+                    }
                 }
             }
+            t = t.getSuperclass();
         }
+        while ( t != null );
 
         // FIXME: Add logged warnings!!
         // TODO: Validate @KeyRefs against acutal discovered @DataKey annotation values.

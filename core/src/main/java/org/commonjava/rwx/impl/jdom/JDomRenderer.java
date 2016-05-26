@@ -15,15 +15,32 @@
  */
 package org.commonjava.rwx.impl.jdom;
 
+import org.apache.commons.lang.StringUtils;
 import org.commonjava.rwx.error.CoercionException;
 import org.commonjava.rwx.error.XmlRpcException;
 import org.commonjava.rwx.spi.AbstractXmlRpcListener;
 import org.commonjava.rwx.vocab.ValueType;
-import org.commonjava.rwx.vocab.XmlRpcConstants;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.output.Format;
 import org.jdom.output.XMLOutputter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import static org.commonjava.rwx.vocab.XmlRpcConstants.ARRAY;
+import static org.commonjava.rwx.vocab.XmlRpcConstants.DATA;
+import static org.commonjava.rwx.vocab.XmlRpcConstants.FAULT;
+import static org.commonjava.rwx.vocab.XmlRpcConstants.FAULT_CODE;
+import static org.commonjava.rwx.vocab.XmlRpcConstants.FAULT_STRING;
+import static org.commonjava.rwx.vocab.XmlRpcConstants.MEMBER;
+import static org.commonjava.rwx.vocab.XmlRpcConstants.METHOD_NAME;
+import static org.commonjava.rwx.vocab.XmlRpcConstants.NAME;
+import static org.commonjava.rwx.vocab.XmlRpcConstants.PARAM;
+import static org.commonjava.rwx.vocab.XmlRpcConstants.PARAMS;
+import static org.commonjava.rwx.vocab.XmlRpcConstants.REQUEST;
+import static org.commonjava.rwx.vocab.XmlRpcConstants.RESPONSE;
+import static org.commonjava.rwx.vocab.XmlRpcConstants.STRUCT;
+import static org.commonjava.rwx.vocab.XmlRpcConstants.VALUE;
 
 public class JDomRenderer
     extends AbstractXmlRpcListener
@@ -59,42 +76,45 @@ public class JDomRenderer
     public JDomRenderer fault( final int code, final String message )
         throws XmlRpcException
     {
-        final Element fault = new Element( XmlRpcConstants.FAULT );
+        final Element fault = new Element( FAULT );
         currentParent.addContent( fault );
 
-        final Element value = new Element( XmlRpcConstants.VALUE );
+        final Element value = new Element( VALUE );
         fault.addContent( value );
 
         final Element last = currentParent;
-        currentParent = value;
+        setParent( value );
 
         startStruct();
-        startStructMember( XmlRpcConstants.FAULT_CODE );
+        startStructMember( FAULT_CODE );
         value( code, ValueType.INT );
-        structMember( XmlRpcConstants.FAULT_CODE, code, ValueType.INT );
+        structMember( FAULT_CODE, code, ValueType.INT );
         endStructMember();
-        startStructMember( XmlRpcConstants.FAULT_STRING );
+        startStructMember( FAULT_STRING );
         value( message, ValueType.STRING );
-        structMember( XmlRpcConstants.FAULT_STRING, message, ValueType.STRING );
+        structMember( FAULT_STRING, message, ValueType.STRING );
         endStructMember();
         endStruct();
 
-        currentParent = last;
+        setParent( last );
         return this;
     }
 
     @Override
     public JDomRenderer startParameter( final int index )
     {
+        Logger logger = LoggerFactory.getLogger( getClass() );
+        logger.trace( "START-PARAM: {}", index );
+
         verifyParamsContainer();
 
-        final Element param = new Element( XmlRpcConstants.PARAM );
+        final Element param = new Element( PARAM );
         currentParent.addContent( param );
 
-        final Element value = new Element( XmlRpcConstants.VALUE );
+        final Element value = new Element( VALUE );
         param.addContent( value );
 
-        currentParent = value;
+        setParent( value );
         return this;
     }
 
@@ -102,6 +122,9 @@ public class JDomRenderer
     public JDomRenderer value( final Object value, final ValueType type )
         throws CoercionException
     {
+        Logger logger = LoggerFactory.getLogger( getClass() );
+        logger.trace( "RAW-VALUE: {}, TYPE: {}", value, type.name() );
+
         if ( ValueType.STRUCT == type || ValueType.ARRAY == type )
         {
             return this;
@@ -115,7 +138,10 @@ public class JDomRenderer
     @Override
     public JDomRenderer requestMethod( final String methodName )
     {
-        final Element mn = new Element( XmlRpcConstants.METHOD_NAME );
+        Logger logger = LoggerFactory.getLogger( getClass() );
+        logger.debug( "START: {}", methodName );
+
+        final Element mn = new Element( METHOD_NAME );
         mn.setText( methodName );
 
         currentParent.addContent( mn );
@@ -125,30 +151,33 @@ public class JDomRenderer
     @Override
     public JDomRenderer startArray()
     {
-        final Element arry = new Element( XmlRpcConstants.ARRAY );
+        final Element arry = new Element( ARRAY );
         currentParent.addContent( arry );
 
-        final Element data = new Element( XmlRpcConstants.DATA );
+        final Element data = new Element( DATA );
         arry.addContent( data );
 
-        currentParent = data;
+        setParent( data );
         return this;
     }
 
     @Override
     public JDomRenderer startArrayElement( final int index )
     {
-        final Element value = new Element( XmlRpcConstants.VALUE );
+        Logger logger = LoggerFactory.getLogger( getClass() );
+        logger.trace( "START-ARRAY-ELEMENT: {}", index );
+
+        final Element value = new Element( VALUE );
         currentParent.addContent( value );
 
-        currentParent = value;
+        setParent( value );
         return this;
     }
 
     @Override
     public JDomRenderer startRequest()
     {
-        currentParent = new Element( XmlRpcConstants.REQUEST );
+        setParent( new Element( REQUEST ) );
         doc = new Document( currentParent );
         return this;
     }
@@ -156,7 +185,7 @@ public class JDomRenderer
     @Override
     public JDomRenderer startResponse()
     {
-        currentParent = new Element( XmlRpcConstants.RESPONSE );
+        setParent( new Element( RESPONSE ) );
         doc = new Document( currentParent );
         return this;
     }
@@ -164,10 +193,10 @@ public class JDomRenderer
     @Override
     public JDomRenderer startStruct()
     {
-        final Element e = new Element( XmlRpcConstants.STRUCT );
+        final Element e = new Element( STRUCT );
         currentParent.addContent( e );
 
-        currentParent = e;
+        setParent( e );
         return this;
     }
 
@@ -213,18 +242,21 @@ public class JDomRenderer
     public JDomRenderer startStructMember( final String key )
         throws XmlRpcException
     {
-        final Element wrapper = new Element( XmlRpcConstants.MEMBER );
+        Logger logger = LoggerFactory.getLogger( getClass() );
+        logger.trace( "START-STRUCT-MEMBER: {}", key );
+
+        final Element wrapper = new Element( MEMBER );
         currentParent.addContent( wrapper );
 
-        final Element name = new Element( XmlRpcConstants.NAME );
+        final Element name = new Element( NAME );
         name.setText( key );
 
         wrapper.addContent( name );
 
-        final Element value = new Element( XmlRpcConstants.VALUE );
+        final Element value = new Element( VALUE );
         wrapper.addContent( value );
 
-        currentParent = value;
+        setParent( value );
         return this;
     }
 
@@ -235,22 +267,50 @@ public class JDomRenderer
         parent.addContent( val );
 
         val.setText( vt.coercion().toString( value ) );
+
+        Logger logger = LoggerFactory.getLogger( getClass() );
+        logger.trace( "VALUE: {}", val.getText() );
     }
 
     protected void verifyParamsContainer()
     {
-        if ( !XmlRpcConstants.PARAMS.equals( currentParent.getName() ) )
+        if ( !PARAMS.equals( currentParent.getName() ) )
         {
-            final Element params = new Element( XmlRpcConstants.PARAMS );
+            final Element params = new Element( PARAMS );
             currentParent.addContent( params );
 
-            currentParent = params;
+            setParent( params );
         }
     }
 
     protected void popParent()
     {
-        currentParent = currentParent.getParentElement();
+        Logger logger = LoggerFactory.getLogger( getClass() );
+
+        if ( logger.isTraceEnabled() )
+        {
+            logger.trace( "POP/before: parent is: {}\n\nCalled from: {}\n", currentParent,
+                               StringUtils.join( Thread.currentThread().getStackTrace(), "\n  " ) );
+        }
+
+
+        setParent( currentParent.getParentElement() );
+        logger.trace( "POP/after: parent is: {}", currentParent );
+    }
+
+    protected Element setParent( Element e )
+    {
+        Logger logger = LoggerFactory.getLogger( getClass() );
+
+        if ( logger.isTraceEnabled() )
+        {
+            logger.trace( "SET/before: parent is: {}\n\nCalled from: {}\n", currentParent,
+                               StringUtils.join( Thread.currentThread().getStackTrace(), "\n  " ) );
+        }
+
+        currentParent = e;
+        logger.trace( "SET/after: parent is: {}", currentParent );
+        return e;
     }
 
 }

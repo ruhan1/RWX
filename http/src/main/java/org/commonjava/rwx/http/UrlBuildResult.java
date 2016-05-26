@@ -65,4 +65,13 @@ public final class UrlBuildResult
     {
         return url;
     }
+
+    @Override
+    public String toString()
+    {
+        return "UrlBuildResult{" +
+                "error=" + error +
+                ", url='" + url + '\'' +
+                '}';
+    }
 }
