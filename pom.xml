@@ -27,7 +27,7 @@
   
   <groupId>org.commonjava.rwx</groupId>
   <artifactId>rwx-parent</artifactId>
-  <version>0.4-SNAPSHOT</version>
+  <version>1.0</version>
   
   <packaging>pom</packaging>
   <inceptionYear>2010</inceptionYear>
@@ -65,17 +65,17 @@
       <dependency>
         <groupId>org.commonjava.rwx</groupId>
         <artifactId>rwx-core</artifactId>
-        <version>0.4-SNAPSHOT</version>
+        <version>1.0</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.rwx</groupId>
         <artifactId>rwx-bindings</artifactId>
-        <version>0.4-SNAPSHOT</version>
+        <version>1.0</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.rwx</groupId>
         <artifactId>rwx-http</artifactId>
-        <version>0.4-SNAPSHOT</version>
+        <version>1.0</version>
       </dependency>
 
       <dependency>
@@ -111,7 +111,7 @@
     <connection>scm:git:git@github.com:jdcasey/RWX.git</connection>
     <developerConnection>scm:git:git@github.com:jdcasey/RWX.git</developerConnection>
     <url>http://github.com/jdcasey/RWX</url>
-    <tag>HEAD</tag>
+    <tag>rwx-parent-1.0</tag>
   </scm>
   
   <dependencies>
