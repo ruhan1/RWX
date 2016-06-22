@@ -108,9 +108,9 @@
   </dependencyManagement>
 
   <scm>
-    <connection>scm:git:git@github.com:jdcasey/RWX.git</connection>
-    <developerConnection>scm:git:git@github.com:jdcasey/RWX.git</developerConnection>
-    <url>http://github.com/jdcasey/RWX</url>
+    <connection>scm:git:https://github.com/Commonjava/RWX.git</connection>
+    <developerConnection>scm:git:git@github.com:Commonjava/RWX.git</developerConnection>
+    <url>https://github.com/Commonjava/RWX</url>
     <tag>HEAD</tag>
   </scm>
   
