@@ -39,6 +39,7 @@ public class EventStreamParserTest
 
     @Test
     public void simpleRequest()
+            throws XmlRpcException
     {
         final List<Event<?>> check =
             new ExtList<Event<?>>().with( new RequestEvent( true ) )
@@ -78,6 +79,7 @@ public class EventStreamParserTest
 
     @Test
     public void simpleResponse()
+            throws XmlRpcException
     {
         final List<Event<?>> check =
             new ExtList<Event<?>>().with( new ResponseEvent( true ) )

@@ -228,12 +228,14 @@ public class TrackingXmlRpcListener
     private XmlRpcListener record( RecordingOp<XmlRpcListener> supplier )
             throws XmlRpcException
     {
-        XmlRpcListener next = supplier.execute();
+        Logger logger = LoggerFactory.getLogger( getClass() );
         StackTraceElement lastFrame = Thread.currentThread().getStackTrace()[2];
+        logger.trace( "CALLING: {}.{}\n  {} -> {}", lastFrame.getClassName(), lastFrame.getMethodName(), last, current );
+
+        XmlRpcListener next = supplier.execute();
         calls.add( new XmlRpcCall( lastFrame, last, current, next ) );
 
-        Logger logger = LoggerFactory.getLogger( getClass() );
-        logger.trace( "CALL: {}.{}\n  {} -> {} -> {}", lastFrame.getClassName(), lastFrame.getMethodName(), last, current,
+        logger.trace( "CALLED: {}.{}\n  {} -> {} -> {}", lastFrame.getClassName(), lastFrame.getMethodName(), last, current,
                       next );
 
         last = current;

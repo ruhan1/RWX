@@ -205,15 +205,16 @@ public class SimpleAddress
     @Override
     public Map<Class<?>, Mapping<?>> recipes()
     {
-        final StructMapping sRecipe = new StructMapping( SimpleAddress.class, new String[0] );
+        Class<SimpleAddress> owningType = SimpleAddress.class;
+        final StructMapping sRecipe = new StructMapping( owningType, new String[0] );
 
-        sRecipe.addFieldBinding( "line1", new FieldBinding( "line1", String.class ) )
-               .addFieldBinding( "line2", new FieldBinding( "line2", String.class ) )
-               .addFieldBinding( "city", new FieldBinding( "city", String.class ) )
-               .addFieldBinding( "state", new FieldBinding( "state", String.class ) )
-               .addFieldBinding( "zip", new FieldBinding( "zip", String.class ) );
+        sRecipe.addFieldBinding( "line1", new FieldBinding( "line1", String.class, owningType ) )
+               .addFieldBinding( "line2", new FieldBinding( "line2", String.class, owningType ) )
+               .addFieldBinding( "city", new FieldBinding( "city", String.class, owningType ) )
+               .addFieldBinding( "state", new FieldBinding( "state", String.class, owningType ) )
+               .addFieldBinding( "zip", new FieldBinding( "zip", String.class, owningType ) );
 
-        return new HashMap<Class<?>, Mapping<?>>( Collections.singletonMap( SimpleAddress.class, sRecipe ) );
+        return new HashMap<Class<?>, Mapping<?>>( Collections.singletonMap( owningType, sRecipe ) );
     }
 
 }

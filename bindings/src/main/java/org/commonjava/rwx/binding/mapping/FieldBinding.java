@@ -33,12 +33,15 @@ public class FieldBinding
 
     private Class<?> type;
 
+    private Class<?> owningType;
+
     private Class<? extends ValueBinder> valueBinder;
 
-    public FieldBinding( final String name, final Class<?> type )
+    public FieldBinding( final String name, final Class<?> type, Class<?> owningType )
     {
         this.name = name;
         this.type = type;
+        this.owningType = owningType;
     }
 
     public FieldBinding withValueBinderType( final Class<? extends ValueBinder> valueBinder )
@@ -62,12 +65,18 @@ public class FieldBinding
         return type;
     }
 
+    public Class<?> getOwningType()
+    {
+        return owningType;
+    }
+
     @Override
     public void readExternal( final ObjectInput in )
         throws IOException, ClassNotFoundException
     {
         name = (String) in.readObject();
         type = Class.forName( (String) in.readObject() );
+        owningType = Class.forName( (String) in.readObject() );
     }
 
     @Override
@@ -76,12 +85,17 @@ public class FieldBinding
     {
         out.writeObject( name );
         out.writeObject( type.getName() );
+        out.writeObject( owningType.getName() );
     }
 
     @Override
     public String toString()
     {
-        return "FieldBinding [name=" + name + ", type=" + type + ", valueBinder=" + valueBinder + "]";
+        return "FieldBinding{" +
+                "name='" + name + '\'' +
+                ", type=" + type +
+                ", owningType=" + owningType +
+                ", valueBinder=" + valueBinder +
+                '}';
     }
-
 }

@@ -15,6 +15,7 @@
  */
 package org.commonjava.rwx.binding.internal.xbr;
 
+import org.commonjava.rwx.binding.conf.BindingConfiguration;
 import org.commonjava.rwx.binding.error.BindException;
 import org.commonjava.rwx.binding.internal.reflect.ReflectionMapper;
 import org.commonjava.rwx.binding.internal.reflect.ReflectionUnbindery;
@@ -51,7 +52,14 @@ public class XBRCompositionBindery
     public XBRCompositionBindery( final Map<Class<?>, Mapping<?>> recipes, final XMLOutputter outputter )
         throws BindException
     {
-        super( new ReflectionUnbindery( recipes, outputter ), new XBeanRenderingBindery( recipes ) );
+        super( new ReflectionUnbindery( recipes, outputter, new BindingConfiguration() ), new XBeanRenderingBindery( recipes ) );
+    }
+
+    public XBRCompositionBindery( final Map<Class<?>, Mapping<?>> recipes, final XMLOutputter outputter,
+                                  BindingConfiguration configuration )
+            throws BindException
+    {
+        super( new ReflectionUnbindery( recipes, outputter, configuration ), new XBeanRenderingBindery( recipes ) );
     }
 
 }

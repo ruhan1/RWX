@@ -104,8 +104,16 @@ public class ParameterEvent
     @Override
     public String toString()
     {
-        return "ParameterEvent [eventType=" + eventType + ", index=" + index + ", value=" + value + ", valueType="
-            + valueType + "]";
+        if ( eventType == EventType.START_PARAMETER )
+        {
+            return eventType.name() + "[" + index + "]";
+        }
+        else if ( eventType == EventType.PARAMETER )
+        {
+            return eventType.name() + "[" + index + "] = " + value + " (type: " + valueType + ")";
+        }
+
+        return eventType.name();
     }
 
     @Override

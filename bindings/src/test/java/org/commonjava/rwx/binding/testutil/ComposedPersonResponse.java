@@ -109,11 +109,11 @@ public class ComposedPersonResponse
 
         final ArrayMapping recipe = new ArrayMapping( ComposedPersonResponse.class, new Integer[0] );
 
-        recipe.addFieldBinding( 0, new FieldBinding( "userId", String.class ) )
-              .addFieldBinding( 1, new FieldBinding( "firstName", String.class ) )
-              .addFieldBinding( 2, new FieldBinding( "lastName", String.class ) )
-              .addFieldBinding( 3, new FieldBinding( "email", String.class ) )
-              .addFieldBinding( 4, new FieldBinding( "address", SimpleAddress.class ) );
+        recipe.addFieldBinding( 0, new FieldBinding( "userId", String.class, ComposedPersonResponse.class ) )
+              .addFieldBinding( 1, new FieldBinding( "firstName", String.class, ComposedPersonResponse.class ) )
+              .addFieldBinding( 2, new FieldBinding( "lastName", String.class, ComposedPersonResponse.class ) )
+              .addFieldBinding( 3, new FieldBinding( "email", String.class, ComposedPersonResponse.class ) )
+              .addFieldBinding( 4, new FieldBinding( "address", SimpleAddress.class, ComposedPersonResponse.class ) );
 
         recipes.put( ComposedPersonResponse.class, recipe );
 

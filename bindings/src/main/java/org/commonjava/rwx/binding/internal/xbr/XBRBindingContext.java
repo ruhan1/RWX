@@ -15,6 +15,7 @@
  */
 package org.commonjava.rwx.binding.internal.xbr;
 
+import static org.apache.commons.lang.StringUtils.join;
 import static org.commonjava.rwx.binding.anno.AnnotationUtils.hasAnnotation;
 import static org.commonjava.rwx.binding.anno.AnnotationUtils.isMessage;
 
@@ -139,6 +140,8 @@ public class XBRBindingContext
             ctorArgTypes[i] = binding.getFieldType();
         }
 
+        Logger logger = LoggerFactory.getLogger( XBRBindingContext.class );
+        logger.debug( "CTOR {} with names: ({}) and types: ({})", mapping.getObjectType().getName(), join( ctorArgs, ", "), join( ctorArgTypes, ", " ) );
         recipe.setConstructorArgNames( ctorArgs );
         recipe.setConstructorArgTypes( ctorArgTypes );
 

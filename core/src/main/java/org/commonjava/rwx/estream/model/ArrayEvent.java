@@ -109,8 +109,16 @@ public class ArrayEvent
     @Override
     public String toString()
     {
-        return "ArrayEvent [eventType=" + eventType + ", index=" + index + ", value=" + value + ", valueType="
-            + valueType + "]";
+        if ( eventType == EventType.START_ARRAY_ELEMENT )
+        {
+            return eventType.name() + "[" + index + "]";
+        }
+        else if ( eventType == EventType.ARRAY_ELEMENT )
+        {
+            return eventType.name() + "[" + index + "] = " + value + " (type: " + valueType + ")";
+        }
+
+        return eventType.name();
     }
 
     @Override

@@ -45,4 +45,7 @@ public class XmlRpcConstants
     public static final String FAULT_STRING = "faultString";
 
     public static final String PARAM = "param";
+
+    public static final String DATETIME_FORMAT = "yyyyMMdd'T'HHmmss";
+
 }

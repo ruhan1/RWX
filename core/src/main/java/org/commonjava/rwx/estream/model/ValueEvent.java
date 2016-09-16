@@ -75,8 +75,8 @@ public class ValueEvent
     @Override
     public String toString()
     {
-        return "ValueEvent [type=" + type + ", value=" + value + " (type: "
-            + ( value == null ? "null" : value.getClass().getName() ) + ")]";
+        return EventType.VALUE + ": '" + value + "' (xml-rpc type: " + type + ", class: "
+            + ( value == null ? "null" : value.getClass().getName() ) + ")";
     }
 
     @Override

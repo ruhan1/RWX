@@ -166,6 +166,19 @@ public class XBRCompositionBinderyTest
         assertRoundTrip_StringDriven( response );
     }
 
+    @Test
+    public void responseWithConstructorAnnotations_Stream()
+            throws XmlRpcException
+    {
+        final SimpleFinalFieldAddress address =
+                new SimpleFinalFieldAddress( "123 Sesame St", "Little Big Fork", "NV", "01234" );
+
+        final ComposedPersonResponseWithFinalFields response =
+                new ComposedPersonResponseWithFinalFields( "foo", "foo@nowhere.com", address );
+
+        assertRoundTrip_StreamDriven( response );
+    }
+
     private void assertRoundTrip_EventDriven( final Object object )
         throws XmlRpcException
     {

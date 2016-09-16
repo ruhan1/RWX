@@ -15,14 +15,10 @@
  */
 package org.commonjava.rwx.binding.internal.reflect;
 
-import static org.commonjava.rwx.binding.anno.AnnotationUtils.hasAnnotation;
-import static org.commonjava.rwx.binding.anno.AnnotationUtils.isMessage;
-import static org.commonjava.rwx.binding.mapping.MappingUtils.toIntegerArray;
-
 import org.commonjava.rwx.binding.VoidResponse;
 import org.commonjava.rwx.binding.anno.ArrayPart;
-import org.commonjava.rwx.binding.anno.Converter;
 import org.commonjava.rwx.binding.anno.Contains;
+import org.commonjava.rwx.binding.anno.Converter;
 import org.commonjava.rwx.binding.anno.DataIndex;
 import org.commonjava.rwx.binding.anno.DataKey;
 import org.commonjava.rwx.binding.anno.Ignored;
@@ -45,12 +41,17 @@ import java.lang.ref.WeakReference;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+
+import static org.commonjava.rwx.binding.anno.AnnotationUtils.hasAnnotation;
+import static org.commonjava.rwx.binding.anno.AnnotationUtils.isMessage;
+import static org.commonjava.rwx.binding.mapping.MappingUtils.toIntegerArray;
 
 public class ReflectionMapper
         implements Mapper
@@ -92,6 +93,8 @@ public class ReflectionMapper
 
             if ( isMessage( root ) )
             {
+                Logger logger = LoggerFactory.getLogger( getClass() );
+                logger.debug( "Reading mappings for message: {}", root );
                 processArrayPart( root, current );
             }
             else
@@ -109,6 +112,7 @@ public class ReflectionMapper
     protected ArrayMapping processArrayPart( final Class<?> type, final Map<Class<?>, Mapping<?>> mappings )
             throws BindException
     {
+        Logger logger = LoggerFactory.getLogger( getClass() );
         final String typeName = type.getName();
         int[] ctorIndices = new int[0];
 
@@ -118,11 +122,13 @@ public class ReflectionMapper
             if ( refs != null )
             {
                 ctorIndices = refs.value();
+                logger.debug( "Found ctor: {} with @IndexRefs: {}", ctor, Arrays.toString( ctorIndices ) );
                 break;
             }
         }
 
         final ArrayMapping mapping = new ArrayMapping( type, toIntegerArray( ctorIndices ) );
+        logger.debug( "Adding ArrayMapping: {} for: {} based on @IndexRefs from ctor", mapping, type );
         mappings.put( type, mapping );
 
         final SortedSet<Integer> taken = new TreeSet<Integer>();
@@ -212,7 +218,7 @@ public class ReflectionMapper
         final Class<?> type = field.getType();
         final String name = field.getName();
 
-        final FieldBinding binding = new FieldBinding( name, type );
+        final FieldBinding binding = new FieldBinding( name, type, recipe.getObjectType() );
 
         Converter bindVia = field.getAnnotation( Converter.class );
         if ( bindVia == null )
@@ -237,6 +243,8 @@ public class ReflectionMapper
             processBindingTarget( type, mappings );
         }
 
+        Logger logger = LoggerFactory.getLogger( getClass() );
+        logger.debug( "Adding field binding: {} at index: {} to: {}", binding, index, recipe );
         recipe.addFieldBinding( index, binding );
     }
 
@@ -244,8 +252,9 @@ public class ReflectionMapper
                                     final String[] ctorKeys, final Map<Class<?>, Mapping<?>> mappings )
             throws BindException
     {
+
         Logger logger = LoggerFactory.getLogger( getClass() );
-        logger.trace( "Creating binding for field: {}", field );
+        logger.debug( "Creating binding for field: {}", field );
 
         if ( Modifier.isTransient( field.getModifiers() ) )
         {
@@ -276,7 +285,7 @@ public class ReflectionMapper
         final Class<?> type = field.getType();
         final String name = field.getName();
 
-        final FieldBinding binding = new FieldBinding( name, type );
+        final FieldBinding binding = new FieldBinding( name, type, recipe.getObjectType() );
 
         Converter bindVia = field.getAnnotation( Converter.class );
         if ( bindVia == null )
@@ -286,7 +295,8 @@ public class ReflectionMapper
 
         if ( bindVia != null )
         {
-            logger.trace( "Adding ValueBinder: {} for: {} in: {}", bindVia.value().getName(), field, field.getDeclaringClass().getName() );
+            logger.trace( "Adding ValueBinder: {} for: {} in: {}", bindVia.value().getName(), field,
+                          field.getDeclaringClass().getName() );
             binding.withValueBinderType( bindVia.value() );
         }
 
@@ -300,6 +310,7 @@ public class ReflectionMapper
             processBindingTarget( type, mappings );
         }
 
+        logger.debug( "Adding field binding: {} at key: {} to: {}", binding, key, recipe );
         recipe.addFieldBinding( key, binding );
     }
 
@@ -315,6 +326,8 @@ public class ReflectionMapper
             {
                 for ( final Class<?> cls : imported )
                 {
+                    Logger logger = LoggerFactory.getLogger( getClass() );
+                    logger.debug( "Adding imported mapping: {}", cls );
                     if ( hasAnnotation( cls, Request.class, Response.class, ArrayPart.class ) )
                     {
                         processArrayPart( type, mappings );
@@ -350,6 +363,7 @@ public class ReflectionMapper
     protected StructMapping processStructPart( final Class<?> type, final Map<Class<?>, Mapping<?>> mappings )
             throws BindException
     {
+        Logger logger = LoggerFactory.getLogger( getClass() );
         final String typeName = type.getName();
         String[] ctorKeys = new String[0];
 
@@ -359,11 +373,13 @@ public class ReflectionMapper
             if ( refs != null )
             {
                 ctorKeys = refs.value();
+                logger.debug( "Found ctor: {} with @KeyRefs: {}", ctor, Arrays.toString( ctorKeys ) );
                 break;
             }
         }
 
         final StructMapping mapping = new StructMapping( type, ctorKeys );
+        logger.debug( "Adding StructMapping: {} for: {} based on @KeyRefs from ctor", mapping, type );
         mappings.put( type, mapping );
 
         final Set<String> takenKeys = new HashSet<String>();

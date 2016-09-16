@@ -27,6 +27,10 @@ import org.jdom.output.XMLOutputter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.apache.commons.lang.StringUtils.join;
 import static org.commonjava.rwx.vocab.XmlRpcConstants.ARRAY;
 import static org.commonjava.rwx.vocab.XmlRpcConstants.DATA;
 import static org.commonjava.rwx.vocab.XmlRpcConstants.FAULT;
@@ -52,6 +56,8 @@ public class JDomRenderer
 
     private final XMLOutputter outputter;
 
+    private List<Object> callsAndChanges = new ArrayList<>();
+
     public JDomRenderer()
     {
         outputter = new XMLOutputter( Format.getCompactFormat() );
@@ -72,12 +78,18 @@ public class JDomRenderer
         return doc == null ? null : outputter.outputString( doc );
     }
 
+    public String renderCallsAndChanges()
+    {
+        return join( callsAndChanges, "\n" );
+    }
+
     @Override
     public JDomRenderer fault( final int code, final String message )
         throws XmlRpcException
     {
+        record();
         final Element fault = new Element( FAULT );
-        currentParent.addContent( fault );
+        addParentContent( fault );
 
         final Element value = new Element( VALUE );
         fault.addContent( value );
@@ -103,13 +115,14 @@ public class JDomRenderer
     @Override
     public JDomRenderer startParameter( final int index )
     {
+        record();
         Logger logger = LoggerFactory.getLogger( getClass() );
         logger.trace( "START-PARAM: {}", index );
 
         verifyParamsContainer();
 
         final Element param = new Element( PARAM );
-        currentParent.addContent( param );
+        addParentContent( param );
 
         final Element value = new Element( VALUE );
         param.addContent( value );
@@ -122,8 +135,9 @@ public class JDomRenderer
     public JDomRenderer value( final Object value, final ValueType type )
         throws CoercionException
     {
+        record();
         Logger logger = LoggerFactory.getLogger( getClass() );
-        logger.trace( "RAW-VALUE: {}, TYPE: {}", value, type.name() );
+        logger.trace( "RAW-VALUE: {}, TYPE: {}", value, type );
 
         if ( ValueType.STRUCT == type || ValueType.ARRAY == type )
         {
@@ -138,21 +152,23 @@ public class JDomRenderer
     @Override
     public JDomRenderer requestMethod( final String methodName )
     {
+        record();
         Logger logger = LoggerFactory.getLogger( getClass() );
         logger.debug( "START: {}", methodName );
 
         final Element mn = new Element( METHOD_NAME );
         mn.setText( methodName );
 
-        currentParent.addContent( mn );
+        addParentContent( mn );
         return this;
     }
 
     @Override
     public JDomRenderer startArray()
     {
+        record();
         final Element arry = new Element( ARRAY );
-        currentParent.addContent( arry );
+        addParentContent( arry );
 
         final Element data = new Element( DATA );
         arry.addContent( data );
@@ -164,11 +180,12 @@ public class JDomRenderer
     @Override
     public JDomRenderer startArrayElement( final int index )
     {
+        record();
         Logger logger = LoggerFactory.getLogger( getClass() );
         logger.trace( "START-ARRAY-ELEMENT: {}", index );
 
         final Element value = new Element( VALUE );
-        currentParent.addContent( value );
+        addParentContent( value );
 
         setParent( value );
         return this;
@@ -177,6 +194,7 @@ public class JDomRenderer
     @Override
     public JDomRenderer startRequest()
     {
+        record();
         setParent( new Element( REQUEST ) );
         doc = new Document( currentParent );
         return this;
@@ -185,6 +203,7 @@ public class JDomRenderer
     @Override
     public JDomRenderer startResponse()
     {
+        record();
         setParent( new Element( RESPONSE ) );
         doc = new Document( currentParent );
         return this;
@@ -193,16 +212,35 @@ public class JDomRenderer
     @Override
     public JDomRenderer startStruct()
     {
+        record();
         final Element e = new Element( STRUCT );
-        currentParent.addContent( e );
+        addParentContent( e );
 
         setParent( e );
         return this;
     }
 
+    private void addParentContent( Element e )
+    {
+        if ( currentParent == null )
+        {
+            currentParent = e;
+            if ( doc == null )
+            {
+                doc = new Document( currentParent );
+            }
+        }
+        else
+        {
+            currentParent.addContent( e );
+        }
+    }
+
     @Override
     public JDomRenderer endArray()
     {
+        record();
+        popParent();
         popParent();
         return this;
     }
@@ -210,6 +248,7 @@ public class JDomRenderer
     @Override
     public JDomRenderer endArrayElement()
     {
+        record();
         popParent();
         return this;
     }
@@ -217,14 +256,26 @@ public class JDomRenderer
     @Override
     public JDomRenderer endParameter()
     {
+        record();
         popParent();
         popParent();
         return this;
     }
 
+    private void record()
+    {
+        Logger logger = LoggerFactory.getLogger( getClass() );
+        if ( logger.isTraceEnabled() )
+        {
+            StackTraceElement call = Thread.currentThread().getStackTrace()[2];
+            callsAndChanges.add( call );
+        }
+    }
+
     @Override
     public JDomRenderer endStruct()
     {
+        record();
         popParent();
         return this;
     }
@@ -233,6 +284,7 @@ public class JDomRenderer
     public JDomRenderer endStructMember()
         throws XmlRpcException
     {
+        record();
         popParent();
         popParent();
         return this;
@@ -242,11 +294,12 @@ public class JDomRenderer
     public JDomRenderer startStructMember( final String key )
         throws XmlRpcException
     {
+        record();
         Logger logger = LoggerFactory.getLogger( getClass() );
         logger.trace( "START-STRUCT-MEMBER: {}", key );
 
         final Element wrapper = new Element( MEMBER );
-        currentParent.addContent( wrapper );
+        addParentContent( wrapper );
 
         final Element name = new Element( NAME );
         name.setText( key );
@@ -277,7 +330,7 @@ public class JDomRenderer
         if ( !PARAMS.equals( currentParent.getName() ) )
         {
             final Element params = new Element( PARAMS );
-            currentParent.addContent( params );
+            addParentContent( params );
 
             setParent( params );
         }
@@ -289,13 +342,12 @@ public class JDomRenderer
 
         if ( logger.isTraceEnabled() )
         {
-            logger.trace( "POP/before: parent is: {}\n\nCalled from: {}\n", currentParent,
-                               StringUtils.join( Thread.currentThread().getStackTrace(), "\n  " ) );
+//            logger.trace( "POP/before: parent is: {}", currentParent );
         }
 
 
         setParent( currentParent.getParentElement() );
-        logger.trace( "POP/after: parent is: {}", currentParent );
+//        logger.trace( "POP/after: parent is: {}", currentParent );
     }
 
     protected Element setParent( Element e )
@@ -304,13 +356,25 @@ public class JDomRenderer
 
         if ( logger.isTraceEnabled() )
         {
-            logger.trace( "SET/before: parent is: {}\n\nCalled from: {}\n", currentParent,
-                               StringUtils.join( Thread.currentThread().getStackTrace(), "\n  " ) );
+            callsAndChanges.add( String.format( "%s (%d) >> %s (%d)", currentParent, depthOf(currentParent), e, depthOf(e) ) );
+//            logger.trace( "SET/before: parent is: {}", currentParent );
         }
 
         currentParent = e;
-        logger.trace( "SET/after: parent is: {}", currentParent );
+//        logger.trace( "SET/after: parent is: {}", currentParent );
         return e;
+    }
+
+    private int depthOf( Element e )
+    {
+        int count=0;
+        while ( e != null )
+        {
+            e = e.getParentElement();
+            count++;
+        }
+
+        return count;
     }
 
 }

@@ -41,7 +41,7 @@ public class InheritedPersonRequest
         final Map<Class<?>, Mapping<?>> recipes = new HashMap<Class<?>, Mapping<?>>();
 
         final ArrayMapping recipe = new ArrayMapping( InheritedPersonRequest.class, new Integer[0] );
-        recipe.addFieldBinding( 0, new FieldBinding( "userId", String.class ) );
+        recipe.addFieldBinding( 0, new FieldBinding( "userId", String.class, InheritedPersonRequest.class ) );
         recipes.put( InheritedPersonRequest.class, recipe );
 
         return recipes;
