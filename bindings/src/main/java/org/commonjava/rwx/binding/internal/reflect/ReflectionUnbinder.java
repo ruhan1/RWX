@@ -35,7 +35,6 @@ import org.commonjava.rwx.error.XmlRpcException;
 import org.commonjava.rwx.error.XmlRpcFaultException;
 import org.commonjava.rwx.spi.XmlRpcGenerator;
 import org.commonjava.rwx.spi.XmlRpcListener;
-import org.commonjava.rwx.util.LambdaHolder;
 import org.commonjava.rwx.util.ValueCoercion;
 import org.commonjava.rwx.vocab.ValueType;
 import org.slf4j.Logger;
@@ -146,44 +145,19 @@ public class ReflectionUnbinder
 
         final Map<Integer, FieldBinding> bindings = new TreeMap<Integer, FieldBinding>( recipe.getFieldBindings() );
 
-        LambdaHolder<XmlRpcException> holder = new LambdaHolder<>();
-        bindings.forEach( ( index, fieldBinding ) -> {
-            try
-            {
-                fireValueEvents( fieldBinding, message, listener, true, ( val, t ) -> {
-                    try
-                    {
-                        listener.startParameter( index );
-                        return true;
-                    }
-                    catch ( XmlRpcException e )
-                    {
-                        holder.set( e );
-                    }
-                    return false;
-                }, ( val, t ) -> {
-                    try
-                    {
-                        listener.parameter( index, val, t );
-                        listener.endParameter();
-                        return true;
-                    }
-                    catch ( XmlRpcException e )
-                    {
-                        holder.set( e );
-                    }
-                    return false;
-                } );
-            }
-            catch ( XmlRpcException e )
-            {
-                holder.set( e );
-            }
-        } );
-
-        if ( holder.has() )
+        for ( Map.Entry<Integer, FieldBinding> entry : bindings.entrySet() )
         {
-            throw holder.get();
+            int index = entry.getKey();
+            FieldBinding fieldBinding = entry.getValue();
+
+            fireValueEvents( fieldBinding, message, listener, true, ( val, t ) -> {
+                listener.startParameter( index );
+                return true;
+            }, ( val, t ) -> {
+                listener.parameter( index, val, t );
+                listener.endParameter();
+                return true;
+            } );
         }
     }
 
@@ -209,51 +183,26 @@ public class ReflectionUnbinder
 
         final List<Object> result = new ArrayList<Object>();
 
-        LambdaHolder<XmlRpcException> holder = new LambdaHolder<>();
-        bindings.forEach( ( index, fieldBinding ) -> {
-            try
-            {
-                Object arrayEntry = fireValueEvents( fieldBinding, part, listener, false, ( val, t ) -> {
-                    try
-                    {
-                        listener.startArrayElement( index );
-                        return true;
-                    }
-                    catch ( XmlRpcException e )
-                    {
-                        holder.set( e );
-                    }
-                    return false;
-                }, ( val, t ) -> {
-                    try
-                    {
-                        while ( result.size() < index )
-                        {
-                            result.add( null );
-                        }
-
-                        result.add( val );
-
-                        listener.arrayElement( index, val, t );
-                        listener.endArrayElement();
-                        return true;
-                    }
-                    catch ( XmlRpcException e )
-                    {
-                        holder.set( e );
-                    }
-                    return false;
-                } );
-            }
-            catch ( XmlRpcException e )
-            {
-                holder.set( e );
-            }
-        } );
-
-        if ( holder.has() )
+        for ( Map.Entry<Integer, FieldBinding> entry : bindings.entrySet() )
         {
-            throw holder.get();
+            int index = entry.getKey();
+            FieldBinding fieldBinding = entry.getValue();
+
+            Object arrayEntry = fireValueEvents( fieldBinding, part, listener, false, ( val, t ) -> {
+                listener.startArrayElement( index );
+                return true;
+            }, ( val, t ) -> {
+                while ( result.size() < index )
+                {
+                    result.add( null );
+                }
+
+                result.add( val );
+
+                listener.arrayElement( index, val, t );
+                listener.endArrayElement();
+                return true;
+            } );
         }
 
         listener.endArray();
@@ -278,49 +227,23 @@ public class ReflectionUnbinder
 
         listener.startStruct();
 
-        LambdaHolder<XmlRpcException> holder = new LambdaHolder<>();
         Map<String, FieldBinding> bindings = recipe.getFieldBindings();
 
         final Map<String, Object> result = new LinkedHashMap<String, Object>();
-        bindings.forEach( ( memberName, fieldBinding ) -> {
-            try
-            {
-                Object arrayEntry = fireValueEvents( fieldBinding, part, listener, false, ( val, t ) -> {
-                    try
-                    {
-                        listener.startStructMember( memberName );
-                        return true;
-                    }
-                    catch ( XmlRpcException e )
-                    {
-                        holder.set( e );
-                    }
-                    return false;
-                }, ( val, t ) -> {
-                    try
-                    {
-                        result.put( memberName, val );
-
-                        listener.structMember( memberName, val, t );
-                        listener.endStructMember();
-                        return true;
-                    }
-                    catch ( XmlRpcException e )
-                    {
-                        holder.set( e );
-                    }
-                    return false;
-                } );
-            }
-            catch ( XmlRpcException e )
-            {
-                holder.set( e );
-            }
-        } );
-
-        if ( holder.has() )
+        for ( Map.Entry<String, FieldBinding> entry : bindings.entrySet() )
         {
-            throw holder.get();
+            String memberName = entry.getKey();
+            FieldBinding fieldBinding = entry.getValue();
+            Object arrayEntry = fireValueEvents( fieldBinding, part, listener, false, ( val, t ) -> {
+                listener.startStructMember( memberName );
+                return true;
+            }, ( val, t ) -> {
+                result.put( memberName, val );
+
+                listener.structMember( memberName, val, t );
+                listener.endStructMember();
+                return true;
+            } );
         }
 
         listener.endStruct();
@@ -415,7 +338,7 @@ public class ReflectionUnbinder
 
     public interface EventCallback
     {
-        boolean call( Object val, ValueType type );
+        boolean call( Object val, ValueType type ) throws XmlRpcException;
     }
 
     private Object fireValueEvents( final FieldBinding binding, final Object parent, final XmlRpcListener listener,
