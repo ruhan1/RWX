@@ -24,17 +24,34 @@ import org.commonjava.rwx.estream.model.RequestEvent;
 import org.commonjava.rwx.estream.model.ResponseEvent;
 import org.commonjava.rwx.estream.model.StructEvent;
 import org.commonjava.rwx.estream.model.ValueEvent;
+import org.commonjava.rwx.spi.XmlRpcListener;
 import org.commonjava.rwx.vocab.EventType;
 import org.commonjava.rwx.vocab.ValueType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
 
 public class EventStreamParserImpl
     implements EventStreamParser
 {
 
     private final List<Event<?>> events = new ArrayList<Event<?>>();
+
+    private final XmlRpcListener delegate;
+
+    public EventStreamParserImpl()
+    {
+        this.delegate = null;
+    }
+
+    public EventStreamParserImpl( XmlRpcListener delegate )
+    {
+        this.delegate = delegate;
+    }
 
     @Override
     public List<Event<?>> getEvents()
@@ -48,108 +65,155 @@ public class EventStreamParserImpl
         events.clear();
     }
 
+    private void withDelegate( DelegateOp<XmlRpcListener> operation )
+            throws XmlRpcException
+    {
+        if ( delegate != null )
+        {
+            operation.execute( delegate );
+        }
+    }
+
+    private void addEvent( Event<?> event )
+    {
+        Logger logger = LoggerFactory.getLogger( getClass() );
+        logger.debug( "{}", event );
+        events.add( event );
+    }
+
     @Override
     public EventStreamParserImpl arrayElement( final int index, final Object value, final ValueType type )
+            throws XmlRpcException
     {
-        events.add( new ArrayEvent( index, value, type ) );
+        withDelegate( ( d ) -> d.arrayElement( index, value, type ) );
+        addEvent( new ArrayEvent( index, value, type ) );
+
         return this;
     }
 
     @Override
     public EventStreamParserImpl endArray()
+            throws XmlRpcException
     {
-        events.add( new ArrayEvent( EventType.END_ARRAY ) );
+        withDelegate( ( d ) -> d.endArray() );
+        addEvent( new ArrayEvent( EventType.END_ARRAY ) );
         return this;
     }
 
     @Override
     public EventStreamParserImpl endParameter()
+            throws XmlRpcException
     {
-        events.add( new ParameterEvent() );
+        withDelegate( ( d ) -> d.endParameter() );
+        addEvent( new ParameterEvent() );
         return this;
     }
 
     @Override
     public EventStreamParserImpl endRequest()
+            throws XmlRpcException
     {
-        events.add( new RequestEvent( false ) );
+        withDelegate( ( d ) -> d.endRequest() );
+        addEvent( new RequestEvent( false ) );
         return this;
     }
 
     @Override
     public EventStreamParserImpl endResponse()
+            throws XmlRpcException
     {
-        events.add( new ResponseEvent( false ) );
+        withDelegate( ( d ) -> d.endResponse() );
+        addEvent( new ResponseEvent( false ) );
         return this;
     }
 
     @Override
     public EventStreamParserImpl endStruct()
+            throws XmlRpcException
     {
-        events.add( new StructEvent( EventType.END_STRUCT ) );
+        withDelegate( ( d ) -> d.endStruct() );
+        addEvent( new StructEvent( EventType.END_STRUCT ) );
         return this;
     }
 
     @Override
     public EventStreamParserImpl fault( final int code, final String message )
+            throws XmlRpcException
     {
-        events.add( new ResponseEvent( code, message ) );
+        withDelegate( ( d ) -> d.fault( code, message ) );
+        addEvent( new ResponseEvent( code, message ) );
         return this;
     }
 
     @Override
     public EventStreamParserImpl parameter( final int index, final Object value, final ValueType type )
+            throws XmlRpcException
     {
-        events.add( new ParameterEvent( index, value, type ) );
+        withDelegate( ( d ) -> d.parameter( index, value, type ) );
+        addEvent( new ParameterEvent( index, value, type ) );
         return this;
     }
 
     @Override
     public EventStreamParserImpl requestMethod( final String methodName )
+            throws XmlRpcException
     {
-        events.add( new RequestEvent( methodName ) );
+        withDelegate( ( d ) -> d.requestMethod( methodName ) );
+        addEvent( new RequestEvent( methodName ) );
         return this;
     }
 
     @Override
     public EventStreamParserImpl startArray()
+            throws XmlRpcException
     {
-        events.add( new ArrayEvent( EventType.START_ARRAY ) );
+        withDelegate( ( d ) -> d.startArray() );
+        addEvent( new ArrayEvent( EventType.START_ARRAY ) );
         return this;
     }
 
     @Override
     public EventStreamParserImpl startParameter( final int index )
+            throws XmlRpcException
     {
-        events.add( new ParameterEvent( index ) );
+        withDelegate( ( d ) -> d.startParameter( index ) );
+        addEvent( new ParameterEvent( index ) );
         return this;
     }
 
     @Override
     public EventStreamParserImpl startRequest()
+            throws XmlRpcException
     {
-        events.add( new RequestEvent( true ) );
+        withDelegate( ( d ) -> d.startRequest() );
+        addEvent( new RequestEvent( true ) );
         return this;
     }
 
     @Override
     public EventStreamParserImpl startResponse()
+            throws XmlRpcException
     {
-        events.add( new ResponseEvent( true ) );
+        withDelegate( ( d ) -> d.startResponse() );
+        addEvent( new ResponseEvent( true ) );
         return this;
     }
 
     @Override
     public EventStreamParserImpl startStruct()
+            throws XmlRpcException
     {
-        events.add( new StructEvent( EventType.START_STRUCT ) );
+        withDelegate( ( d ) -> d.startStruct() );
+        addEvent( new StructEvent( EventType.START_STRUCT ) );
         return this;
     }
 
     @Override
     public EventStreamParserImpl structMember( final String key, final Object value, final ValueType type )
+            throws XmlRpcException
     {
-        events.add( new StructEvent( key, value, type ) );
+        withDelegate( ( d ) -> d.structMember( key, value, type ) );
+        addEvent( new StructEvent( key, value, type ) );
         return this;
     }
 
@@ -157,7 +221,8 @@ public class EventStreamParserImpl
     public EventStreamParserImpl endArrayElement()
         throws XmlRpcException
     {
-        events.add( new ArrayEvent( EventType.END_ARRAY_ELEMENT ) );
+        withDelegate( ( d ) -> d.endArrayElement() );
+        addEvent( new ArrayEvent( EventType.END_ARRAY_ELEMENT ) );
         return this;
     }
 
@@ -165,7 +230,8 @@ public class EventStreamParserImpl
     public EventStreamParserImpl endStructMember()
         throws XmlRpcException
     {
-        events.add( new StructEvent( EventType.END_STRUCT_MEMBER ) );
+        withDelegate( ( d ) -> d.endStructMember() );
+        addEvent( new StructEvent( EventType.END_STRUCT_MEMBER ) );
         return this;
     }
 
@@ -173,7 +239,8 @@ public class EventStreamParserImpl
     public EventStreamParserImpl startArrayElement( final int index )
         throws XmlRpcException
     {
-        events.add( new ArrayEvent( index ) );
+        withDelegate( ( d ) -> d.startArrayElement( index ) );
+        addEvent( new ArrayEvent( index ) );
         return this;
     }
 
@@ -181,7 +248,8 @@ public class EventStreamParserImpl
     public EventStreamParserImpl startStructMember( final String key )
         throws XmlRpcException
     {
-        events.add( new StructEvent( key ) );
+        withDelegate( ( d ) -> d.startStructMember( key ) );
+        addEvent( new StructEvent( key ) );
         return this;
     }
 
@@ -189,8 +257,59 @@ public class EventStreamParserImpl
     public EventStreamParserImpl value( final Object value, final ValueType type )
         throws XmlRpcException
     {
-        events.add( new ValueEvent( value, type ) );
+        withDelegate( ( d ) -> d.value( value, type ) );
+        addEvent( new ValueEvent( value, type ) );
         return this;
     }
 
+    public CharSequence renderEventTree()
+    {
+        StringBuilder sb = new StringBuilder();
+        final AtomicInteger indent = new AtomicInteger( 0 );
+        events.forEach( (event)->{
+            sb.append('\n');
+            int ident = indent.get();
+
+            switch ( event.getEventType() )
+            {
+                case END_ARRAY:
+                case END_ARRAY_ELEMENT:
+                case END_PARAMETER:
+                case END_REQUEST:
+                case END_RESPONSE:
+                case END_STRUCT:
+                case END_STRUCT_MEMBER:
+                {
+                    ident--;
+                    indent.decrementAndGet();
+                    break;
+                }
+
+                case START_ARRAY:
+                case START_ARRAY_ELEMENT:
+                case START_PARAMETER:
+                case START_REQUEST:
+                case START_RESPONSE:
+                case START_STRUCT:
+                case START_STRUCT_MEMBER:
+                {
+                    indent.incrementAndGet();
+                    break;
+                }
+            }
+
+            for(int i=0; i<ident; i++)
+            {
+                sb.append( "  " );
+            }
+            sb.append( event );
+        } );
+
+        return sb;
+    }
+
+    private interface DelegateOp<T>
+    {
+        void execute(XmlRpcListener delegate) throws XmlRpcException;
+    }
 }

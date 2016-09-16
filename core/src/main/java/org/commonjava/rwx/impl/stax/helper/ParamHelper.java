@@ -17,8 +17,11 @@ package org.commonjava.rwx.impl.stax.helper;
 
 import org.commonjava.rwx.error.XmlRpcException;
 import org.commonjava.rwx.impl.TrackingXmlRpcListener;
+import org.commonjava.rwx.spi.XmlRpcListener;
 import org.commonjava.rwx.vocab.ValueType;
 import org.commonjava.rwx.vocab.XmlRpcConstants;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
@@ -28,7 +31,7 @@ public class ParamHelper
     implements XMLStreamConstants
 {
 
-    public static void parse( final XMLStreamReader reader, final TrackingXmlRpcListener listener )
+    public static void parse( final XMLStreamReader reader, final XmlRpcListener listener )
         throws XMLStreamException, XmlRpcException
     {
         int count = 0;
@@ -40,6 +43,8 @@ public class ParamHelper
             {
                 if ( XmlRpcConstants.VALUE.equals( reader.getName().getLocalPart() ) )
                 {
+                    Logger logger = LoggerFactory.getLogger( ParamHelper.class );
+                    logger.trace( "Starting parameter: {}", count );
                     listener.startParameter( count );
 
                     final ValueHelper vh = new ValueHelper();
@@ -50,6 +55,7 @@ public class ParamHelper
 
                     listener.parameter( count, value, vt );
                     listener.endParameter();
+                    logger.trace( "Finished parameter: {}", count );
 
                     count++;
                 }

@@ -69,7 +69,7 @@ public class SimpleConverterRequest
         final ArrayMapping recipe = new ArrayMapping( SimpleConverterRequest.class, new Integer[0] );
 
         final FieldBinding binding =
-            new FieldBinding( "date", Date.class ).withValueBinderType( TestDateConverter.class );
+            new FieldBinding( "date", Date.class, SimpleConverterRequest.class ).withValueBinderType( TestDateConverter.class );
 
         recipe.addFieldBinding( 0, binding );
         recipes.put( SimpleConverterRequest.class, recipe );

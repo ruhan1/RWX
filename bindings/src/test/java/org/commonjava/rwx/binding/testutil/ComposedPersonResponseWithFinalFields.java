@@ -193,11 +193,11 @@ public class ComposedPersonResponseWithFinalFields
 
         final ArrayMapping recipe = new ArrayMapping( ComposedPersonResponseWithFinalFields.class, 0, 3, 4 );
 
-        recipe.addFieldBinding( 0, new FieldBinding( "userId", String.class ) )
-              .addFieldBinding( 1, new FieldBinding( "firstName", String.class ) )
-              .addFieldBinding( 2, new FieldBinding( "lastName", String.class ) )
-              .addFieldBinding( 3, new FieldBinding( "email", String.class ) )
-              .addFieldBinding( 4, new FieldBinding( "address", SimpleFinalFieldAddress.class ) );
+        recipe.addFieldBinding( 0, new FieldBinding( "userId", String.class, ComposedPersonResponseWithFinalFields.class ) )
+              .addFieldBinding( 1, new FieldBinding( "firstName", String.class, ComposedPersonResponseWithFinalFields.class ) )
+              .addFieldBinding( 2, new FieldBinding( "lastName", String.class, ComposedPersonResponseWithFinalFields.class ) )
+              .addFieldBinding( 3, new FieldBinding( "email", String.class, ComposedPersonResponseWithFinalFields.class ) )
+              .addFieldBinding( 4, new FieldBinding( "address", SimpleFinalFieldAddress.class, ComposedPersonResponseWithFinalFields.class ) );
 
         recipes.put( ComposedPersonResponseWithFinalFields.class, recipe );
 
@@ -205,11 +205,11 @@ public class ComposedPersonResponseWithFinalFields
         final StructMapping sRecipe =
             new StructMapping( SimpleFinalFieldAddress.class, "line1", "city", "state", "zip" );
 
-        sRecipe.addFieldBinding( "line1", new FieldBinding( "line1", String.class ) )
-               .addFieldBinding( "line2", new FieldBinding( "line2", String.class ) )
-               .addFieldBinding( "city", new FieldBinding( "city", String.class ) )
-               .addFieldBinding( "state", new FieldBinding( "state", String.class ) )
-               .addFieldBinding( "zip", new FieldBinding( "zip", String.class ) );
+        sRecipe.addFieldBinding( "line1", new FieldBinding( "line1", String.class, SimpleFinalFieldAddress.class ) )
+               .addFieldBinding( "line2", new FieldBinding( "line2", String.class, SimpleFinalFieldAddress.class ) )
+               .addFieldBinding( "city", new FieldBinding( "city", String.class, SimpleFinalFieldAddress.class ) )
+               .addFieldBinding( "state", new FieldBinding( "state", String.class, SimpleFinalFieldAddress.class ) )
+               .addFieldBinding( "zip", new FieldBinding( "zip", String.class, SimpleFinalFieldAddress.class ) );
 
         recipes.put( SimpleFinalFieldAddress.class, sRecipe );
 

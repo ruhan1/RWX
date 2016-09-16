@@ -111,22 +111,22 @@ public class ComposedPersonResponse3
 
         final ArrayMapping recipe = new ArrayMapping( ComposedPersonResponse3.class, new Integer[0] );
 
-        recipe.addFieldBinding( 0, new FieldBinding( "userId", String.class ) )
-              .addFieldBinding( 1, new FieldBinding( "firstName", String.class ) )
-              .addFieldBinding( 2, new FieldBinding( "lastName", String.class ) )
-              .addFieldBinding( 3, new FieldBinding( "email", String.class ) )
-              .addFieldBinding( 4, new FieldBinding( "address", ArrayAddress.class ) );
+        recipe.addFieldBinding( 0, new FieldBinding( "userId", String.class, ComposedPersonResponse3.class ) )
+              .addFieldBinding( 1, new FieldBinding( "firstName", String.class, ComposedPersonResponse3.class ) )
+              .addFieldBinding( 2, new FieldBinding( "lastName", String.class, ComposedPersonResponse3.class ) )
+              .addFieldBinding( 3, new FieldBinding( "email", String.class, ComposedPersonResponse3.class ) )
+              .addFieldBinding( 4, new FieldBinding( "address", ArrayAddress.class, ComposedPersonResponse3.class ) );
 
         recipes.put( ComposedPersonResponse3.class, recipe );
 
         // ArrayAddress
         final ArrayMapping aRecipe = new ArrayMapping( ArrayAddress.class, new Integer[0] );
 
-        aRecipe.addFieldBinding( 0, new FieldBinding( "line1", String.class ) )
-               .addFieldBinding( 1, new FieldBinding( "line2", String.class ) )
-               .addFieldBinding( 2, new FieldBinding( "city", String.class ) )
-               .addFieldBinding( 3, new FieldBinding( "state", String.class ) )
-               .addFieldBinding( 4, new FieldBinding( "zip", String.class ) );
+        aRecipe.addFieldBinding( 0, new FieldBinding( "line1", String.class, ArrayAddress.class ) )
+               .addFieldBinding( 1, new FieldBinding( "line2", String.class, ArrayAddress.class ) )
+               .addFieldBinding( 2, new FieldBinding( "city", String.class, ArrayAddress.class ) )
+               .addFieldBinding( 3, new FieldBinding( "state", String.class, ArrayAddress.class ) )
+               .addFieldBinding( 4, new FieldBinding( "zip", String.class, ArrayAddress.class ) );
 
         recipes.put( ArrayAddress.class, aRecipe );
 

@@ -15,6 +15,7 @@
  */
 package org.commonjava.rwx.binding.internal.reflect;
 
+import org.commonjava.rwx.binding.conf.BindingConfiguration;
 import org.commonjava.rwx.binding.error.BindException;
 import org.commonjava.rwx.binding.mapping.Mapping;
 import org.commonjava.rwx.binding.testutil.ComposedPersonResponse;
@@ -49,7 +50,7 @@ public class ReflectionUnbinderTest
     public void invalidEntryPoint()
         throws XmlRpcException
     {
-        new ReflectionUnbinder( new SimpleAddress(), new HashMap<Class<?>, Mapping<?>>() ).generate( new RecordingListener() );
+        new ReflectionUnbinder( new SimpleAddress(), new HashMap<Class<?>, Mapping<?>>(), new BindingConfiguration() ).generate( new RecordingListener() );
     }
 
     @Test
@@ -61,7 +62,7 @@ public class ReflectionUnbinderTest
                                new ResponseEvent( false ) ) );
 
         final ReflectionUnbinder unbinder = new ReflectionUnbinder( new XmlRpcFaultException( 101, "Test fault" ),
-                                                                    new HashMap<Class<?>, Mapping<?>>() );
+                                                                    new HashMap<Class<?>, Mapping<?>>(), new BindingConfiguration() );
         final RecordingListener listener = new RecordingListener();
         unbinder.generate( listener );
 
@@ -122,7 +123,7 @@ public class ReflectionUnbinderTest
     private void assertUnbind( final TestObject request )
         throws XmlRpcException
     {
-        final ReflectionUnbinder unbinder = new ReflectionUnbinder( request, request.recipes() );
+        final ReflectionUnbinder unbinder = new ReflectionUnbinder( request, request.recipes(), new BindingConfiguration() );
 
         final RecordingListener listener = new RecordingListener();
         unbinder.generate( listener );

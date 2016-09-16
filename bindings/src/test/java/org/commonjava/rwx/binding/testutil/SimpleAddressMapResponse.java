@@ -63,7 +63,7 @@ public class SimpleAddressMapResponse
 
         final ArrayMapping recipe = new ArrayMapping( SimpleAddressMapResponse.class, new Integer[0] );
 
-        recipe.addFieldBinding( 0, new FieldBinding( "addresses", Map.class ) );
+        recipe.addFieldBinding( 0, new FieldBinding( "addresses", Map.class, SimpleAddressMapResponse.class ) );
 
         recipes.put( SimpleAddressMapResponse.class, recipe );
 

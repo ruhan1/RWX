@@ -109,8 +109,16 @@ public class StructEvent
     @Override
     public String toString()
     {
-        return "StructEvent [eventType=" + eventType + ", key=" + key + ", value=" + value + ", valueType=" + valueType
-            + "]";
+        if ( eventType == EventType.START_STRUCT_MEMBER )
+        {
+            return eventType.name() + "[" + key + "]";
+        }
+        else if ( eventType == EventType.STRUCT_MEMBER )
+        {
+            return eventType.name() + "[" + key + "] = " + value + " (type: " + valueType + ")";
+        }
+
+        return eventType.name();
     }
 
     @Override

@@ -58,6 +58,8 @@ public class MessageBinder
         if ( !ignore && currentField == null )
         {
             final FieldBinding binding = getMapping().getFieldBinding( index );
+            Logger logger = LoggerFactory.getLogger( getClass() );
+            logger.debug( "SET: {}.{} = {}", getMapping().getObjectType().getName(), binding.getFieldName(), value );
             recipe.setProperty( binding.getFieldName(), value );
         }
 
@@ -98,6 +100,8 @@ public class MessageBinder
     {
         if ( !ignore && currentField != null )
         {
+            Logger logger = LoggerFactory.getLogger( getClass() );
+            logger.debug( "SET: {}.{} = {}", getMapping().getObjectType().getName(), currentField.getFieldName(), value );
             recipe.setProperty( currentField.getFieldName(), value );
         }
 

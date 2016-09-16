@@ -18,6 +18,7 @@ package org.commonjava.rwx.impl.stax.helper;
 import org.commonjava.rwx.error.CoercionException;
 import org.commonjava.rwx.error.XmlRpcException;
 import org.commonjava.rwx.impl.TrackingXmlRpcListener;
+import org.commonjava.rwx.spi.XmlRpcListener;
 import org.commonjava.rwx.vocab.ValueType;
 import org.commonjava.rwx.vocab.XmlRpcConstants;
 import org.slf4j.Logger;
@@ -62,7 +63,7 @@ public class ValueHelper
         return type;
     }
 
-    public Object parse( final XMLStreamReader reader, final TrackingXmlRpcListener listener )
+    public Object parse( final XMLStreamReader reader, final XmlRpcListener listener )
         throws XMLStreamException, XmlRpcException
     {
         int evt;
@@ -76,6 +77,8 @@ public class ValueHelper
 
                 type = ValueType.STRING;
                 value = src;
+
+                logger.trace( "Parsed string value: '{}'", value );
             }
             else if ( evt == START_ELEMENT )
             {
@@ -118,7 +121,7 @@ public class ValueHelper
         return value;
     }
 
-    private void parseSimpleValue( final XMLStreamReader reader, final TrackingXmlRpcListener listener )
+    private void parseSimpleValue( final XMLStreamReader reader, final XmlRpcListener listener )
         throws XMLStreamException, CoercionException
     {
         type = ValueType.typeOf( reader.getName().getLocalPart() );

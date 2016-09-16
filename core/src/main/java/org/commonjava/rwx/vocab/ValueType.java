@@ -25,9 +25,11 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import static org.commonjava.rwx.vocab.XmlRpcConstants.DATETIME_FORMAT;
+
 public enum ValueType
 {
-    STRUCT( new ValueCoercion()
+    STRUCT( new ValueCoercion( "STRUCT non-coercion" )
     {
         @Override
         public String toString( final Object value )
@@ -44,7 +46,7 @@ public enum ValueType
         }
     }, Map.class, XmlRpcConstants.STRUCT ),
 
-    ARRAY( new ValueCoercion()
+    ARRAY( new ValueCoercion( "ARRAY non-coercion" )
     {
         @Override
         public String toString( final Object value )
@@ -61,7 +63,7 @@ public enum ValueType
         }
     }, List.class, XmlRpcConstants.ARRAY ),
 
-    NIL( new ValueCoercion()
+    NIL( new ValueCoercion( "NIL-to-null" )
     {
         @Override
         public Object fromString( final String value )
@@ -77,7 +79,7 @@ public enum ValueType
         }
     }, Void.class, "nil" ),
 
-    INT( new ValueCoercion()
+    INT( new ValueCoercion("INT-to-String")
     {
         @Override
         public Object fromString( final String value )
@@ -95,7 +97,7 @@ public enum ValueType
         }
     }, Integer.class, "int", "i4" ),
 
-    BOOLEAN( new ValueCoercion()
+    BOOLEAN( new ValueCoercion("BOOLEAN-to-String")
     {
         @Override
         public String toString( final Object value )
@@ -134,7 +136,7 @@ public enum ValueType
         }
     }, Boolean.class, "boolean" ),
 
-    STRING( new ValueCoercion()
+    STRING( new ValueCoercion("STRING-to-String (with trim)")
     {
         @Override
         public Object fromString( final String value )
@@ -143,7 +145,7 @@ public enum ValueType
         }
     }, String.class, "string" ),
 
-    DOUBLE( new ValueCoercion()
+    DOUBLE( new ValueCoercion("DOUBLE-to-String")
     {
         @Override
         public Object fromString( final String value )
@@ -167,10 +169,8 @@ public enum ValueType
         }
     }, Number.class, "double" ),
 
-    DATETIME( new ValueCoercion()
+    DATETIME( new ValueCoercion("DATETIME-to-String (" + DATETIME_FORMAT + ")")
     {
-        private static final String FORMAT = "yyyyMMdd'T'HHmmss";
-
         @Override
         public Object fromString( final String value )
             throws CoercionException
@@ -178,7 +178,7 @@ public enum ValueType
             try
             {
                 String val = value == null ? null : value.trim();
-                return val == null ? null : new SimpleDateFormat( FORMAT ).parse( value );
+                return val == null ? null : new SimpleDateFormat( DATETIME_FORMAT ).parse( value );
             }
             catch ( final ParseException e )
             {
@@ -192,7 +192,7 @@ public enum ValueType
         {
             try
             {
-                return value == null ? null : new SimpleDateFormat( FORMAT ).format( (Date) value );
+                return value == null ? null : new SimpleDateFormat( DATETIME_FORMAT ).format( (Date) value );
             }
             catch ( final ClassCastException e )
             {
@@ -202,7 +202,7 @@ public enum ValueType
 
     }, Date.class, "dateTime.iso8601" ),
 
-    BASE64( new ValueCoercion()
+    BASE64( new ValueCoercion( "BASE64-to-String")
     {
         @Override
         public Object fromString( final String value )
@@ -313,5 +313,10 @@ public enum ValueType
         }
 
         return STRING;
+    }
+
+    public String toString()
+    {
+        return name();
     }
 }

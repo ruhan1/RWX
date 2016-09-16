@@ -15,17 +15,14 @@
  */
 package org.commonjava.rwx.binding.internal.reflect;
 
-import static org.commonjava.rwx.binding.anno.AnnotationUtils.getRequestMethod;
-import static org.commonjava.rwx.binding.anno.AnnotationUtils.hasAnnotation;
-import static org.commonjava.rwx.binding.anno.AnnotationUtils.isMessage;
-import static org.commonjava.rwx.binding.anno.AnnotationUtils.isRequest;
-import static org.commonjava.rwx.binding.anno.AnnotationUtils.isResponse;
-
+import org.apache.commons.lang.StringUtils;
 import org.commonjava.rwx.binding.anno.ArrayPart;
-import org.commonjava.rwx.binding.anno.Converter;
 import org.commonjava.rwx.binding.anno.Contains;
+import org.commonjava.rwx.binding.anno.Converter;
+import org.commonjava.rwx.binding.anno.SkipContainedNull;
 import org.commonjava.rwx.binding.anno.SkipNull;
 import org.commonjava.rwx.binding.anno.StructPart;
+import org.commonjava.rwx.binding.conf.BindingConfiguration;
 import org.commonjava.rwx.binding.error.BindException;
 import org.commonjava.rwx.binding.internal.xbr.XBRBinderInstantiator;
 import org.commonjava.rwx.binding.mapping.ArrayMapping;
@@ -36,7 +33,6 @@ import org.commonjava.rwx.binding.spi.value.ValueBinder;
 import org.commonjava.rwx.error.CoercionException;
 import org.commonjava.rwx.error.XmlRpcException;
 import org.commonjava.rwx.error.XmlRpcFaultException;
-import org.commonjava.rwx.impl.stax.helper.ValueHelper;
 import org.commonjava.rwx.spi.XmlRpcGenerator;
 import org.commonjava.rwx.spi.XmlRpcListener;
 import org.commonjava.rwx.util.LambdaHolder;
@@ -55,6 +51,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
+import static org.commonjava.rwx.binding.anno.AnnotationUtils.getRequestMethod;
+import static org.commonjava.rwx.binding.anno.AnnotationUtils.hasAnnotation;
+import static org.commonjava.rwx.binding.anno.AnnotationUtils.isMessage;
+import static org.commonjava.rwx.binding.anno.AnnotationUtils.isRequest;
+import static org.commonjava.rwx.binding.anno.AnnotationUtils.isResponse;
+import static org.commonjava.rwx.vocab.ValueType.NIL;
+
 public class ReflectionUnbinder
         implements XmlRpcGenerator
 {
@@ -63,13 +66,16 @@ public class ReflectionUnbinder
 
     private final Map<Class<?>, Mapping<?>> recipesByClass;
 
+    private BindingConfiguration configuration;
+
     private final Object message;
 
-    public ReflectionUnbinder( final Object message, final Map<Class<?>, Mapping<?>> recipes )
+    public ReflectionUnbinder( final Object message, final Map<Class<?>, Mapping<?>> recipes, BindingConfiguration configuration )
             throws BindException
     {
         this.message = message;
         recipesByClass = recipes;
+        this.configuration = configuration;
     }
 
     @SuppressWarnings( "unchecked" )
@@ -105,11 +111,13 @@ public class ReflectionUnbinder
         }
         else if ( hasAnnotation( message, StructPart.class ) )
         {
-            fireStructEvents( message.getClass(), message, listener );
+            FieldBinding binding = new FieldBinding( "NONE; TOP-LEVEL RENDER", message.getClass(), Void.class );
+            fireStructEvents( binding, message, listener );
         }
         else if ( hasAnnotation( message, ArrayPart.class ) )
         {
-            fireArrayEvents( message.getClass(), message, listener );
+            FieldBinding binding = new FieldBinding( "NONE; TOP-LEVEL RENDER", message.getClass(), Void.class );
+            fireArrayEvents( binding, message, listener );
         }
 
         if ( isRequest( message ) )
@@ -142,7 +150,7 @@ public class ReflectionUnbinder
         bindings.forEach( ( index, fieldBinding ) -> {
             try
             {
-                fireValueEvents( fieldBinding, message, listener, ( val, t ) -> {
+                fireValueEvents( fieldBinding, message, listener, true, ( val, t ) -> {
                     try
                     {
                         listener.startParameter( index );
@@ -180,16 +188,19 @@ public class ReflectionUnbinder
     }
 
     @SuppressWarnings( "unchecked" )
-    private List<Object> fireArrayEvents( final Class<?> type, final Object part, final XmlRpcListener listener )
+    private List<Object> fireArrayEvents( final FieldBinding binding, final Object part, final XmlRpcListener listener )
             throws XmlRpcException
     {
+        Class<?> fieldType = binding.getFieldType();
         Logger logger = LoggerFactory.getLogger( getClass() );
-        logger.trace( "Getting mapping recipe for: {}", type.getSimpleName() );
-        final Mapping<Integer> recipe = (Mapping<Integer>) recipesByClass.get( type );
+        logger.trace( "Getting mapping recipe for: {}", fieldType.getSimpleName() );
+        final Mapping<Integer> recipe = (Mapping<Integer>) recipesByClass.get( binding.getFieldType() );
 
         if ( recipe == null )
         {
-            throw new BindException( "Cannot find recipe for array value: " + type.getName() );
+            throw new BindException( "Cannot find recipe for array field: " + binding.getFieldName() + " in: " + binding
+                    .getOwningType()
+                    .getName() + " with field type: " + fieldType.getName() );
         }
 
         final Map<Integer, FieldBinding> bindings = new TreeMap<Integer, FieldBinding>( recipe.getFieldBindings() );
@@ -202,7 +213,7 @@ public class ReflectionUnbinder
         bindings.forEach( ( index, fieldBinding ) -> {
             try
             {
-                Object arrayEntry = fireValueEvents( fieldBinding, part, listener, ( val, t ) -> {
+                Object arrayEntry = fireValueEvents( fieldBinding, part, listener, false, ( val, t ) -> {
                     try
                     {
                         listener.startArrayElement( index );
@@ -251,15 +262,18 @@ public class ReflectionUnbinder
     }
 
     @SuppressWarnings( "unchecked" )
-    private Map<String, Object> fireStructEvents( final Class<?> type, final Object part,
+    private Map<String, Object> fireStructEvents( final FieldBinding binding, final Object part,
                                                   final XmlRpcListener listener )
             throws XmlRpcException
     {
-        final Mapping<String> recipe = (Mapping<String>) recipesByClass.get( type );
+        Class<?> fieldType = binding.getFieldType();
+        final Mapping<String> recipe = (Mapping<String>) recipesByClass.get( binding.getFieldType() );
 
         if ( recipe == null )
         {
-            throw new BindException( "Cannot find recipe for array value: " + type.getName() );
+            throw new BindException( "Cannot find recipe for struct field: " + binding.getFieldName() + " in: " + binding
+                    .getOwningType()
+                    .getName() + " with field type: " + fieldType.getName() );
         }
 
         listener.startStruct();
@@ -271,7 +285,7 @@ public class ReflectionUnbinder
         bindings.forEach( ( memberName, fieldBinding ) -> {
             try
             {
-                Object arrayEntry = fireValueEvents( fieldBinding, part, listener, ( val, t ) -> {
+                Object arrayEntry = fireValueEvents( fieldBinding, part, listener, false, ( val, t ) -> {
                     try
                     {
                         listener.startStructMember( memberName );
@@ -343,18 +357,32 @@ public class ReflectionUnbinder
     private ValueType typeOf( final Object value, final FieldBinding binding )
             throws BindException
     {
+        Logger logger = LoggerFactory.getLogger( getClass() );
+        logger.debug( "Looking for ValueType of: {} (of class: {}) for field binding: {}", value,
+                      ( value == null ? "NONE" : value.getClass().getName() ), binding );
+
         if ( value == null )
         {
-            return ValueType.NIL;
+            logger.debug( "Value is null, returning NIL" );
+            return NIL;
+        }
+
+        if ( value == null && binding == null )
+        {
+            throw new BindException( "Cannot find ValueType. Both value and FieldBinding are null!" );
         }
 
         final Class<?> cls = value.getClass();
+
+        logger.debug( "Looking for ValueType of: {}", cls );
+
         ValueType type = typeCache.get( cls );
         if ( type == null )
         {
-            if ( binding != null && recipesByClass.containsKey( binding.getFieldType() ) )
+            logger.debug( "Lookup recipe for: {}", cls );
+            if ( binding != null && recipesByClass.containsKey( cls ) )
             {
-                final Mapping<?> recipe = recipesByClass.get( binding.getFieldType() );
+                final Mapping<?> recipe = recipesByClass.get( cls );
 
                 if ( recipe instanceof ArrayMapping )
                 {
@@ -372,6 +400,7 @@ public class ReflectionUnbinder
             }
             else
             {
+                logger.debug( "Falling back to ValueType.typeFor({})", value );
                 type = ValueType.typeFor( value );
             }
 
@@ -381,7 +410,7 @@ public class ReflectionUnbinder
             }
         }
 
-        return type;
+        return type == null ? NIL : type;
     }
 
     public interface EventCallback
@@ -390,9 +419,11 @@ public class ReflectionUnbinder
     }
 
     private Object fireValueEvents( final FieldBinding binding, final Object parent, final XmlRpcListener listener,
+                                    boolean ignoreSkipNulls,
                                     EventCallback before, EventCallback after )
             throws XmlRpcException
     {
+        Logger logger = LoggerFactory.getLogger( getClass() );
         final Class<?> parentCls = parent.getClass();
         try
         {
@@ -402,12 +433,19 @@ public class ReflectionUnbinder
 
             Object value = field.get( parent );
 
-            if ( isSuppressedNull( field, parentCls, value ) )
+            if ( !ignoreSkipNulls && isNullSuppressed( field, parentCls, value ) )
             {
+                logger.debug( "Skipping null value for: {}", field );
                 return null;
             }
+//            else if ( value == null )
+//            {
+//                listener.value( null, ValueType.NIL );
+//                return null;
+//            }
 
-            final ValueType type = typeOf( value, binding );
+            ValueType type = typeOf( value, binding );
+            logger.debug( "ValueType for {} in binding: {} is: {}.", value, binding, type );
 
             if ( before != null )
             {
@@ -427,37 +465,52 @@ public class ReflectionUnbinder
             if ( converter != null )
             {
                 final ValueBinder vc = XBRBinderInstantiator.newValueUnbinder( converter );
+                logger.debug( "Calling: {}.generate(..)", vc.getClass().getName() );
                 vc.generate( listener, value, recipesByClass );
             }
             else if ( recipesByClass.containsKey( binding.getFieldType() ) )
             {
+                logger.debug( "Finding appropriate event-firing mechanism for field: {} with value-type: {} (value is: {})", binding, type, value );
                 if ( type == ValueType.ARRAY )
                 {
-                    value = fireArrayEvents( binding.getFieldType(), value, listener );
+                    logger.debug( "Firing array events for: {}", binding );
+                    value = fireArrayEvents( binding, value, listener );
                 }
                 else if ( type == ValueType.STRUCT )
                 {
-                    value = fireStructEvents( binding.getFieldType(), value, listener );
+                    logger.debug( "Firing struct events for: {}", binding );
+                    value = fireStructEvents( binding, value, listener );
                 }
-                else
+                else if ( type != NIL )
                 {
-                    throw new BindException( "Unknown recipe reference type: " + binding.getFieldType() + "\nField: "
-                                                     + binding.getFieldName() + "\nClass: " + parentCls.getName() );
+                    throw new BindException( "Unknown recipe reference type: " + binding.getFieldType() + "\nValue: " + value + "\nField: "
+                                                     + binding.getFieldName() + "\nClass: " + parentCls.getName() + "\nAll recipe classes:\n\n  " + StringUtils
+                            .join( recipesByClass.keySet(), "\n  ") );
                 }
 
+                logger.debug( "Firing value event for: {} on binding: {} with ValueType: {}", value, binding, type );
                 listener.value( value, type );
             }
             else
             {
+                logger.debug(
+                        "No recipe found for field: {} with value-type: {} (value is: {}). Trying to fire raw map/collection events...",
+                        binding, type, value );
+
                 final Contains contains = field.getAnnotation( Contains.class );
+                final SkipContainedNull skipContainedNull = field.getAnnotation( SkipContainedNull.class );
                 if ( Map.class.isAssignableFrom( binding.getFieldType() ) )
                 {
-                    fireMapEvents( value, binding.getFieldName(), contains, listener );
+                    logger.debug( "Firing map events for: {}", binding );
+                    type = ValueType.STRUCT;
+                    fireMapEvents( value, binding, contains, skipContainedNull, listener );
                 }
                 else if ( binding.getFieldType().isArray() || Collection.class.isAssignableFrom(
                         binding.getFieldType() ) )
                 {
-                    fireCollectionEvents( value, binding.getFieldName(), contains, listener );
+                    logger.debug( "Firing collection events for: {}", binding );
+                    type = ValueType.ARRAY;
+                    fireCollectionEvents( value, binding, contains, skipContainedNull, listener );
                 }
                 else
                 {
@@ -467,9 +520,12 @@ public class ReflectionUnbinder
                         throw new XmlRpcException(
                                 "Cannot render {} (type: {}) to string. It has no corresponding coercion, and isn't an @ArrayPart or a @StructPart!" );
                     }
+
+                    logger.debug( "Attempting to coerce raw value of: {} using: {}", value, coercion );
                     value = coercion.toString( value );
                 }
 
+                logger.debug( "Firing value event for: {} on binding: {} with ValueType: {}", value, binding, type );
                 listener.value( value, type );
             }
 
@@ -491,14 +547,44 @@ public class ReflectionUnbinder
         }
     }
 
-    private boolean isSuppressedNull( Field field, Class<?> cls, Object value )
+    private boolean isNullSuppressed( Field field, Class<?> cls, Object value )
     {
         if ( value == null )
         {
-            if ( field.getAnnotation( SkipNull.class ) != null || cls.getAnnotation( SkipNull.class ) != null )
+            SkipNull fieldSkipNull = field.getAnnotation( SkipNull.class );
+            if ( fieldSkipNull != null )
             {
-                return true;
+                return fieldSkipNull.value();
             }
+
+            SkipNull clsSkipNull = cls.getAnnotation( SkipNull.class );
+            if ( clsSkipNull != null )
+            {
+                return clsSkipNull.value();
+            }
+
+            return configuration.isSkipNulls();
+        }
+
+        return false;
+    }
+
+    private boolean isNullSuppressed( SkipContainedNull fieldSkipContained, Class<?> cls, Object value )
+    {
+        if ( value == null )
+        {
+            if ( fieldSkipContained != null )
+            {
+                return fieldSkipContained.value();
+            }
+
+            SkipContainedNull clsSkipContained = cls.getAnnotation( SkipContainedNull.class );
+            if ( clsSkipContained != null )
+            {
+                return clsSkipContained.value();
+            }
+
+            return configuration.isSkipNulls();
         }
 
         return false;
@@ -534,35 +620,53 @@ public class ReflectionUnbinder
     }
 
     @SuppressWarnings( "unchecked" )
-    private void fireMapEvents( final Object values, final String fieldName, final Contains contains,
-                                final XmlRpcListener listener )
+    private void fireMapEvents( final Object values, FieldBinding binding, final Contains contains,
+                                final SkipContainedNull skipContainedNull, final XmlRpcListener listener )
             throws XmlRpcException
     {
+        if ( values == null )
+        {
+            return;
+        }
+
         ValueType vt = typeOf( contains );
 
-        listener.startStruct();
+        boolean structStarted = false;
 
+        Logger logger = LoggerFactory.getLogger( getClass() );
+        logger.debug( "Firing events for map entries in: {}", binding );
         for ( final Map.Entry<Object, Object> entry : ( (Map<Object, Object>) values ).entrySet() )
         {
             final String key = String.valueOf( entry.getKey() );
             Object value = entry.getValue();
+            if ( isNullSuppressed( skipContainedNull, binding.getOwningType(), value ) )
+            {
+                continue;
+            }
+
             final Class<?> type = value.getClass();
 
+            binding = new FieldBinding( binding.getFieldName() + "<Map-Value>", type, binding.getOwningType() );
             if ( vt == null )
             {
-                final FieldBinding binding = new FieldBinding( fieldName + "<Map-Value>", type );
                 vt = typeOf( value, binding );
+            }
+
+            if ( !structStarted )
+            {
+                listener.startStruct();
+                structStarted = true;
             }
 
             listener.startStructMember( key );
 
             if ( ValueType.ARRAY == vt )
             {
-                fireArrayEvents( type, value, listener );
+                fireArrayEvents( binding, value, listener );
             }
             else if ( ValueType.STRUCT == vt )
             {
-                fireStructEvents( type, value, listener );
+                fireStructEvents( binding, value, listener );
             }
             else
             {
@@ -575,15 +679,23 @@ public class ReflectionUnbinder
             listener.endStructMember();
         }
 
-        listener.endStruct();
+        if ( structStarted )
+        {
+            listener.endStruct();
+        }
 
     }
 
     @SuppressWarnings( "unchecked" )
-    private void fireCollectionEvents( final Object values, final String fieldName, final Contains contains,
-                                       final XmlRpcListener listener )
+    private void fireCollectionEvents( final Object values, FieldBinding binding, final Contains contains,
+                                       SkipContainedNull skipContainedNull, final XmlRpcListener listener )
             throws XmlRpcException
     {
+        if ( values == null )
+        {
+            return;
+        }
+
         ValueType vt = typeOf( contains );
 
         listener.startArray();
@@ -601,17 +713,22 @@ public class ReflectionUnbinder
         int i = 0;
         for ( Object entry : vals )
         {
+            if ( isNullSuppressed( skipContainedNull, binding.getOwningType(), entry ) )
+            {
+                continue;
+            }
+
             final Class<?> type = entry.getClass();
 
+            binding = new FieldBinding( binding.getFieldName() + "<Collection-Value>", type, binding.getOwningType() );
             if ( vt == null )
             {
-                final FieldBinding binding = new FieldBinding( fieldName + "<Map-Value>", type );
                 vt = typeOf( entry, binding );
             }
 
             if ( vt == null )
             {
-                throw new CoercionException( "Cannot find suitable coercion for type: " + ( contains == null ?
+                throw new CoercionException( "Cannot find suitable coercion for field: " + binding.getFieldName() + " in: " + type.getName() + ", with collection type: " + ( contains == null ?
                         "Un-annotated collection" :
                         contains.value() ) );
             }
@@ -620,11 +737,11 @@ public class ReflectionUnbinder
 
             if ( ValueType.ARRAY == vt )
             {
-                fireArrayEvents( type, entry, listener );
+                fireArrayEvents( binding, entry, listener );
             }
             else if ( ValueType.STRUCT == vt )
             {
-                fireStructEvents( type, entry, listener );
+                fireStructEvents( binding, entry, listener );
             }
             else
             {

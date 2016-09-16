@@ -17,6 +17,7 @@ package org.commonjava.rwx.impl.stax.helper;
 
 import org.commonjava.rwx.error.XmlRpcException;
 import org.commonjava.rwx.impl.TrackingXmlRpcListener;
+import org.commonjava.rwx.spi.XmlRpcListener;
 import org.commonjava.rwx.vocab.ValueType;
 import org.commonjava.rwx.vocab.XmlRpcConstants;
 import org.slf4j.Logger;
@@ -38,7 +39,7 @@ public class ArrayHelper
         return parse( reader, listener, true );
     }
 
-    public static List<Object> parse( final XMLStreamReader reader, final TrackingXmlRpcListener listener,
+    public static List<Object> parse( final XMLStreamReader reader, final XmlRpcListener listener,
                                       final boolean enableEvents )
         throws XMLStreamException, XmlRpcException
     {

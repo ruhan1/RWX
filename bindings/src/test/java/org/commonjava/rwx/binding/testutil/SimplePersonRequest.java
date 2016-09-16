@@ -55,7 +55,7 @@ public class SimplePersonRequest
         final Map<Class<?>, Mapping<?>> recipes = new HashMap<Class<?>, Mapping<?>>();
 
         final ArrayMapping recipe = new ArrayMapping( SimplePersonRequest.class, new Integer[0] );
-        recipe.addFieldBinding( 0, new FieldBinding( "userId", String.class ) );
+        recipe.addFieldBinding( 0, new FieldBinding( "userId", String.class, SimplePersonRequest.class ) );
         recipes.put( SimplePersonRequest.class, recipe );
 
         return recipes;

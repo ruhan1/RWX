@@ -15,13 +15,17 @@
  */
 package org.commonjava.rwx.impl.stax;
 
+import org.apache.commons.lang.StringUtils;
 import org.commonjava.rwx.error.XmlRpcException;
 import org.commonjava.rwx.impl.TrackingXmlRpcListener;
+import org.commonjava.rwx.impl.estream.EventStreamParserImpl;
 import org.commonjava.rwx.impl.stax.helper.RequestHelper;
 import org.commonjava.rwx.impl.stax.helper.ResponseHelper;
 import org.commonjava.rwx.spi.XmlRpcListener;
 import org.commonjava.rwx.spi.XmlRpcParser;
 import org.commonjava.rwx.vocab.XmlRpcConstants;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
@@ -84,7 +88,17 @@ public class StaxParser
     public void parse( final XmlRpcListener l )
         throws XmlRpcException
     {
-        final TrackingXmlRpcListener listener = new TrackingXmlRpcListener( l );
+        XmlRpcListener listener = l;
+        Logger logger = LoggerFactory.getLogger( getClass() );
+        TrackingXmlRpcListener tracker = null;
+        EventStreamParserImpl estream = null;
+        if ( logger.isTraceEnabled() )
+        {
+            tracker = new TrackingXmlRpcListener( l );
+            estream = new EventStreamParserImpl( tracker );
+            listener = estream;
+        }
+
         try
         {
             while ( reader.hasNext() )
@@ -111,6 +125,20 @@ public class StaxParser
         catch ( final RuntimeException e )
         {
 
+        }
+        finally
+        {
+            if ( logger.isTraceEnabled() )
+            {
+                try
+                {
+                    logger.trace( "Message parse call trace:\n\n  {}\n\nEvent tree:\n\n  {}\n\n",
+                                  StringUtils.join( tracker.getCalls(), "\n  " ), estream.renderEventTree() );
+                }
+                catch ( Throwable t )
+                {
+                }
+            }
         }
     }
 }
