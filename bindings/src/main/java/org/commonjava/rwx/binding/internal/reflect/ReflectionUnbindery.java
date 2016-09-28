@@ -125,12 +125,13 @@ public class ReflectionUnbindery
         EventStreamParserImpl estream = null;
 
         XmlRpcListener listener = renderer;
-        if ( logger.isTraceEnabled() )
-        {
+//        if ( logger.isTraceEnabled() )
+//        {
             tracker = new TrackingXmlRpcListener( renderer );
-            estream = new EventStreamParserImpl( tracker );
-            listener = estream;
-        }
+            listener = tracker;
+//            estream = new EventStreamParserImpl( tracker );
+//            listener = estream;
+//        }
 
         if ( value instanceof XmlRpcGenerator )
         {
@@ -141,11 +142,11 @@ public class ReflectionUnbindery
             new ReflectionUnbinder( value, recipes, configuration ).generate( listener );
         }
 
-        if ( logger.isTraceEnabled() )
-        {
-            logger.trace( "Message call trace:\n\n  {}\n\nEvent tree:\n\n  {}\n\nXML:\n\n{}\n\n",
-                          StringUtils.join( tracker.getCalls(), "\n  " ), estream.renderEventTree(), renderer.documentToString() );
-        }
+//        if ( logger.isTraceEnabled() )
+//        {
+//            logger.trace( "Message call trace:\n\n  {}\n\nEvent tree:\n\n  {}\n\nXML:\n\n{}\n\n",
+//                          StringUtils.join( tracker.getCalls(), "\n  " ), estream.renderEventTree(), renderer.documentToString() );
+//        }
 
         return renderer.getDocument();
     }

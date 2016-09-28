@@ -91,13 +91,14 @@ public class StaxParser
         XmlRpcListener listener = l;
         Logger logger = LoggerFactory.getLogger( getClass() );
         TrackingXmlRpcListener tracker = null;
-        EventStreamParserImpl estream = null;
-        if ( logger.isTraceEnabled() )
-        {
+//        EventStreamParserImpl estream = null;
+//        if ( logger.isTraceEnabled() )
+//        {
             tracker = new TrackingXmlRpcListener( l );
-            estream = new EventStreamParserImpl( tracker );
-            listener = estream;
-        }
+            listener = tracker;
+//            estream = new EventStreamParserImpl( tracker );
+//            listener = estream;
+//        }
 
         try
         {
@@ -126,19 +127,19 @@ public class StaxParser
         {
 
         }
-        finally
-        {
-            if ( logger.isTraceEnabled() )
-            {
-                try
-                {
-                    logger.trace( "Message parse call trace:\n\n  {}\n\nEvent tree:\n\n  {}\n\n",
-                                  StringUtils.join( tracker.getCalls(), "\n  " ), estream.renderEventTree() );
-                }
-                catch ( Throwable t )
-                {
-                }
-            }
-        }
+//        finally
+//        {
+//            if ( logger.isTraceEnabled() )
+//            {
+//                try
+//                {
+//                    logger.trace( "Message parse call trace:\n\n  {}\n\nEvent tree:\n\n  {}\n\n",
+//                                  StringUtils.join( tracker.getCalls(), "\n  " ), estream.renderEventTree() );
+//                }
+//                catch ( Throwable t )
+//                {
+//                }
+//            }
+//        }
     }
 }
