@@ -443,8 +443,6 @@ public class ReflectionUnbinder
                         throw new XmlRpcException(
                                 "Cannot render {} (type: {}) to string. It has no corresponding coercion, and isn't an @ArrayPart or a @StructPart!" );
                     }
-
-                    logger.debug( "Attempting to coerce raw value of: {} using: {}", value, coercion );
                 }
 
                 logger.debug( "Firing value event for: {} on binding: {} with ValueType: {}", value, binding, type );
