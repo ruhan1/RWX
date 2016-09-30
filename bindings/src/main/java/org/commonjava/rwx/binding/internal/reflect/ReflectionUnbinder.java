@@ -445,7 +445,6 @@ public class ReflectionUnbinder
                     }
 
                     logger.debug( "Attempting to coerce raw value of: {} using: {}", value, coercion );
-                    value = coercion.toString( value );
                 }
 
                 logger.debug( "Firing value event for: {} on binding: {} with ValueType: {}", value, binding, type );
