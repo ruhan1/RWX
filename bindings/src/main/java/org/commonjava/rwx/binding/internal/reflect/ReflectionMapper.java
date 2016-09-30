@@ -330,11 +330,11 @@ public class ReflectionMapper
                     logger.debug( "Adding imported mapping: {}", cls );
                     if ( hasAnnotation( cls, Request.class, Response.class, ArrayPart.class ) )
                     {
-                        processArrayPart( type, mappings );
+                        processArrayPart( cls, mappings );
                     }
                     else if ( hasAnnotation( cls, StructPart.class ) )
                     {
-                        processStructPart( type, mappings );
+                        processStructPart( cls, mappings );
                     }
                     else
                     {
