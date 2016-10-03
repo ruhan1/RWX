@@ -15,14 +15,11 @@
  */
 package org.commonjava.rwx.binding.internal.xbr;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
-
 import org.commonjava.rwx.binding.error.BindException;
-import org.commonjava.rwx.binding.internal.xbr.XBRCompositionBindery;
 import org.commonjava.rwx.binding.testutil.ComposedPersonResponse;
 import org.commonjava.rwx.binding.testutil.ComposedPersonResponse3;
 import org.commonjava.rwx.binding.testutil.ComposedPersonResponseWithFinalFields;
+import org.commonjava.rwx.binding.testutil.DoubleRequest;
 import org.commonjava.rwx.binding.testutil.InheritedPersonRequest;
 import org.commonjava.rwx.binding.testutil.SimpleAddress;
 import org.commonjava.rwx.binding.testutil.SimpleFinalFieldAddress;
@@ -33,11 +30,13 @@ import org.commonjava.rwx.impl.estream.EventStreamGeneratorImpl;
 import org.commonjava.rwx.impl.estream.EventStreamParserImpl;
 import org.junit.Test;
 
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.StringReader;
 import java.io.StringWriter;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 public class XBRCompositionBinderyTest
 {
@@ -177,6 +176,13 @@ public class XBRCompositionBinderyTest
                 new ComposedPersonResponseWithFinalFields( "foo", "foo@nowhere.com", address );
 
         assertRoundTrip_StreamDriven( response );
+    }
+
+    @Test
+    public void doubleResponse() throws XmlRpcException {
+        DoubleRequest intResponse = new DoubleRequest(3.0);
+
+        assertRoundTrip_StreamDriven(intResponse);
     }
 
     private void assertRoundTrip_EventDriven( final Object object )

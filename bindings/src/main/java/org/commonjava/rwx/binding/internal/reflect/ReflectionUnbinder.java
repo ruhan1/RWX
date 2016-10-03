@@ -35,7 +35,6 @@ import org.commonjava.rwx.error.XmlRpcException;
 import org.commonjava.rwx.error.XmlRpcFaultException;
 import org.commonjava.rwx.spi.XmlRpcGenerator;
 import org.commonjava.rwx.spi.XmlRpcListener;
-import org.commonjava.rwx.util.ValueCoercion;
 import org.commonjava.rwx.vocab.ValueType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -434,15 +433,6 @@ public class ReflectionUnbinder
                     logger.debug( "Firing collection events for: {}", binding );
                     type = ValueType.ARRAY;
                     fireCollectionEvents( value, binding, contains, skipContainedNull, listener );
-                }
-                else
-                {
-                    ValueCoercion coercion = type.coercion();
-                    if ( coercion == null )
-                    {
-                        throw new XmlRpcException(
-                                "Cannot render {} (type: {}) to string. It has no corresponding coercion, and isn't an @ArrayPart or a @StructPart!" );
-                    }
                 }
 
                 logger.debug( "Firing value event for: {} on binding: {} with ValueType: {}", value, binding, type );
