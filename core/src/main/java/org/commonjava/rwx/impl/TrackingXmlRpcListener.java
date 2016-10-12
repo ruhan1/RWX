@@ -59,121 +59,121 @@ public class TrackingXmlRpcListener
     public XmlRpcListener arrayElement( final int index, final Object value, final ValueType type )
             throws XmlRpcException
     {
-        return record( () -> current.arrayElement( index, value, type ) );
+        return proceed( () -> current.arrayElement( index, value, type ) );
     }
 
     public XmlRpcListener endArray()
             throws XmlRpcException
     {
-        return record( () -> current.endArray() );
+        return proceed( () -> current.endArray() );
     }
 
     public XmlRpcListener endArrayElement()
             throws XmlRpcException
     {
-        return record( () -> current.endArrayElement() );
+        return proceed( () -> current.endArrayElement() );
     }
 
     public XmlRpcListener endParameter()
             throws XmlRpcException
     {
-        return record( () -> current.endParameter() );
+        return proceed( () -> current.endParameter() );
     }
 
     public XmlRpcListener endRequest()
             throws XmlRpcException
     {
-        return record( () -> current.endRequest() );
+        return proceed( () -> current.endRequest() );
     }
 
     public XmlRpcListener endResponse()
             throws XmlRpcException
     {
-        return record( () -> current.endResponse() );
+        return proceed( () -> current.endResponse() );
     }
 
     public XmlRpcListener endStruct()
             throws XmlRpcException
     {
-        return record( () -> current.endStruct() );
+        return proceed( () -> current.endStruct() );
     }
 
     public XmlRpcListener endStructMember()
             throws XmlRpcException
     {
-        return record( () -> current.endStructMember() );
+        return proceed( () -> current.endStructMember() );
     }
 
     public XmlRpcListener fault( final int code, final String message )
             throws XmlRpcException
     {
-        return record( () -> current.fault( code, message ) );
+        return proceed( () -> current.fault( code, message ) );
     }
 
     public XmlRpcListener parameter( final int index, final Object value, final ValueType type )
             throws XmlRpcException
     {
-        return record( () -> current.parameter( index, value, type ) );
+        return proceed( () -> current.parameter( index, value, type ) );
     }
 
     public XmlRpcListener requestMethod( final String methodName )
             throws XmlRpcException
     {
-        return record( () -> current.requestMethod( methodName ) );
+        return proceed( () -> current.requestMethod( methodName ) );
     }
 
     public XmlRpcListener startArray()
             throws XmlRpcException
     {
-        return record( () -> current.startArray() );
+        return proceed( () -> current.startArray() );
     }
 
     public XmlRpcListener startArrayElement( final int index )
             throws XmlRpcException
     {
-        return record( () -> current.startArrayElement( index ) );
+        return proceed( () -> current.startArrayElement( index ) );
     }
 
     public XmlRpcListener startParameter( final int index )
             throws XmlRpcException
     {
-        return record( () -> current.startParameter( index ) );
+        return proceed( () -> current.startParameter( index ) );
     }
 
     public XmlRpcListener startRequest()
             throws XmlRpcException
     {
-        return record( () -> current.startRequest() );
+        return proceed( () -> current.startRequest() );
     }
 
     public XmlRpcListener startResponse()
             throws XmlRpcException
     {
-        return record( () -> current.startResponse() );
+        return proceed( () -> current.startResponse() );
     }
 
     public XmlRpcListener startStruct()
             throws XmlRpcException
     {
-        return record( () -> current.startStruct() );
+        return proceed( () -> current.startStruct() );
     }
 
     public XmlRpcListener startStructMember( final String key )
             throws XmlRpcException
     {
-        return record( () -> current.startStructMember( key ) );
+        return proceed( () -> current.startStructMember( key ) );
     }
 
     public XmlRpcListener structMember( final String key, final Object value, final ValueType type )
             throws XmlRpcException
     {
-        return record( () -> current.structMember( key, value, type ) );
+        return proceed( () -> current.structMember( key, value, type ) );
     }
 
     public XmlRpcListener value( final Object value, final ValueType type )
             throws XmlRpcException
     {
-        return record( () -> current.value( value, type ) );
+        return proceed( () -> current.value( value, type ) );
     }
 
     private List<XmlRpcCall> calls = new ArrayList<>();
@@ -225,7 +225,7 @@ public class TrackingXmlRpcListener
         }
     }
 
-    private XmlRpcListener record( RecordingOp<XmlRpcListener> supplier )
+    private XmlRpcListener proceed(RecordingOp<XmlRpcListener> supplier )
             throws XmlRpcException
     {
         XmlRpcListener next = supplier.execute();
