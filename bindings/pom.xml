@@ -21,7 +21,7 @@
   <parent>
     <artifactId>rwx-parent</artifactId>
     <groupId>org.commonjava.rwx</groupId>
-    <version>1.1</version>
+    <version>1.2-SNAPSHOT</version>
   </parent>
   
   <artifactId>rwx-bindings</artifactId>
