@@ -64,23 +64,26 @@ public class EStreamResponseHandler
 
             Logger logger = LoggerFactory.getLogger( getClass() );
 
-            File recording = null;
-            FileOutputStream stream = null;
-            try
+            if ( logger.isTraceEnabled() )
             {
-                recording = File.createTempFile( "xml-rpc.response.", ".xml" );
-                stream = new FileOutputStream( recording );
-                stream.write( baos.toByteArray() );
-            }
-            catch ( final IOException e )
-            {
-                logger.debug( "Failed to record xml-rpc response to file.", e );
-                // this is an auxilliary function. ignore errors.
-            }
-            finally
-            {
-                IOUtils.closeQuietly( stream );
-                logger.info( "\n\n\nRecorded response to: {}\n\n\n", recording );
+                File recording = null;
+                FileOutputStream stream = null;
+                try
+                {
+                    recording = File.createTempFile( "xml-rpc.response.", ".xml" );
+                    stream = new FileOutputStream( recording );
+                    stream.write( baos.toByteArray() );
+                }
+                catch ( final IOException e )
+                {
+                    logger.debug( "Failed to record xml-rpc response to file.", e );
+                    // this is an auxilliary function. ignore errors.
+                }
+                finally
+                {
+                    IOUtils.closeQuietly( stream );
+                    logger.info( "\n\n\nRecorded response to: {}\n\n\n", recording );
+                }
             }
 
             try
