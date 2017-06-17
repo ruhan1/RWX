@@ -55,14 +55,13 @@ public class EStreamResponseHandler
     public List<Event<?>> handleResponse( final HttpResponse resp )
         throws ClientProtocolException, IOException
     {
+        Logger logger = LoggerFactory.getLogger( getClass() );
         final StatusLine status = resp.getStatusLine();
-        System.out.println( status );
+        logger.debug( status.toString() );
         if ( status.getStatusCode() > 199 && status.getStatusCode() < 203 )
         {
             final ByteArrayOutputStream baos = new ByteArrayOutputStream();
             IOUtils.copy( resp.getEntity().getContent(), baos );
-
-            Logger logger = LoggerFactory.getLogger( getClass() );
 
             if ( logger.isTraceEnabled() )
             {
