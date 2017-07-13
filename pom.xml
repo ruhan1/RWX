@@ -52,6 +52,7 @@
     <module>bindings</module>
     <module>http</module>
     <module>experimental</module>
+    <module>rwx2</module>
   </modules>
   
   <dependencyManagement>
