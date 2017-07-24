@@ -1,4 +1,4 @@
-package org.commonjava.rwx2.core.koji;
+package org.commonjava.rwx2.test.koji;
 
 import org.commonjava.rwx.binding.anno.DataKey;
 import org.commonjava.rwx.binding.anno.KeyRefs;
@@ -14,14 +14,19 @@ class KojiBuildInfo
 {
     @DataKey("build_id")
     private int id;
+
     @DataKey("package_id")
     private int packageId;
+
     @DataKey("package_name")
     private String name;
+
     @DataKey("version")
     private String version;
+
     @DataKey("release")
     private String release;
+
     // ...
     @DataKey("extra")
     private Map<String, Object> extra;

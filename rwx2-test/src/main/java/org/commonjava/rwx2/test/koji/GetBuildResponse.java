@@ -1,4 +1,4 @@
-package org.commonjava.rwx2.core.koji;
+package org.commonjava.rwx2.test.koji;
 
 import org.commonjava.rwx.binding.anno.DataIndex;
 import org.commonjava.rwx.binding.anno.Response;
