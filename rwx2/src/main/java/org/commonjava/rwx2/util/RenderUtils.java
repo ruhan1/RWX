@@ -9,6 +9,8 @@ import org.commonjava.rwx.error.CoercionException;
 import org.commonjava.rwx.error.XmlRpcException;
 import org.commonjava.rwx.vocab.ValueType;
 import org.commonjava.rwx2.model.MethodCall;
+import org.commonjava.rwx2.model.MethodResponse;
+import org.commonjava.rwx2.model.RpcObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,16 +24,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.commonjava.rwx.vocab.XmlRpcConstants.ARRAY;
-import static org.commonjava.rwx.vocab.XmlRpcConstants.DATA;
-import static org.commonjava.rwx.vocab.XmlRpcConstants.MEMBER;
-import static org.commonjava.rwx.vocab.XmlRpcConstants.METHOD_NAME;
-import static org.commonjava.rwx.vocab.XmlRpcConstants.NAME;
-import static org.commonjava.rwx.vocab.XmlRpcConstants.PARAM;
-import static org.commonjava.rwx.vocab.XmlRpcConstants.PARAMS;
-import static org.commonjava.rwx.vocab.XmlRpcConstants.REQUEST;
-import static org.commonjava.rwx.vocab.XmlRpcConstants.STRUCT;
-import static org.commonjava.rwx.vocab.XmlRpcConstants.VALUE;
+import static org.commonjava.rwx.vocab.XmlRpcConstants.*;
 
 /**
  * Created by ruhan on 7/13/17.
@@ -41,18 +34,27 @@ public class RenderUtils
     final static Logger logger = LoggerFactory.getLogger( RenderUtils.class );
 
     /**
-     * Render a request object to MethodCall object which represents a Map/List structure.
+     * Render an object to RpcObject (MethodCall, MethodResponse, or Fault ) which represents a Map/List structure.
      *
      * @param request
      * @return
      * @throws XmlRpcException
      */
-    public static MethodCall render( Object request ) throws XmlRpcException
+    public static RpcObject render( Object request ) throws XmlRpcException
     {
-        MethodCall ret = new MethodCall();
+        RpcObject ret = null;
         Class<?> cls = request.getClass();
-        Request anno = cls.getAnnotation( Request.class );
-        ret.setMethodName( anno.method() );
+        Request requestAnno = cls.getAnnotation( Request.class );
+        if (requestAnno != null)
+        {
+            MethodCall methodCall = new MethodCall();
+            methodCall.setMethodName( requestAnno.method() );
+            ret = methodCall;
+        }
+        else
+        {
+            ret = new MethodResponse();
+        }
         ret.setParams( getList( request ) );
         return ret;
     }
@@ -169,13 +171,53 @@ public class RenderUtils
     }
 
     /**
-     * Serialize a MethodCall object to XML string.
+     * Serialize a MethodCall or MethodResponse object to XML string.
      *
-     * @param methodCall
+     * @param rpcObject
      * @return
      * @throws XmlRpcException
      */
-    public static String toXMLString( MethodCall methodCall ) throws XmlRpcException
+    public static String toXMLString( Object rpcObject ) throws XmlRpcException
+    {
+        if ( rpcObject instanceof MethodCall )
+        {
+            return toRequestXMLString( (MethodCall) rpcObject );
+        }
+        else if ( rpcObject instanceof MethodResponse )
+        {
+            return toResponseXMLString( (MethodResponse) rpcObject );
+        }
+        else
+        {
+            throw new XmlRpcException( "Not supported, " + rpcObject.getClass() );
+        }
+    }
+
+    private static String toResponseXMLString( MethodResponse methodResponse ) throws XmlRpcException
+    {
+        XMLOutputFactory output = XMLOutputFactory.newInstance();
+        StringWriter result = new StringWriter();
+        try
+        {
+            XMLStreamWriter w = output.createXMLStreamWriter( result );
+            w.writeStartDocument();
+            w.writeStartElement( RESPONSE );
+            List<Object> params = methodResponse.getParams();
+            writeParams(w, params);
+            w.writeEndElement();
+            w.writeEndDocument();
+            w.close();
+        }
+        catch ( Exception e )
+        {
+            logger.error( "Write to XML error", e );
+            return null;
+        }
+
+        return result.toString();
+    }
+
+    private static String toRequestXMLString( MethodCall methodCall ) throws XmlRpcException
     {
         XMLOutputFactory output = XMLOutputFactory.newInstance();
         StringWriter result = new StringWriter();
@@ -188,17 +230,7 @@ public class RenderUtils
             w.writeCharacters( methodCall.getMethodName() );
             w.writeEndElement();
             List<Object> params = methodCall.getParams();
-            if ( params != null && !params.isEmpty() )
-            {
-                w.writeStartElement( PARAMS );
-                for ( Object object : params )
-                {
-                    w.writeStartElement( PARAM );
-                    writeValue( w, object );
-                    w.writeEndElement();
-                }
-                w.writeEndElement();
-            }
+            writeParams(w, params);
             w.writeEndElement();
             w.writeEndDocument();
             w.close();
@@ -210,6 +242,21 @@ public class RenderUtils
         }
 
         return result.toString();
+    }
+
+    private static void writeParams( XMLStreamWriter w, List<Object> params ) throws XmlRpcException, XMLStreamException
+    {
+        if ( params != null && !params.isEmpty() )
+        {
+            w.writeStartElement( PARAMS );
+            for ( Object object : params )
+            {
+                w.writeStartElement( PARAM );
+                writeValue( w, object );
+                w.writeEndElement();
+            }
+            w.writeEndElement();
+        }
     }
 
     private static void writeValue( XMLStreamWriter w, Object object ) throws XMLStreamException, CoercionException

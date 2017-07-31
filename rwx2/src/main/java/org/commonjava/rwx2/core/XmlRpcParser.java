@@ -7,6 +7,7 @@ import org.commonjava.rwx.vocab.ValueType;
 import org.commonjava.rwx2.model.Fault;
 import org.commonjava.rwx2.model.MethodCall;
 import org.commonjava.rwx2.model.MethodResponse;
+import org.commonjava.rwx2.model.RpcObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,7 +25,7 @@ import java.util.Map;
 import static org.commonjava.rwx.vocab.XmlRpcConstants.*;
 
 /**
- * XML-RPC request/response parser. This will parse input xml stream and return MethodCall/MethodResponse or a Fault object
+ * XML-RPC request/response parser. This will parse input xml stream and return an RpcObject (MethodCall, MethodResponse or a Fault)
  * which represents a Map/List structure.
  *
  * Created by ruhan on 7/13/17.
@@ -51,13 +52,13 @@ public class XmlRpcParser
     }
 
     /**
-     * Parse method response. XML-RPC response has either fault or params element.
+     * Parse method request or response. XML-RPC response has either fault or params element.
      * @return
      * @throws XmlRpcException
      */
-    public Object parse() throws XmlRpcException, XMLStreamException
+    public RpcObject parse() throws XmlRpcException, XMLStreamException
     {
-        Object ret = null;
+        RpcObject ret = null;
 
         int level = 0;
         do
@@ -142,9 +143,9 @@ public class XmlRpcParser
         return ret;
     }
 
-    private Object parseResponse( XMLStreamReader reader ) throws XMLStreamException, CoercionException
+    private RpcObject parseResponse( XMLStreamReader reader ) throws XMLStreamException, CoercionException
     {
-        Object ret = null;
+        RpcObject ret = null;
 
         int level = 1;
         do

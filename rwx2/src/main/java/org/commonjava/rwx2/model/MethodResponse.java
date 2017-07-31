@@ -16,17 +16,6 @@ import java.util.List;
  * Created by ruhan on 7/13/17.
  */
 public final class MethodResponse
+                extends RpcObject
 {
-    private List<Object> params;
-
-    public List<Object> getParams()
-    {
-        return params;
-    }
-
-    public void setParams( List<Object> params )
-    {
-        this.params = params;
-    }
-
 }

@@ -3,6 +3,7 @@ package org.commonjava.rwx2.core.simple.generated;
 import org.commonjava.rwx2.core.Parser;
 import org.commonjava.rwx2.core.simple.SimpleResponse;
 import org.commonjava.rwx2.model.MethodResponse;
+import org.commonjava.rwx2.model.RpcObject;
 
 import java.util.List;
 
@@ -13,11 +14,11 @@ public class SimpleResponse_Parser
                 implements Parser<SimpleResponse>
 {
     @Override
-    public SimpleResponse parse( MethodResponse response )
+    public SimpleResponse parse( Object object )
     {
         SimpleResponse ret = new SimpleResponse();
 
-        List<Object> params = response.getParams();
+        List<Object> params = ((RpcObject)object).getParams();
         ret.setValue( (Double) params.get( 0 ) );
 
         return ret;

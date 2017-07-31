@@ -4,9 +4,13 @@ import groovy.lang.Writable;
 import groovy.text.GStringTemplateEngine;
 import groovy.text.Template;
 import org.apache.commons.io.IOUtils;
+import org.commonjava.rwx.binding.anno.ArrayPart;
 import org.commonjava.rwx.binding.anno.DataIndex;
+import org.commonjava.rwx.binding.anno.DataKey;
 import org.commonjava.rwx.binding.anno.Request;
 import org.commonjava.rwx.binding.anno.Response;
+import org.commonjava.rwx.binding.anno.StructPart;
+import org.commonjava.rwx2.util.ProcessorUtils;
 
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.Filer;
@@ -21,9 +25,18 @@ import java.io.IOException;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
+
+import static org.commonjava.rwx2.util.ProcessorUtils.GENERATED;
+import static org.commonjava.rwx2.util.ProcessorUtils.getList;
+import static org.commonjava.rwx2.util.ProcessorUtils.getMethodName;
+import static org.commonjava.rwx2.util.ProcessorUtils.getPackageAndClassName;
+import static org.commonjava.rwx2.util.ProcessorUtils.getRegistryClassName;
+import static org.commonjava.rwx2.util.ProcessorUtils.union;
 
 /**
  * Created by ruhan on 7/24/17.
@@ -40,30 +53,38 @@ public class AnnoProcessor
     public static final String TEMPLATE_PKG = "groovy";
 
     public static final String RENDERER_TEMPLATE = "Renderer.groovy";
+
     public static final String PARSER_TEMPLATE = "Parser.groovy";
+
+    public static final String REGISTRY_TEMPLATE = "Registry.groovy";
 
     final GStringTemplateEngine engine = new GStringTemplateEngine();
 
     @Override
-    public boolean process( Set<? extends TypeElement> annotations, RoundEnvironment roundEnvironment )
+    public boolean process( Set<? extends TypeElement> annotations, RoundEnvironment roundEnv )
     {
         debug( "Processing for " + annotations );
 
         Template rendererTemplate = getTemplate( RENDERER_TEMPLATE );
         Template parserTemplate = getTemplate( PARSER_TEMPLATE );
+        Template registryTemplate = getTemplate( REGISTRY_TEMPLATE );
 
         try
         {
-            Set<? extends Element> requestClasses = roundEnvironment.getElementsAnnotatedWith( Request.class );
-            for ( Element elem : requestClasses )
-            {
-                writeRendererFile( (TypeElement) elem, roundEnvironment, rendererTemplate );
-            }
+            Set<? extends Element> requestClasses = roundEnv.getElementsAnnotatedWith( Request.class );
+            Set<? extends Element> responseClasses = roundEnv.getElementsAnnotatedWith( Response.class );
+            Set<? extends Element> structClasses = roundEnv.getElementsAnnotatedWith( StructPart.class );
+            Set<? extends Element> arrayClasses = roundEnv.getElementsAnnotatedWith( ArrayPart.class );
 
-            Set<? extends Element> responseClasses = roundEnvironment.getElementsAnnotatedWith( Response.class );
-            for ( Element elem : responseClasses )
+            Set<? extends Element> classes = union( requestClasses, responseClasses, structClasses, arrayClasses );
+            for ( Element elem : classes )
             {
-                writeParserFile( (TypeElement) elem, roundEnvironment, parserTemplate );
+                writeRendererFile( (TypeElement) elem, roundEnv, rendererTemplate );
+                writeParserFile( (TypeElement) elem, roundEnv, parserTemplate );
+            }
+            if ( !classes.isEmpty() )
+            {
+                writeRegistryFile( classes, roundEnv, registryTemplate );
             }
         }
         catch ( IOException e )
@@ -74,75 +95,186 @@ public class AnnoProcessor
         return true;
     }
 
-    private void writeParserFile( TypeElement respElement, RoundEnvironment roundEnvironment, Template parserTemplate )
-                    throws IOException
+    private void writeRegistryFile( Set<? extends Element> classes, RoundEnvironment roundEnvironment,
+                                    Template registryTemplate )
     {
+        List<String> imports = new ArrayList<>();
+        List<String> simpleClassNames = new ArrayList<>();
+
+        Set<String> packageNames = new HashSet<>();
+        for ( Element elem : classes )
+        {
+            String qName = ( (TypeElement) elem ).getQualifiedName().toString();
+            imports.add( qName );
+            String[] split = getPackageAndClassName( qName );
+            String packageName = split[0];
+            String simpleClassName = split[1];
+            imports.add( packageName + "." + GENERATED + "." + simpleClassName + "_Renderer" );
+            imports.add( packageName + "." + GENERATED + "." + simpleClassName + "_Parser" );
+            simpleClassNames.add( simpleClassName );
+            packageNames.add( packageName );
+        }
+
+        String registryClassName = getRegistryClassName( packageNames );
+        String[] split = getPackageAndClassName( registryClassName );
+        String registryPackageName = split[0];
+        String registrySimpleClassName = split[1];
+
+        debug( "Registry: " + registryClassName );
+
+        Map<String, Object> templateParams = new HashMap<>();
+        templateParams.put( "packageName", registryPackageName );
+        templateParams.put( "registrySimpleClassName", registrySimpleClassName );
+        templateParams.put( "imports", imports );
+        templateParams.put( "classes", simpleClassNames );
+
+        generateOutput( registryTemplate, templateParams, registryClassName );
     }
 
-    private void writeRendererFile( TypeElement reqElement, RoundEnvironment roundEnvironment,
-                                    Template rendererTemplate ) throws IOException
+    private void writeParserFile( TypeElement typeElement, RoundEnvironment roundEnvironment, Template template )
+                    throws IOException
     {
-        String qName = reqElement.getQualifiedName().toString();
+        String qName = typeElement.getQualifiedName().toString();
+        String[] split = getPackageAndClassName( qName );
 
-        String packageName = null;
-        int lastDot = qName.lastIndexOf( '.' );
-        if ( lastDot > 0 )
+        String packageName = split[0];
+        String simpleClassName = split[1];
+
+        String parserSimpleClassName = simpleClassName + "_Parser";
+        String parserPackageName = ( packageName == null ) ? GENERATED : packageName + "." + GENERATED;
+        String parserClassName = parserPackageName + "." + parserSimpleClassName;
+
+        Map<String, Object> templateParams = new HashMap<>();
+        templateParams.put( "parserPackageName", parserPackageName );
+        templateParams.put( "qName", qName );
+        templateParams.put( "simpleClassName", simpleClassName );
+        templateParams.put( "structPart", false );
+        templateParams.put( "arrayPart", false );
+
+        StructPart structPart = typeElement.getAnnotation( StructPart.class );
+        if ( structPart != null )
         {
-            packageName = qName.substring( 0, lastDot );
+            handleStructPart( templateParams, typeElement, "set", ProcessorUtils::getParserClassName );
         }
-        String simpleClassName = qName.substring( lastDot + 1 );
-        String rendererSimpleClassName = simpleClassName + "_Renderer";
+        else
+        {
+            ArrayPart arrayPart = typeElement.getAnnotation( ArrayPart.class );
+            if ( arrayPart != null )
+            {
+                templateParams.put( "arrayPart", true );
+            }
+            handleArrayPart( templateParams, typeElement, "set", ProcessorUtils::getParserClassName );
+        }
 
-        String rendererPackageName = ( packageName == null ) ? "generated" : packageName + ".generated";
+        generateOutput( template, templateParams, parserClassName );
+    }
+
+    private void writeRendererFile( TypeElement typeElement, RoundEnvironment roundEnvironment, Template template )
+                    throws IOException
+    {
+        String qName = typeElement.getQualifiedName().toString();
+        String[] split = getPackageAndClassName( qName );
+
+        String packageName = split[0];
+        String simpleClassName = split[1];
+
+        String rendererSimpleClassName = simpleClassName + "_Renderer";
+        String rendererPackageName = ( packageName == null ) ? GENERATED : packageName + "." + GENERATED;
         String rendererClassName = rendererPackageName + "." + rendererSimpleClassName;
 
-        debug( "Renderer: " + rendererClassName );
+        Map<String, Object> templateParams = new HashMap<>();
+        templateParams.put( "rendererPackageName", rendererPackageName );
+        templateParams.put( "qName", qName );
+        templateParams.put( "simpleClassName", simpleClassName );
+        templateParams.put( "request", false );
+        templateParams.put( "response", false );
+        templateParams.put( "structPart", false );
+        templateParams.put( "arrayPart", false );
 
-        Request anno = reqElement.getAnnotation( Request.class );
-        String methodName = anno.method();
+        Request request = typeElement.getAnnotation( Request.class );
+        Response response = typeElement.getAnnotation( Response.class );
 
+        if ( request != null || response != null )
+        {
+            if ( request != null )
+            {
+                templateParams.put( "request", true );
+                templateParams.put( "methodName", request.method() );
+            }
+            else
+            {
+                templateParams.put( "response", true );
+            }
+            handleArrayPart( templateParams, typeElement, "get", ProcessorUtils::getRendererClassName );
+        }
+
+        StructPart structPart = typeElement.getAnnotation( StructPart.class );
+        if ( structPart != null )
+        {
+            handleStructPart( templateParams, typeElement, "get", ProcessorUtils::getRendererClassName );
+        }
+
+        ArrayPart arrayPart = typeElement.getAnnotation( ArrayPart.class );
+        if ( arrayPart != null )
+        {
+            templateParams.put( "arrayPart", true );
+            handleArrayPart( templateParams, typeElement, "get", ProcessorUtils::getRendererClassName );
+        }
+
+        generateOutput( template, templateParams, rendererClassName );
+    }
+
+    private void handleArrayPart( Map<String, Object> templateParams, TypeElement typeElement, String method,
+                                  Function<String, String> function )
+    {
         Map<Integer, Object> paramsMap = new HashMap<>();
-        for ( Element e : reqElement.getEnclosedElements() )
+        for ( Element e : typeElement.getEnclosedElements() )
         {
             DataIndex dataIndex = e.getAnnotation( DataIndex.class );
             if ( dataIndex != null )
             {
                 int index = dataIndex.value();
-                paramsMap.put( index, getMethodName( e ) );
+                String type = e.asType().toString();
+                String actionClass = getActionClass( type, function );
+                paramsMap.put( index, new ItemWrapperObj( getMethodName( method, e ), type, null, actionClass ) );
             }
         }
-        List<Object> params = getList(paramsMap);
-
-        Map<String, Object> templateParams = new HashMap<>();
-        templateParams.put( "rendererSimpleClassName", methodName );
-        templateParams.put( "rendererPackageName", methodName );
-        templateParams.put( "qName", qName );
-        templateParams.put( "simpleClassName", simpleClassName );
-        templateParams.put( "methodName", methodName );
-        templateParams.put( "params", params );
-
-        generateOutput( rendererTemplate, templateParams, rendererClassName );
+        templateParams.put( "params", getList( paramsMap ) );
     }
 
-    private List<Object> getList( Map<Integer, Object> paramsMap )
+    private void handleStructPart( Map<String, Object> templateParams, TypeElement typeElement, String method,
+                                   Function<String, String> function )
     {
-        List<Object> ret = new ArrayList<>(paramsMap.size());
-        for(int i = 0; i < paramsMap.size(); i++)
+        templateParams.put( "structPart", true );
+        List<Object> params = new ArrayList<>();
+        for ( Element e : typeElement.getEnclosedElements() )
         {
-            ret.add( paramsMap.get( i ) );
+            DataKey dataKey = e.getAnnotation( DataKey.class );
+            if ( dataKey != null )
+            {
+                String key = dataKey.value();
+                String type = e.asType().toString();
+                String actionClass = getActionClass( type, function );
+                params.add( new ItemWrapperObj( getMethodName( method, e ), type, key, actionClass ) );
+            }
         }
-        return ret;
+        templateParams.put( "params", params );
     }
 
-    private String getMethodName( Element e )
+    private String getActionClass( String type, Function<String, String> function )
     {
-        String fieldName = e.getSimpleName().toString();
-
-        Character upperCaseChar = Character.toUpperCase( fieldName.charAt( 0 ) );
-        StringBuilder sb = new StringBuilder( "get" );
-        sb.append( upperCaseChar );
-        sb.append( fieldName.substring( 1 ) );
-        return sb.toString();
+        String parserClass = null;
+        TypeElement typeElement = processingEnv.getElementUtils().getTypeElement( type );
+        if ( typeElement != null )
+        {
+            StructPart sPart = typeElement.getAnnotation( StructPart.class );
+            ArrayPart aPart = typeElement.getAnnotation( ArrayPart.class );
+            if ( sPart != null || aPart != null )
+            {
+                parserClass = function.apply( type );
+            }
+        }
+        return parserClass;
     }
 
     private Template getTemplate( String templateName )
@@ -162,14 +294,14 @@ public class AnnoProcessor
         return template;
     }
 
-    private void generateOutput( Template template, Map<String, Object> templateParams, String rendererClassName )
+    private void generateOutput( Template template, Map<String, Object> templateParams, String className )
     {
         Filer filer = processingEnv.getFiler();
         Writable output = template.make( templateParams );
         Writer sourceWriter = null;
         try
         {
-            FileObject file = filer.createSourceFile( rendererClassName );
+            FileObject file = filer.createSourceFile( className );
             sourceWriter = file.openWriter();
             output.writeTo( sourceWriter );
         }
@@ -177,7 +309,7 @@ public class AnnoProcessor
         {
             processingEnv.getMessager()
                          .printMessage( Diagnostic.Kind.ERROR,
-                                        "While generating sources for class: '" + rendererClassName + "', error: "
+                                        "While generating sources for class: '" + className + "', error: "
                                                         + e.getMessage() );
         }
         finally
@@ -186,4 +318,42 @@ public class AnnoProcessor
         }
     }
 
+    private class ItemWrapperObj
+    {
+        private String methodName;
+
+        private String type;
+
+        private String key;
+
+        private String actionClass;
+
+        public ItemWrapperObj( String methodName, String type, String key, String actionClass )
+        {
+            this.methodName = methodName;
+            this.type = type;
+            this.key = key;
+            this.actionClass = actionClass;
+        }
+
+        public String getMethodName()
+        {
+            return methodName;
+        }
+
+        public String getType()
+        {
+            return type;
+        }
+
+        public String getKey()
+        {
+            return key;
+        }
+
+        public String getActionClass()
+        {
+            return actionClass;
+        }
+    }
 }

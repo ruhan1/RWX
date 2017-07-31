@@ -31,9 +31,6 @@ public class XmlRpcParserTest
         assertTrue( object instanceof MethodCall );
 
         MethodCall request = (MethodCall) object;
-        List<Object> params = request.getParams();
-
-        assertTrue( params.size() == 0 );
 
         String methodName = request.getMethodName();
         assertTrue( "foo".equals( methodName ) );

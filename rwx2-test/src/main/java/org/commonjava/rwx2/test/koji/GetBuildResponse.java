@@ -7,9 +7,19 @@ import org.commonjava.rwx.binding.anno.Response;
  * Created by ruhan on 7/19/17.
  */
 @Response
-class GetBuildResponse
+public class GetBuildResponse
 {
     @DataIndex(0)
     private KojiBuildInfo buildInfo;
+
+    public KojiBuildInfo getBuildInfo()
+    {
+        return buildInfo;
+    }
+
+    public void setBuildInfo( KojiBuildInfo buildInfo )
+    {
+        this.buildInfo = buildInfo;
+    }
 
 }

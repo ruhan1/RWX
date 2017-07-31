@@ -2,31 +2,58 @@ package ${rendererPackageName};
 
 import org.commonjava.rwx2.core.Renderer;
 import org.commonjava.rwx2.model.MethodCall;
+import org.commonjava.rwx2.model.MethodResponse;
 
 import ${qName};
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 
 /**
  * Created by RWX AnnoProcessor.
  */
-public class ${simpleClassName}_Renderer
-        implements Renderer<${simpleClassName}>
+public class ${simpleClassName}_Renderer implements Renderer<${simpleClassName}>
 {
     @Override
-    public MethodCall render( ${simpleClassName} request )
+    public Object render( ${simpleClassName} object )
     {
+        <% if (request == true) { %>
         MethodCall ret = new MethodCall();
         ret.setMethodName( "${methodName}" );
-
+        <% } else if (response == true) { %>
+        MethodResponse ret = new MethodResponse();
+        <% } else if (structPart == true) { %>
+        Map<String, Object> ret = new HashMap<>();
+            <% params.each { %>
+                <% if (it.actionClass == null) { %>
+        ret.put( "${it.key}", object.${it.methodName}() );
+                <% } else { %>
+        ret.put( "${it.key}", new ${it.actionClass}().render( object.${it.methodName}() ) );
+                <% } %>
+            <% } %>
+        <% } else if (arrayPart == true) { %>
+        List<Object> ret = new ArrayList<>();
+            <% params.each { %>
+                <% if (it.actionClass == null) { %>
+        ret.add( object.${it.methodName}() );
+                <% } else { %>
+        ret.add( new ${it.actionClass}().render( object.${it.methodName}() ) );
+                <% } %>
+            <% } %>
+        <% } %>
+        <% if (request == true || response == true) { %>
         List<Object> params = new ArrayList<>();
         ret.setParams( params );
-
-        <% params.each { %>
-        params.add( request.${it}() );
+            <% params.each { %>
+                <% if (it.actionClass == null) { %>
+        params.add( object.${it.methodName}() );
+                <% } else { %>
+        params.add( new ${it.actionClass}().render( object.${it.methodName}() ) );
+                <% } %>
+            <% } %>
         <% } %>
-
         return ret;
     }
 }

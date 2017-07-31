@@ -4,7 +4,7 @@ import org.commonjava.rwx.binding.anno.DataIndex;
 import org.commonjava.rwx.binding.anno.DataKey;
 import org.commonjava.rwx.error.XmlRpcException;
 import org.commonjava.rwx.vocab.ValueType;
-import org.commonjava.rwx2.model.MethodResponse;
+import org.commonjava.rwx2.model.RpcObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,16 +20,16 @@ public class ParseUtils
     final static Logger logger = LoggerFactory.getLogger( ParseUtils.class );
 
     /**
-     * Parse a MethodResponse object (representing a Map/List structure) to target user object.
+     * Parse an RPC object (representing a Map/List structure) to target user object.
      *
-     * @param response
+     * @param rpcObject
      * @param type
      * @param <T>
      * @return
      */
-    public static <T> T parse( MethodResponse response, Class<T> type ) throws XmlRpcException
+    public static <T> T parse( RpcObject rpcObject, Class<T> type ) throws XmlRpcException
     {
-        return parseList( type, response.getParams() );
+        return parseList( type, rpcObject.getParams() );
     }
 
     private static Object parseListOrMap( Class<?> fieldType, Object value ) throws XmlRpcException
@@ -144,4 +144,5 @@ public class ParseUtils
         }
         return ret;
     }
+
 }

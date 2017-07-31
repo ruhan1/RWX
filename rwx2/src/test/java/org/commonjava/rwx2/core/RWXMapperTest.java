@@ -19,7 +19,7 @@ public class RWXMapperTest
     @Test
     public void simpleRequestTest() throws Exception
     {
-        String request = new RWXMapper().renderRequest( new SimpleRequest() );
+        String request = new RWXMapper().render( new SimpleRequest() );
         String expected = getXMLStringIgnoreFormat( "simpleRequest" );
         assertEquals( expected, formalizeXMLString( request ) );
     }
@@ -29,7 +29,7 @@ public class RWXMapperTest
     {
         RequestWithOneParam requst = new RequestWithOneParam();
         requst.setValue( "test" );
-        String request = new RWXMapper().renderRequest( requst );
+        String request = new RWXMapper().render( requst );
         String expected = getXMLStringIgnoreFormat( "requestWithOneParam" );
         assertEquals( expected, formalizeXMLString( request ) );
     }
@@ -38,7 +38,7 @@ public class RWXMapperTest
     public void simpleResponseTest() throws Exception
     {
         InputStream stream = getXMLStream( "simpleResponse" );
-        SimpleResponse response = new RWXMapper().parseResponse( stream, SimpleResponse.class );
+        SimpleResponse response = new RWXMapper().parse( stream, SimpleResponse.class );
         assertEquals( 18.24668429131D, response.getValue() );
     }
 

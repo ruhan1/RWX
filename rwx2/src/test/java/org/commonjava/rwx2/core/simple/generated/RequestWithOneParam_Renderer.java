@@ -3,6 +3,7 @@ package org.commonjava.rwx2.core.simple.generated;
 import org.commonjava.rwx2.core.Renderer;
 import org.commonjava.rwx2.core.simple.RequestWithOneParam;
 import org.commonjava.rwx2.model.MethodCall;
+import org.commonjava.rwx2.model.RpcObject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,7 +15,7 @@ public class RequestWithOneParam_Renderer
                 implements Renderer<RequestWithOneParam>
 {
     @Override
-    public MethodCall render( RequestWithOneParam request )
+    public RpcObject render( RequestWithOneParam request )
     {
         MethodCall ret = new MethodCall();
         ret.setMethodName( "foo" );

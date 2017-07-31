@@ -3,6 +3,7 @@ package org.commonjava.rwx2.core.simple.generated;
 import org.commonjava.rwx2.core.Renderer;
 import org.commonjava.rwx2.core.simple.SimpleRequest;
 import org.commonjava.rwx2.model.MethodCall;
+import org.commonjava.rwx2.model.RpcObject;
 
 /**
  * Created by ruhan on 7/19/17.
@@ -10,7 +11,7 @@ import org.commonjava.rwx2.model.MethodCall;
 public class SimpleRequest_Renderer implements Renderer<SimpleRequest>
 {
     @Override
-    public MethodCall render( SimpleRequest value )
+    public RpcObject render( SimpleRequest value )
     {
         MethodCall ret = new MethodCall();
         ret.setMethodName( "foo" );

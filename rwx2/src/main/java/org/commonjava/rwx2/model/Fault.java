@@ -1,5 +1,7 @@
 package org.commonjava.rwx2.model;
 
+import java.util.List;
+
 /**
  * XML-RPC faults are a type of responses. If there was a problem in processing a XML-RPC request, the methodResponse
  * element will contain a fault element instead of a params element. The fault element, like the params element, has
@@ -7,7 +9,7 @@ package org.commonjava.rwx2.model;
  *
  * Created by ruhan on 7/13/17.
  */
-public final class Fault
+public final class Fault extends RpcObject
 {
     private Object value;
 
@@ -20,5 +22,4 @@ public final class Fault
     {
         this.value = value;
     }
-
 }

@@ -11,6 +11,7 @@ import java.util.List;
  * Created by ruhan on 7/13/17.
  */
 public final class MethodCall
+                extends RpcObject
 {
     private String methodName;
 
@@ -22,17 +23,5 @@ public final class MethodCall
     public void setMethodName( String methodName )
     {
         this.methodName = methodName;
-    }
-
-    private List<Object> params = Collections.emptyList(); // default
-
-    public List<Object> getParams()
-    {
-        return params;
-    }
-
-    public void setParams( List<Object> params )
-    {
-        this.params = params;
     }
 }

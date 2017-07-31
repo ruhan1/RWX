@@ -10,7 +10,7 @@ import java.util.Map;
  * Created by ruhan on 7/19/17.
  */
 @StructPart
-class KojiBuildInfo
+public class KojiBuildInfo
 {
     @DataKey("build_id")
     private int id;

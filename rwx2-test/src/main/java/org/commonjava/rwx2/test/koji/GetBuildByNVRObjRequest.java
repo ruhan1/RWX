@@ -12,6 +12,8 @@ public class GetBuildByNVRObjRequest
     @DataIndex( 0 )
     private KojiNVR nvr;
 
+    public GetBuildByNVRObjRequest() {}
+
     public GetBuildByNVRObjRequest( KojiNVR nvr )
     {
         this.nvr = nvr;

@@ -7,8 +7,7 @@ import org.commonjava.rwx2.core.Registry;
 import org.commonjava.rwx2.core.Renderer;
 import org.commonjava.rwx2.core.XmlRpcParser;
 import org.commonjava.rwx2.model.Fault;
-import org.commonjava.rwx2.model.MethodCall;
-import org.commonjava.rwx2.model.MethodResponse;
+import org.commonjava.rwx2.model.RpcObject;
 import org.commonjava.rwx2.util.ParseUtils;
 import org.commonjava.rwx2.util.RenderUtils;
 
@@ -20,42 +19,57 @@ import java.io.InputStream;
  */
 public final class RWXMapper
 {
-    public String renderRequest( Object obj ) throws XmlRpcException
+    /**
+     * Render an object to XML-RPC request or response string.
+     *
+     * @param obj
+     * @return
+     * @throws XmlRpcException
+     */
+    public String render( Object obj ) throws XmlRpcException
     {
-        MethodCall methodCall = null;
+        Object rpcObject = null;
         Renderer renderer = Registry.getInstance().getRenderer( obj.getClass() );
         if ( renderer != null )
         {
-            methodCall = renderer.render( obj ); // by generated x_Render class
+            rpcObject = renderer.render( obj ); // by generated x_Render class
         }
         else
         {
-            methodCall = RenderUtils.render( obj ); // by reflection
+            rpcObject = RenderUtils.render( obj ); // by reflection
         }
 
-        return RenderUtils.toXMLString( methodCall );
+        return RenderUtils.toXMLString( rpcObject );
     }
 
-    public <T> T parseResponse( InputStream stream, Class<T> type ) throws XmlRpcException, XMLStreamException
+    /**
+     * Parse a XML-RPC request or response stream (XML string) to an object.
+     *
+     * @param stream
+     * @param type
+     * @param <T>
+     * @return
+     * @throws XmlRpcException
+     * @throws XMLStreamException
+     */
+    public <T> T parse( InputStream stream, Class<T> type ) throws XmlRpcException, XMLStreamException
     {
         final XmlRpcParser xmlRpcParser = new XmlRpcParser( stream );
-        Object object = xmlRpcParser.parse();
+        RpcObject rpcObject = xmlRpcParser.parse();
 
-        if ( object instanceof Fault )
+        if ( rpcObject instanceof Fault )
         {
-            throw new XmlRpcFaultException( (Fault) object );
+            throw new XmlRpcFaultException( (Fault) rpcObject );
         }
-
-        MethodResponse response = (MethodResponse) object;
 
         Parser parser = Registry.getInstance().getParser( type );
         if ( parser != null )
         {
-            return (T) parser.parse( response ); // by generated x_Parser class
+            return (T) parser.parse( rpcObject ); // by generated x_Parser class
         }
         else
         {
-            return ParseUtils.parse( response, type ); // by reflection
+            return ParseUtils.parse( rpcObject, type ); // by reflection
         }
     }
 }
