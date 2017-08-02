@@ -16,21 +16,6 @@ public class KojiNVR
     @DataKey( "userID" )
     private String userId;
 
-    public String getPackageId()
-    {
-        return packageId;
-    }
-
-    public String getUserId()
-    {
-        return userId;
-    }
-
-    public String getTagId()
-    {
-        return tagId;
-    }
-
     @DataKey( "tagID" )
     private String tagId;
 
@@ -51,6 +36,21 @@ public class KojiNVR
         this.name = name;
         this.version = version;
         this.release = release;
+    }
+
+    public String getPackageId()
+    {
+        return packageId;
+    }
+
+    public String getUserId()
+    {
+        return userId;
+    }
+
+    public String getTagId()
+    {
+        return tagId;
     }
 
     public String getName()

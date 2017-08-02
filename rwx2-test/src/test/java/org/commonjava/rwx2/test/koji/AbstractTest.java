@@ -1,4 +1,4 @@
-package org.commonjava.rwx2.core;
+package org.commonjava.rwx2.test.koji;
 
 import org.jdom.JDOMException;
 import org.junit.BeforeClass;
@@ -14,7 +14,7 @@ import java.io.StringWriter;
 import java.net.URL;
 
 /**
- * Created by ruhan on 7/13/17.
+ * Created by ruhan on 8/2/17.
  */
 public abstract class AbstractTest
 {
