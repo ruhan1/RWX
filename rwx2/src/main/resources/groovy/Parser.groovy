@@ -6,6 +6,7 @@ import org.commonjava.rwx2.model.RpcObject;
 import ${qName};
 
 import java.util.List;
+import java.util.ArrayList;
 import java.util.Map;
 
 /**
@@ -23,7 +24,16 @@ public class ${simpleClassName}_Parser implements Parser<${simpleClassName}>
             <% if (it.actionClass == null) { %>
         ret.${it.methodName}((${it.type}) params.get("${it.key}"));
             <% } else { %>
-        ret.${it.methodName}(new ${it.actionClass}().parse( params.get("${it.key}")) );
+                <% if (it.contains) { %>
+        List<${it.elementClass}> ${it.localListVariableName} = new ArrayList<>();
+        for ( Object obj : ( List<Object> ) params.get("${it.key}") )
+        {
+            ${it.localListVariableName}.add( new ${it.actionClass}().parse( obj ) );
+        }
+        ret.${it.methodName}( ${it.localListVariableName} );
+                <% } else { %>
+        ret.${it.methodName}( new ${it.actionClass}().parse( params.get("${it.key}") ) );
+                <% } %>
             <% } %>
         <% } %>
         <% } else { %>
@@ -36,7 +46,16 @@ public class ${simpleClassName}_Parser implements Parser<${simpleClassName}>
             <% if (it.actionClass == null) { %>
         ret.${it.methodName}((${it.type}) params.get(${idx}));
             <% } else { %>
-        ret.${it.methodName}(new ${it.actionClass}().parse( params.get(${idx})) );
+                <% if (it.contains) { %>
+        List<${it.elementClass}> ${it.localListVariableName} = new ArrayList<>();
+        for ( Object obj : ( List<Object> ) params.get(${idx}) )
+        {
+            ${it.localListVariableName}.add( new ${it.actionClass}().parse( obj ) );
+        }
+        ret.${it.methodName}( ${it.localListVariableName} );
+                <% } else { %>
+        ret.${it.methodName}( new ${it.actionClass}().parse( params.get(${idx}) ) );
+                <% } %>
             <% } %>
         <% } %>
         <% } %>

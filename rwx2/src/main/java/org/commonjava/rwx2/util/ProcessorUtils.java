@@ -2,6 +2,8 @@ package org.commonjava.rwx2.util;
 
 import com.sun.org.apache.bcel.internal.generic.GETFIELD;
 import org.apache.commons.lang.StringUtils;
+import org.commonjava.rwx.error.XmlRpcException;
+import org.commonjava.rwx2.core.Renderer;
 
 import javax.lang.model.element.Element;
 import java.util.ArrayList;
@@ -166,4 +168,27 @@ public class ProcessorUtils
         String simpleClassName = split[1];
         return packageName + "." + GENERATED + "." + simpleClassName + "_Renderer";
     }
+/*
+    public static Object renderArray( List<Object> objects, Class<?> rendererClass ) throws XmlRpcException
+    {
+        if ( rendererClass == null )
+        {
+            return objects;
+        }
+
+        List<Object> list = new ArrayList<>();
+        try
+        {
+            for ( Object obj : objects )
+            {
+                list.add( ( (Renderer) rendererClass.newInstance() ).render( obj ) );
+            }
+
+        }
+        catch ( Exception e )
+        {
+            throw new XmlRpcException( "Render array error", e );
+        }
+        return list;
+    }*/
 }

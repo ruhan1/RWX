@@ -30,7 +30,16 @@ public class ${simpleClassName}_Renderer implements Renderer<${simpleClassName}>
                 <% if (it.actionClass == null) { %>
         ret.put( "${it.key}", object.${it.methodName}() );
                 <% } else { %>
+                    <% if (it.contains) { %>
+        List<Object> ${it.localListVariableName} = new ArrayList<>(  );
+        for ( ${it.elementClass} obj : object.${it.methodName}() )
+        {
+            ${it.localListVariableName}.add( new ${it.actionClass}().render( obj ) );
+        }
+        ret.put( "${it.key}", ${it.localListVariableName} );
+                    <% } else { %>
         ret.put( "${it.key}", new ${it.actionClass}().render( object.${it.methodName}() ) );
+                    <% } %>
                 <% } %>
             <% } %>
         <% } else if (arrayPart == true) { %>
@@ -39,7 +48,16 @@ public class ${simpleClassName}_Renderer implements Renderer<${simpleClassName}>
                 <% if (it.actionClass == null) { %>
         ret.add( object.${it.methodName}() );
                 <% } else { %>
+                    <% if (it.contains) { %>
+        List<Object> ${it.localListVariableName} = new ArrayList<>(  );
+        for ( ${it.elementClass} obj : object.${it.methodName}() )
+        {
+            ${it.localListVariableName}.add( new ${it.actionClass}().render( obj ) );
+        }
+        ret.add( ${it.localListVariableName} );
+                    <% } else { %>
         ret.add( new ${it.actionClass}().render( object.${it.methodName}() ) );
+                    <% } %>
                 <% } %>
             <% } %>
         <% } %>
@@ -50,7 +68,16 @@ public class ${simpleClassName}_Renderer implements Renderer<${simpleClassName}>
                 <% if (it.actionClass == null) { %>
         params.add( object.${it.methodName}() );
                 <% } else { %>
+                    <% if (it.contains) { %>
+        List<Object> ${it.localListVariableName} = new ArrayList<>(  );
+        for ( ${it.elementClass} obj : object.${it.methodName}() )
+        {
+            ${it.localListVariableName}.add( new ${it.actionClass}().render( obj ) );
+        }
+        params.add( ${it.localListVariableName} );
+                    <% } else { %>
         params.add( new ${it.actionClass}().render( object.${it.methodName}() ) );
+                    <% } %>
                 <% } %>
             <% } %>
         <% } %>

@@ -5,6 +5,7 @@ import groovy.text.GStringTemplateEngine;
 import groovy.text.Template;
 import org.apache.commons.io.IOUtils;
 import org.commonjava.rwx.binding.anno.ArrayPart;
+import org.commonjava.rwx.binding.anno.Contains;
 import org.commonjava.rwx.binding.anno.DataIndex;
 import org.commonjava.rwx.binding.anno.DataKey;
 import org.commonjava.rwx.binding.anno.Request;
@@ -18,6 +19,7 @@ import javax.annotation.processing.RoundEnvironment;
 import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.MirroredTypeException;
 import javax.tools.Diagnostic;
 import javax.tools.FileObject;
 import javax.tools.StandardLocation;
@@ -233,10 +235,8 @@ public class AnnoProcessor
             DataIndex dataIndex = e.getAnnotation( DataIndex.class );
             if ( dataIndex != null )
             {
-                int index = dataIndex.value();
-                String type = e.asType().toString();
-                String actionClass = getActionClass( type, function );
-                paramsMap.put( index, new ItemWrapperObj( getMethodName( method, e ), type, null, actionClass ) );
+                Item item = getItemWrapperObj( e, method, function);
+                paramsMap.put( dataIndex.value(), item );
             }
         }
         templateParams.put( "params", getList( paramsMap ) );
@@ -252,18 +252,58 @@ public class AnnoProcessor
             DataKey dataKey = e.getAnnotation( DataKey.class );
             if ( dataKey != null )
             {
-                String key = dataKey.value();
-                String type = e.asType().toString();
-                String actionClass = getActionClass( type, function );
-                params.add( new ItemWrapperObj( getMethodName( method, e ), type, key, actionClass ) );
+                Item item = getItemWrapperObj( e, method, function);
+                item.setKey( dataKey.value() );
+                params.add( item );
             }
         }
         templateParams.put( "params", params );
     }
 
+    private Item getItemWrapperObj( Element e, String method, Function<String, String> function )
+    {
+        Item item = new Item();
+        String type = e.asType().toString();
+        String actionClass = getActionClass( type, function );
+
+        Contains contains = e.getAnnotation( Contains.class );
+        if (contains != null) // @Request, @Response, @arrayPart, or @structPart annotated objects array or List
+        {
+            String elementClass = null;
+            // https://stackoverflow.com/questions/7687829/java-6-annotation-processing-getting-a-class-from-an-annotation
+            try
+            {
+                Class<?> c = contains.value();
+            }
+            catch( MirroredTypeException mte )
+            {
+                elementClass = mte.getTypeMirror().toString();
+                item.setElementClass( elementClass );
+            }
+            debug( e.toString() + ": contains=true, elementClass=" + elementClass );
+            item.setContains( true );
+            item.setLocalListVariableName( e.getSimpleName().toString() );
+            actionClass = getActionClass( elementClass, function );
+        }
+
+        item.setMethodName( getMethodName( method, e ) );
+        item.setType( type );
+        item.setKey( null );
+        item.setActionClass( actionClass );
+
+        return item;
+    }
+
+    /**
+     * Get parser or renderer class name of a field by the real type.
+     *
+     * @param type
+     * @param function
+     * @return
+     */
     private String getActionClass( String type, Function<String, String> function )
     {
-        String parserClass = null;
+        String actionClass = null;
         TypeElement typeElement = processingEnv.getElementUtils().getTypeElement( type );
         if ( typeElement != null )
         {
@@ -271,10 +311,10 @@ public class AnnoProcessor
             ArrayPart aPart = typeElement.getAnnotation( ArrayPart.class );
             if ( sPart != null || aPart != null )
             {
-                parserClass = function.apply( type );
+                actionClass = function.apply( type );
             }
         }
-        return parserClass;
+        return actionClass;
     }
 
     private Template getTemplate( String templateName )
@@ -318,8 +358,10 @@ public class AnnoProcessor
         }
     }
 
-    private class ItemWrapperObj
+    static class Item
     {
+        private boolean contains;
+
         private String methodName;
 
         private String type;
@@ -328,13 +370,11 @@ public class AnnoProcessor
 
         private String actionClass;
 
-        public ItemWrapperObj( String methodName, String type, String key, String actionClass )
-        {
-            this.methodName = methodName;
-            this.type = type;
-            this.key = key;
-            this.actionClass = actionClass;
-        }
+        private String elementClass;
+
+        private String localListVariableName;
+
+        public Item() {}
 
         public String getMethodName()
         {
@@ -354,6 +394,56 @@ public class AnnoProcessor
         public String getActionClass()
         {
             return actionClass;
+        }
+
+        public void setMethodName( String methodName )
+        {
+            this.methodName = methodName;
+        }
+
+        public void setType( String type )
+        {
+            this.type = type;
+        }
+
+        public void setKey( String key )
+        {
+            this.key = key;
+        }
+
+        public void setActionClass( String actionClass )
+        {
+            this.actionClass = actionClass;
+        }
+
+        public boolean getContains()
+        {
+            return contains;
+        }
+
+        public void setContains( boolean b )
+        {
+            contains = b;
+        }
+
+        public String getElementClass()
+        {
+            return elementClass;
+        }
+
+        public void setElementClass( String elementClass )
+        {
+            this.elementClass = elementClass;
+        }
+
+        public String getLocalListVariableName()
+        {
+            return localListVariableName;
+        }
+
+        public void setLocalListVariableName( String localListVariableName )
+        {
+            this.localListVariableName = localListVariableName;
         }
     }
 }
