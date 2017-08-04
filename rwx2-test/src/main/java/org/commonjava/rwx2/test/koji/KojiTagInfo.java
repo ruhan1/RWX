@@ -62,7 +62,7 @@ public class KojiTagInfo
         return permission;
     }
 
-    public int getPermissionId()
+    public Integer getPermissionId()
     {
         return permissionId;
     }

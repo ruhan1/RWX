@@ -1,6 +1,5 @@
 package org.commonjava.rwx2.test.koji;
 
-import org.commonjava.rwx.binding.anno.Contains;
 import org.commonjava.rwx.binding.anno.DataIndex;
 import org.commonjava.rwx.binding.anno.Response;
 
@@ -13,7 +12,6 @@ import java.util.List;
 public class ListTagsResponse
 {
     @DataIndex( 0 )
-    @Contains( KojiTagInfo.class )
     private List<KojiTagInfo> tags;
 
     public List<KojiTagInfo> getTags()

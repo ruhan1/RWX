@@ -11,6 +11,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Created by ruhan on 7/31/17.
@@ -168,27 +170,15 @@ public class ProcessorUtils
         String simpleClassName = split[1];
         return packageName + "." + GENERATED + "." + simpleClassName + "_Renderer";
     }
-/*
-    public static Object renderArray( List<Object> objects, Class<?> rendererClass ) throws XmlRpcException
+
+    public static String getElementClassByType( String type )
     {
-        if ( rendererClass == null )
+        Pattern pattern = Pattern.compile( ".*List<(.+)>" );
+        Matcher matcher = pattern.matcher( type );
+        while ( matcher.find() )
         {
-            return objects;
+            return matcher.group( 1 ).trim();
         }
-
-        List<Object> list = new ArrayList<>();
-        try
-        {
-            for ( Object obj : objects )
-            {
-                list.add( ( (Renderer) rendererClass.newInstance() ).render( obj ) );
-            }
-
-        }
-        catch ( Exception e )
-        {
-            throw new XmlRpcException( "Render array error", e );
-        }
-        return list;
-    }*/
+        return null;
+    }
 }

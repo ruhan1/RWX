@@ -1,5 +1,6 @@
 package org.commonjava.rwx2.core.util;
 
+import static org.commonjava.rwx2.util.ProcessorUtils.getElementClassByType;
 import static org.commonjava.rwx2.util.ProcessorUtils.getRegistryClassName;
 import org.junit.Test;
 
@@ -30,5 +31,18 @@ public class ProcessorUtilsTest
         set.add( "com.yourcompany");
         reg = getRegistryClassName( set );
         assertEquals( "generated._Registry", reg );
+    }
+
+    @Test
+    public void getElementClassByTypeTest()
+    {
+        String type = "java.util.List<java.lang.String>";
+        assertEquals("java.lang.String", getElementClassByType(type));
+
+        type = "List<java.lang.String>";
+        assertEquals("java.lang.String", getElementClassByType(type));
+
+        type = "List";
+        assertEquals(null, getElementClassByType(type));
     }
 }

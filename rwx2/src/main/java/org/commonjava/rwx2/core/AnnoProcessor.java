@@ -34,6 +34,7 @@ import java.util.Set;
 import java.util.function.Function;
 
 import static org.commonjava.rwx2.util.ProcessorUtils.GENERATED;
+import static org.commonjava.rwx2.util.ProcessorUtils.getElementClassByType;
 import static org.commonjava.rwx2.util.ProcessorUtils.getList;
 import static org.commonjava.rwx2.util.ProcessorUtils.getMethodName;
 import static org.commonjava.rwx2.util.ProcessorUtils.getPackageAndClassName;
@@ -235,7 +236,7 @@ public class AnnoProcessor
             DataIndex dataIndex = e.getAnnotation( DataIndex.class );
             if ( dataIndex != null )
             {
-                Item item = getItemWrapperObj( e, method, function);
+                Item item = getItemObj( e, method, function );
                 paramsMap.put( dataIndex.value(), item );
             }
         }
@@ -252,7 +253,7 @@ public class AnnoProcessor
             DataKey dataKey = e.getAnnotation( DataKey.class );
             if ( dataKey != null )
             {
-                Item item = getItemWrapperObj( e, method, function);
+                Item item = getItemObj( e, method, function );
                 item.setKey( dataKey.value() );
                 params.add( item );
             }
@@ -260,27 +261,17 @@ public class AnnoProcessor
         templateParams.put( "params", params );
     }
 
-    private Item getItemWrapperObj( Element e, String method, Function<String, String> function )
+    private Item getItemObj( Element e, String method, Function<String, String> function )
     {
         Item item = new Item();
         String type = e.asType().toString();
         String actionClass = getActionClass( type, function );
 
-        Contains contains = e.getAnnotation( Contains.class );
-        if (contains != null) // @Request, @Response, @arrayPart, or @structPart annotated objects array or List
+        String elementClass = getElementClass( e );
+        if ( elementClass != null )
         {
-            String elementClass = null;
-            // https://stackoverflow.com/questions/7687829/java-6-annotation-processing-getting-a-class-from-an-annotation
-            try
-            {
-                Class<?> c = contains.value();
-            }
-            catch( MirroredTypeException mte )
-            {
-                elementClass = mte.getTypeMirror().toString();
-                item.setElementClass( elementClass );
-            }
             debug( e.toString() + ": contains=true, elementClass=" + elementClass );
+            item.setElementClass( elementClass );
             item.setContains( true );
             item.setLocalListVariableName( e.getSimpleName().toString() );
             actionClass = getActionClass( elementClass, function );
@@ -294,12 +285,32 @@ public class AnnoProcessor
         return item;
     }
 
+    private String getElementClass( Element e )
+    {
+        String elementClass = null;
+        Contains contains = e.getAnnotation( Contains.class );
+        if ( contains != null ) // array of @Request, @Response, @arrayPart, or @structPart annotated objects
+        {
+            // https://stackoverflow.com/questions/7687829/java-6-annotation-processing-getting-a-class-from-an-annotation
+            try
+            {
+                Class<?> c = contains.value();
+            }
+            catch ( MirroredTypeException mte )
+            {
+                elementClass = mte.getTypeMirror().toString();
+            }
+        }
+        else
+        {
+            elementClass = getElementClassByType( e.asType().toString() );
+
+        }
+        return elementClass;
+    }
+
     /**
      * Get parser or renderer class name of a field by the real type.
-     *
-     * @param type
-     * @param function
-     * @return
      */
     private String getActionClass( String type, Function<String, String> function )
     {
@@ -374,7 +385,9 @@ public class AnnoProcessor
 
         private String localListVariableName;
 
-        public Item() {}
+        public Item()
+        {
+        }
 
         public String getMethodName()
         {
