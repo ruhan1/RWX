@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<methodResponse>
+    <params>
+        <param>
+            <value>
+                <struct>
+                    <member>
+                        <name>version</name>
+                        <value><string>4.1.2</string></value>
+                    </member>
+                    <member>
+                        <name>baseUrl</name>
+                        <value><string>http://jira.codehaus.org</string></value>
+                    </member>
+                    <member>
+                        <name>buildDate</name>
+                        <value><string>Mon Jun 07 00:00:00 CDT 2010</string></value>
+                    </member>
+                    <member>
+                        <name>buildNumber</name>
+                        <value><int>531</int></value>
+                    </member>
+                    <member>
+                        <name>edition</name>
+                        <value><string>Enterprise</string></value>
+                    </member>
+                    <member>
+                        <name>serverTime</name>
+                        <value><string>com.atlassian.jira.rpc.soap.beans.RemoteTimeInfo@18702b7</string></value>
+                    </member>
+                </struct>
+            </value>
+        </param>
+    </params>
+</methodResponse>

@@ -1,9 +1,6 @@
 package org.commonjava.rwx2.util;
 
-import com.sun.org.apache.bcel.internal.generic.GETFIELD;
 import org.apache.commons.lang.StringUtils;
-import org.commonjava.rwx.error.XmlRpcException;
-import org.commonjava.rwx2.core.Renderer;
 
 import javax.lang.model.element.Element;
 import java.util.ArrayList;
@@ -19,6 +16,11 @@ import java.util.regex.Pattern;
  */
 public class ProcessorUtils
 {
+    private static void debug( String message )
+    {
+        System.out.println( "ProcessorUtils >> " + message );
+    }
+
     public static final String GENERATED = "generated";
 
     public static <E> Set<? extends E> union( Set<? extends E>... sets )
@@ -135,7 +137,7 @@ public class ProcessorUtils
 
             if ( commonPkgName.endsWith( "." ) )
             {
-                commonPkgName = commonPkgName.substring( 0, commonPkgName.length() );
+                commonPkgName = commonPkgName.substring( 0, commonPkgName.length() - 1);
             }
             else
             {
@@ -143,6 +145,7 @@ public class ProcessorUtils
                 commonPkgName = commonPkgName.substring( 0, lastDot );
             }
         }
+        debug("Common package: " + commonPkgName);
 
         String[] split = getPackageAndClassName( commonPkgName );
         String lastName = split[1];

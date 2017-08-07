@@ -1,4 +1,4 @@
-package org.commonjava.rwx2.test.koji;
+package org.commonjava.rwx2.test;
 
 import org.apache.commons.io.IOUtils;
 import org.jdom.JDOMException;

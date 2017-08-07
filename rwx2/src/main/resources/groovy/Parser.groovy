@@ -21,7 +21,9 @@ public class ${simpleClassName}_Parser implements Parser<${simpleClassName}>
         <% if (structPart == true) { %>
         Map<String, Object> params = (Map) object;
         <% params.each { %>
-            <% if (it.actionClass == null) { %>
+            <% if (it.converter != null) { %>
+        ret.${it.methodName}( new ${it.converter}().parse( params.get("${it.key}") ) );
+            <% } else if (it.actionClass == null) { %>
         ret.${it.methodName}((${it.type}) params.get("${it.key}"));
             <% } else { %>
                 <% if (it.contains) { %>
@@ -43,7 +45,9 @@ public class ${simpleClassName}_Parser implements Parser<${simpleClassName}>
         List<Object> params = ((RpcObject) object).getParams();
         <% } %>
         <% params.eachWithIndex { it, idx -> %>
-            <% if (it.actionClass == null) { %>
+            <% if (it.converter != null) { %>
+        ret.${it.methodName}( new ${it.converter}().parse( params.get(${idx}) ) );
+            <% } else if (it.actionClass == null) { %>
         ret.${it.methodName}((${it.type}) params.get(${idx}));
             <% } else { %>
                 <% if (it.contains) { %>

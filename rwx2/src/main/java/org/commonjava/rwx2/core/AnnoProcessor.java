@@ -5,7 +5,6 @@ import groovy.text.GStringTemplateEngine;
 import groovy.text.Template;
 import org.apache.commons.io.IOUtils;
 import org.commonjava.rwx.binding.anno.ArrayPart;
-import org.commonjava.rwx.binding.anno.Contains;
 import org.commonjava.rwx.binding.anno.DataIndex;
 import org.commonjava.rwx.binding.anno.DataKey;
 import org.commonjava.rwx.binding.anno.Request;
@@ -265,48 +264,38 @@ public class AnnoProcessor
     {
         Item item = new Item();
         String type = e.asType().toString();
-        String actionClass = getActionClass( type, function );
-
-        String elementClass = getElementClass( e );
-        if ( elementClass != null )
-        {
-            debug( e.toString() + ": contains=true, elementClass=" + elementClass );
-            item.setElementClass( elementClass );
-            item.setContains( true );
-            item.setLocalListVariableName( e.getSimpleName().toString() );
-            actionClass = getActionClass( elementClass, function );
-        }
 
         item.setMethodName( getMethodName( method, e ) );
         item.setType( type );
-        item.setKey( null );
-        item.setActionClass( actionClass );
 
-        return item;
-    }
+        org.commonjava.rwx2.anno.Converter converter = e.getAnnotation( org.commonjava.rwx2.anno.Converter.class );
 
-    private String getElementClass( Element e )
-    {
-        String elementClass = null;
-        Contains contains = e.getAnnotation( Contains.class );
-        if ( contains != null ) // array of @Request, @Response, @arrayPart, or @structPart annotated objects
+        if (converter != null)
         {
-            // https://stackoverflow.com/questions/7687829/java-6-annotation-processing-getting-a-class-from-an-annotation
             try
             {
-                Class<?> c = contains.value();
+                Class<?> c = converter.value();
             }
             catch ( MirroredTypeException mte )
             {
-                elementClass = mte.getTypeMirror().toString();
+                item.setConverter( mte.getTypeMirror().toString() );
             }
         }
         else
         {
-            elementClass = getElementClassByType( e.asType().toString() );
-
+            String actionClass = getActionClass( type, function );
+            String elementClass = getElementClassByType( type );
+            if ( elementClass != null )
+            {
+                debug( e.toString() + ": elementClass=" + elementClass );
+                item.setElementClass( elementClass );
+                item.setContains( true );
+                item.setLocalListVariableName( e.getSimpleName().toString() );
+                actionClass = getActionClass( elementClass, function );
+            }
+            item.setActionClass( actionClass );
         }
-        return elementClass;
+        return item;
     }
 
     /**
@@ -385,6 +374,8 @@ public class AnnoProcessor
 
         private String localListVariableName;
 
+        private String converter;
+
         public Item()
         {
         }
@@ -457,6 +448,16 @@ public class AnnoProcessor
         public void setLocalListVariableName( String localListVariableName )
         {
             this.localListVariableName = localListVariableName;
+        }
+
+        public String getConverter()
+        {
+            return converter;
+        }
+
+        public void setConverter( String converter )
+        {
+            this.converter = converter;
         }
     }
 }

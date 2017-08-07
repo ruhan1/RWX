@@ -2,13 +2,12 @@ package org.commonjava.rwx2.test.koji;
 
 import org.commonjava.rwx2.api.RWXMapper;
 import org.commonjava.rwx2.core.Registry;
-import org.commonjava.rwx2.test.koji.generated.Koji_Registry;
+import org.commonjava.rwx2.test.AbstractTest;
+import org.commonjava.rwx2.test.generated.Test_Registry;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -24,7 +23,7 @@ public class RWXMapperTest
     @BeforeClass
     public static void register()
     {
-        Registry.setInstance( new Koji_Registry() );
+        Registry.setInstance( new Test_Registry() );
     }
 
     @Test
