@@ -1,8 +1,7 @@
 package org.commonjava.rwx2.test.koji;
 
-import org.commonjava.rwx.binding.anno.DataKey;
-import org.commonjava.rwx.binding.anno.KeyRefs;
-import org.commonjava.rwx.binding.anno.StructPart;
+import org.commonjava.rwx2.anno.DataKey;
+import org.commonjava.rwx2.anno.StructPart;
 
 /**
  * Created by ruhan on 7/19/17.
@@ -30,7 +29,7 @@ public class KojiNVR
 
     public KojiNVR() {}
 
-    @KeyRefs( {"name", "version", "release"} )
+    //@KeyRefs( {"name", "version", "release"} )
     public KojiNVR( String name, String version, String release )
     {
         this.name = name;

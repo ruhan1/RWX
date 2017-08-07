@@ -1,8 +1,7 @@
 package org.commonjava.rwx2.test.koji;
 
-import org.commonjava.rwx.binding.anno.Contains;
-import org.commonjava.rwx.binding.anno.DataIndex;
-import org.commonjava.rwx.binding.anno.Response;
+import org.commonjava.rwx2.anno.DataIndex;
+import org.commonjava.rwx2.anno.Response;
 
 import java.util.List;
 
@@ -13,7 +12,6 @@ import java.util.List;
 public class MultiCallResponse
 {
     @DataIndex( 0 )
-    @Contains( MultiCallValueObj.class )
     private List<MultiCallValueObj> valueObjs;
 
     public List<MultiCallValueObj> getValueObjs()

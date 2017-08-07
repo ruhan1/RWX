@@ -1,8 +1,7 @@
 package org.commonjava.rwx2.test.koji;
 
-import org.commonjava.rwx.binding.anno.Contains;
-import org.commonjava.rwx.binding.anno.DataIndex;
-import org.commonjava.rwx.binding.anno.Request;
+import org.commonjava.rwx2.anno.DataIndex;
+import org.commonjava.rwx2.anno.Request;
 
 import java.util.List;
 
@@ -13,7 +12,6 @@ import java.util.List;
 public class MultiCallRequest
 {
     @DataIndex( 0 )
-    @Contains( MultiCallObj.class )
     private List<MultiCallObj> multiCallObjs;
 
     public List<MultiCallObj> getMultiCallObjs()

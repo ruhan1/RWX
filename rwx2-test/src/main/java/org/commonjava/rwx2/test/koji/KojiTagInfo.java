@@ -1,8 +1,7 @@
 package org.commonjava.rwx2.test.koji;
 
-import org.commonjava.rwx.binding.anno.DataKey;
-import org.commonjava.rwx.binding.anno.SkipNull;
-import org.commonjava.rwx.binding.anno.StructPart;
+import org.commonjava.rwx2.anno.DataKey;
+import org.commonjava.rwx2.anno.StructPart;
 
 import java.util.List;
 
@@ -13,25 +12,21 @@ import java.util.List;
 public class KojiTagInfo
 {
     @DataKey( "id" )
-    @SkipNull
     private Integer id;
 
     @DataKey( "name" )
     private String name;
 
     @DataKey( "perm" )
-    @SkipNull
     private String permission;
 
     @DataKey( "perm_id" )
-    @SkipNull
     private Integer permissionId;
 
     @DataKey( "arches" )
     private List<String> arches;
 
     @DataKey( "locked" )
-    @SkipNull
     private Boolean locked;
 
     @DataKey( "maven_support" )

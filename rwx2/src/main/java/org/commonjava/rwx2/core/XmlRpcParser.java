@@ -1,9 +1,9 @@
 package org.commonjava.rwx2.core;
 
 import org.apache.commons.lang.StringUtils;
-import org.commonjava.rwx.error.CoercionException;
-import org.commonjava.rwx.error.XmlRpcException;
-import org.commonjava.rwx.vocab.ValueType;
+import org.commonjava.rwx2.error.CoercionException;
+import org.commonjava.rwx2.error.XmlRpcException;
+import org.commonjava.rwx2.vocab.ValueType;
 import org.commonjava.rwx2.model.Fault;
 import org.commonjava.rwx2.model.MethodCall;
 import org.commonjava.rwx2.model.MethodResponse;
@@ -22,7 +22,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.commonjava.rwx.vocab.XmlRpcConstants.*;
+import static org.commonjava.rwx2.vocab.XmlRpcConstants.*;
 
 /**
  * XML-RPC request/response parser. This will parse input xml stream and return an RpcObject (MethodCall, MethodResponse or a Fault)

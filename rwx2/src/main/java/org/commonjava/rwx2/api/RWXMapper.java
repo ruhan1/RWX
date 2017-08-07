@@ -1,6 +1,6 @@
 package org.commonjava.rwx2.api;
 
-import org.commonjava.rwx.error.XmlRpcException;
+import org.commonjava.rwx2.error.XmlRpcException;
 import org.commonjava.rwx2.error.XmlRpcFaultException;
 import org.commonjava.rwx2.core.Parser;
 import org.commonjava.rwx2.core.Registry;

@@ -1,8 +1,7 @@
 package org.commonjava.rwx2.test.koji;
 
-import org.commonjava.rwx.binding.anno.DataKey;
-import org.commonjava.rwx.binding.anno.KeyRefs;
-import org.commonjava.rwx.binding.anno.StructPart;
+import org.commonjava.rwx2.anno.DataKey;
+import org.commonjava.rwx2.anno.StructPart;
 
 import java.util.Map;
 
@@ -86,7 +85,7 @@ public class KojiBuildInfo
 
     public KojiBuildInfo() {}
 
-    @KeyRefs({"build_id", "package_id", "package_name", "version", "release"})
+    //@KeyRefs({"build_id", "package_id", "package_name", "version", "release"})
     public KojiBuildInfo(int id, int packageId, String name, String version, String release)
     {
         setId( id );

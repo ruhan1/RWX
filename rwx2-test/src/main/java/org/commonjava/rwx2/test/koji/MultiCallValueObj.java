@@ -1,9 +1,7 @@
 package org.commonjava.rwx2.test.koji;
 
-import org.commonjava.rwx.binding.anno.ArrayPart;
-import org.commonjava.rwx.binding.anno.DataIndex;
-
-import java.util.List;
+import org.commonjava.rwx2.anno.ArrayPart;
+import org.commonjava.rwx2.anno.DataIndex;
 
 /**
  * Created by ruhan on 8/4/17.

@@ -1,8 +1,7 @@
 package org.commonjava.rwx2.test.koji;
 
-import org.commonjava.rwx.binding.anno.Contains;
-import org.commonjava.rwx.binding.anno.DataKey;
-import org.commonjava.rwx.binding.anno.StructPart;
+import org.commonjava.rwx2.anno.DataKey;
+import org.commonjava.rwx2.anno.StructPart;
 
 import java.util.List;
 
@@ -16,7 +15,6 @@ public class MultiCallObj
     private String methodName;
 
     @DataKey( "params" )
-    @Contains( Object.class )
     private List<Object> params;
 
     public String getMethodName()

@@ -1,9 +1,9 @@
 package org.commonjava.rwx2.util;
 
-import org.commonjava.rwx.binding.anno.DataIndex;
-import org.commonjava.rwx.binding.anno.DataKey;
-import org.commonjava.rwx.error.XmlRpcException;
-import org.commonjava.rwx.vocab.ValueType;
+import org.commonjava.rwx2.anno.DataIndex;
+import org.commonjava.rwx2.anno.DataKey;
+import org.commonjava.rwx2.error.XmlRpcException;
+import org.commonjava.rwx2.vocab.ValueType;
 import org.commonjava.rwx2.model.RpcObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

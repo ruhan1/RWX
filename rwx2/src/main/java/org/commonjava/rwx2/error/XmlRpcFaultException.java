@@ -1,6 +1,5 @@
 package org.commonjava.rwx2.error;
 
-import org.commonjava.rwx.error.XmlRpcException;
 import org.commonjava.rwx2.model.Fault;
 
 /**

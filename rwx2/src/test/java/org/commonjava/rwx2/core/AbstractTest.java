@@ -1,7 +1,6 @@
 package org.commonjava.rwx2.core;
 
 import org.apache.commons.io.IOUtils;
-import org.jdom.JDOMException;
 import org.junit.BeforeClass;
 
 import javax.xml.stream.XMLInputFactory;
@@ -34,12 +33,12 @@ public abstract class AbstractTest
         return Thread.currentThread().getContextClassLoader().getResourceAsStream( DOC_PATH + name + ".xml" );
     }
 
-    protected String getXMLString( final String name ) throws JDOMException, IOException, XMLStreamException
+    protected String getXMLString( final String name ) throws IOException, XMLStreamException
     {
         return IOUtils.toString( new InputStreamReader( getXMLStream( name ) ));
     }
 
-    protected String getXMLStringIgnoreFormat( final String name ) throws JDOMException, IOException, XMLStreamException
+    protected String getXMLStringIgnoreFormat( final String name ) throws IOException, XMLStreamException
     {
         final BufferedReader reader = new BufferedReader( new InputStreamReader( getXMLStream( name ) ) );
         final StringWriter writer = new StringWriter();

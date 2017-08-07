@@ -1,6 +1,6 @@
 package org.commonjava.rwx2.core;
 
-import org.commonjava.rwx.error.XmlRpcException;
+import org.commonjava.rwx2.error.XmlRpcException;
 import org.commonjava.rwx2.model.Fault;
 import org.commonjava.rwx2.model.MethodCall;
 import org.commonjava.rwx2.model.MethodResponse;

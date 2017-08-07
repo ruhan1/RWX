@@ -1,13 +1,13 @@
 package org.commonjava.rwx2.util;
 
-import org.commonjava.rwx.binding.anno.ArrayPart;
-import org.commonjava.rwx.binding.anno.DataIndex;
-import org.commonjava.rwx.binding.anno.DataKey;
-import org.commonjava.rwx.binding.anno.Request;
-import org.commonjava.rwx.binding.anno.StructPart;
-import org.commonjava.rwx.error.CoercionException;
-import org.commonjava.rwx.error.XmlRpcException;
-import org.commonjava.rwx.vocab.ValueType;
+import org.commonjava.rwx2.anno.ArrayPart;
+import org.commonjava.rwx2.anno.DataIndex;
+import org.commonjava.rwx2.anno.DataKey;
+import org.commonjava.rwx2.anno.Request;
+import org.commonjava.rwx2.anno.StructPart;
+import org.commonjava.rwx2.error.CoercionException;
+import org.commonjava.rwx2.error.XmlRpcException;
+import org.commonjava.rwx2.vocab.ValueType;
 import org.commonjava.rwx2.model.MethodCall;
 import org.commonjava.rwx2.model.MethodResponse;
 import org.commonjava.rwx2.model.RpcObject;
@@ -24,7 +24,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.commonjava.rwx.vocab.XmlRpcConstants.*;
+import static org.commonjava.rwx2.vocab.XmlRpcConstants.*;
 
 /**
  * Created by ruhan on 7/13/17.

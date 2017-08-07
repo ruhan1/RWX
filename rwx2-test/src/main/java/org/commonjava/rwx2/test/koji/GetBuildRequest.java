@@ -1,7 +1,7 @@
 package org.commonjava.rwx2.test.koji;
 
-import org.commonjava.rwx.binding.anno.DataIndex;
-import org.commonjava.rwx.binding.anno.Request;
+import org.commonjava.rwx2.anno.DataIndex;
+import org.commonjava.rwx2.anno.Request;
 
 /**
  * Created by ruhan on 7/19/17.

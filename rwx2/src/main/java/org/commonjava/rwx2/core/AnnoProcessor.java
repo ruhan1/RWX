@@ -4,12 +4,12 @@ import groovy.lang.Writable;
 import groovy.text.GStringTemplateEngine;
 import groovy.text.Template;
 import org.apache.commons.io.IOUtils;
-import org.commonjava.rwx.binding.anno.ArrayPart;
-import org.commonjava.rwx.binding.anno.DataIndex;
-import org.commonjava.rwx.binding.anno.DataKey;
-import org.commonjava.rwx.binding.anno.Request;
-import org.commonjava.rwx.binding.anno.Response;
-import org.commonjava.rwx.binding.anno.StructPart;
+import org.commonjava.rwx2.anno.ArrayPart;
+import org.commonjava.rwx2.anno.DataIndex;
+import org.commonjava.rwx2.anno.DataKey;
+import org.commonjava.rwx2.anno.Request;
+import org.commonjava.rwx2.anno.Response;
+import org.commonjava.rwx2.anno.StructPart;
 import org.commonjava.rwx2.util.ProcessorUtils;
 
 import javax.annotation.processing.AbstractProcessor;
@@ -43,7 +43,7 @@ import static org.commonjava.rwx2.util.ProcessorUtils.union;
 /**
  * Created by ruhan on 7/24/17.
  */
-@SupportedAnnotationTypes( "org.commonjava.rwx.binding.anno.*" )
+@SupportedAnnotationTypes( "org.commonjava.rwx2.anno.*" )
 public class AnnoProcessor
                 extends AbstractProcessor
 {
