@@ -1,0 +1,11 @@
+<?xml version='1.0'?>
+<methodCall>
+    <methodName>listTags</methodName>
+    <params>
+        <param>
+            <value>
+                <string>org.dashbuilder-dashbuilder-parent-metadata-0.4.0.Final_redhat_10-1</string>
+            </value>
+        </param>
+    </params>
+</methodCall>
