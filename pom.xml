@@ -27,7 +27,7 @@
   
   <groupId>org.commonjava.rwx</groupId>
   <artifactId>rwx-parent</artifactId>
-  <version>1.2-SNAPSHOT</version>
+  <version>2.0-SNAPSHOT</version>
   
   <packaging>pom</packaging>
   <inceptionYear>2010</inceptionYear>
@@ -36,24 +36,15 @@
 
   <properties>
     <projectOwner>Red Hat, Inc.</projectOwner>
-    
-    <jhttpcVersion>1.2</jhttpcVersion>
     <javaVersion>1.8</javaVersion>
-    <httpcVersion>4.4</httpcVersion>
-
     <enforceStandards>false</enforceStandards>
     <enforceBestPractices>false</enforceBestPractices>
-
     <plugin.jacoco.skip>false</plugin.jacoco.skip>
   </properties>
   
   <modules>
-    <module>core</module>
-    <module>bindings</module>
-    <module>http</module>
-    <module>experimental</module>
-    <module>rwx2</module>
-    <module>rwx2-test</module>
+    <module>rwx</module>
+    <module>rwx-test</module>
   </modules>
   
   <dependencyManagement>
@@ -65,28 +56,11 @@
         <type>pom</type>
         <scope>import</scope>
       </dependency>
-
       <dependency>
         <groupId>org.commonjava.rwx</groupId>
-        <artifactId>rwx-core</artifactId>
-        <version>1.2-SNAPSHOT</version>
+        <artifactId>rwx</artifactId>
+        <version>2.0-SNAPSHOT</version>
       </dependency>
-      <dependency>
-        <groupId>org.commonjava.rwx</groupId>
-        <artifactId>rwx-bindings</artifactId>
-        <version>1.2-SNAPSHOT</version>
-      </dependency>
-      <dependency>
-        <groupId>org.commonjava.rwx</groupId>
-        <artifactId>rwx-http</artifactId>
-        <version>1.2-SNAPSHOT</version>
-      </dependency>
-      <dependency>
-        <groupId>org.commonjava.rwx</groupId>
-        <artifactId>rwx2</artifactId>
-        <version>1.2-SNAPSHOT</version>
-      </dependency>
-
       <dependency>
         <groupId>org.codehaus.groovy</groupId>
         <artifactId>groovy-templates</artifactId>
@@ -97,32 +71,10 @@
         <artifactId>commons-io</artifactId>
         <version>2.5</version>
       </dependency>
-
-      <dependency>
-        <groupId>org.commonjava.util</groupId>
-        <artifactId>jhttpc</artifactId>
-        <version>${jhttpcVersion}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.httpcomponents</groupId>
-        <artifactId>httpclient</artifactId>
-        <version>${httpcVersion}</version>
-      </dependency>
-      
-    	<dependency>
-    		<groupId>org.apache.xbean</groupId>
-    		<artifactId>xbean-reflect</artifactId>
-    		<version>4.4</version>
-    	</dependency>
       <dependency>
         <groupId>commons-codec</groupId>
         <artifactId>commons-codec</artifactId>
         <version>1.4</version>
-      </dependency>
-      <dependency>
-      	<groupId>org.jdom</groupId>
-      	<artifactId>jdom</artifactId>
-      	<version>1.1</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
