@@ -4,12 +4,8 @@ import groovy.lang.Writable;
 import groovy.text.GStringTemplateEngine;
 import groovy.text.Template;
 import org.apache.commons.io.IOUtils;
-import org.commonjava.rwx.anno.ArrayPart;
-import org.commonjava.rwx.anno.DataIndex;
-import org.commonjava.rwx.anno.DataKey;
-import org.commonjava.rwx.anno.Request;
-import org.commonjava.rwx.anno.Response;
-import org.commonjava.rwx.anno.StructPart;
+import org.commonjava.rwx.anno.*;
+import org.commonjava.rwx.anno.Converter;
 import org.commonjava.rwx.util.ProcessorUtils;
 
 import javax.annotation.processing.AbstractProcessor;
@@ -19,6 +15,9 @@ import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.MirroredTypeException;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.Elements;
 import javax.tools.Diagnostic;
 import javax.tools.FileObject;
 import javax.tools.StandardLocation;
@@ -52,13 +51,13 @@ public class AnnoProcessor
         System.out.println( getClass().getSimpleName() + " >> " + message );
     }
 
-    public static final String TEMPLATE_PKG = "groovy";
+    private static final String TEMPLATE_PKG = "groovy";
 
-    public static final String RENDERER_TEMPLATE = "Renderer.groovy";
+    private static final String RENDERER_TEMPLATE = "Renderer.groovy";
 
-    public static final String PARSER_TEMPLATE = "Parser.groovy";
+    private static final String PARSER_TEMPLATE = "Parser.groovy";
 
-    public static final String REGISTRY_TEMPLATE = "Registry.groovy";
+    private static final String REGISTRY_TEMPLATE = "Registry.groovy";
 
     final GStringTemplateEngine engine = new GStringTemplateEngine();
 
@@ -268,7 +267,7 @@ public class AnnoProcessor
         item.setMethodName( getMethodName( method, e ) );
         item.setType( type );
 
-        org.commonjava.rwx.anno.Converter converter = e.getAnnotation( org.commonjava.rwx.anno.Converter.class );
+        Converter converter = getConverter( e );
 
         if (converter != null)
         {
@@ -296,6 +295,36 @@ public class AnnoProcessor
             item.setActionClass( actionClass );
         }
         return item;
+    }
+
+    private Converter getConverter( Element e )
+    {
+        Converter anno = e.getAnnotation( Converter.class );
+        if ( anno != null )
+        {
+            return anno;
+        }
+        TypeMirror type = e.asType();
+        if ( type.getKind() == TypeKind.DECLARED ) // field type is interface or class
+        {
+            Elements elements = processingEnv.getElementUtils();
+            do
+            {
+                TypeElement typeElement = elements.getTypeElement( type.toString() );
+                if ( typeElement == null )
+                {
+                    return null;
+                }
+                anno = typeElement.getAnnotation( Converter.class );
+                if ( anno != null )
+                {
+                    return anno;
+                }
+                type = typeElement.getSuperclass();
+            }
+            while ( type != null );
+        }
+        return null;
     }
 
     /**
