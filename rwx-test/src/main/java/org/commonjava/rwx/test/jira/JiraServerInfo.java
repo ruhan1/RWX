@@ -3,7 +3,7 @@ package org.commonjava.rwx.test.jira;
 /**
  * Created by ruhan on 8/7/17.
  */
-public final class JiraServerInfo
+public final class JiraServerInfo extends AbstractJiraServerInfo
 {
     private String version;
     private String baseUrl;

@@ -27,16 +27,10 @@ public class JiraServerInfoConverterTest
     public void roundTrip_jiraServerInfoResponse() throws Exception
     {
         String source = getXMLStringIgnoreFormat( "jiraServerInfoResponse" );
-        JiraServerInfoResponse response =
-                        new RWXMapper().parse( new ByteArrayInputStream( source.getBytes() ), JiraServerInfoResponse.class );
-        JiraServerInfo jiraServerInfo = response.getValue();
+        JiraServerInfoResponse response = new RWXMapper().parse( new ByteArrayInputStream( source.getBytes() ),
+                                                                 JiraServerInfoResponse.class );
 
-        assertEquals( "4.1.2", jiraServerInfo.getVersion() );
-        assertEquals( "http://jira.codehaus.org", jiraServerInfo.getBaseUrl() );
-        assertEquals( "Mon Jun 07 00:00:00 CDT 2010", jiraServerInfo.getBuildDate() );
-        assertEquals( 531, jiraServerInfo.getBuildNumber() );
-        assertEquals( "Enterprise", jiraServerInfo.getEdition() );
-        assertEquals( "com.atlassian.jira.rpc.soap.beans.RemoteTimeInfo@18702b7", jiraServerInfo.getServerTime() );
+        assertJiraServerInfo( response.getValue() );
 
         String rendered = new RWXMapper().render( response );
 
@@ -46,4 +40,31 @@ public class JiraServerInfoConverterTest
         assertEquals( sortedSource, sortedRendered );
     }
 
+    @Test
+    public void roundTrip_jiraServerInfoResponseVariantOne() throws Exception
+    {
+        String source = getXMLStringIgnoreFormat( "jiraServerInfoResponse" );
+        JiraServerInfoResponseVariantOne response =
+                        new RWXMapper().parse( new ByteArrayInputStream( source.getBytes() ),
+                                               JiraServerInfoResponseVariantOne.class );
+
+        assertJiraServerInfo( response.getValue() );
+
+        String rendered = new RWXMapper().render( response );
+
+        String sortedSource = splitAndSort( formalizeXMLString( source ) );
+        String sortedRendered = splitAndSort( formalizeXMLString( rendered ) );
+
+        assertEquals( sortedSource, sortedRendered );
+    }
+
+    private void assertJiraServerInfo( JiraServerInfo jiraServerInfo )
+    {
+        assertEquals( "4.1.2", jiraServerInfo.getVersion() );
+        assertEquals( "http://jira.codehaus.org", jiraServerInfo.getBaseUrl() );
+        assertEquals( "Mon Jun 07 00:00:00 CDT 2010", jiraServerInfo.getBuildDate() );
+        assertEquals( 531, jiraServerInfo.getBuildNumber() );
+        assertEquals( "Enterprise", jiraServerInfo.getEdition() );
+        assertEquals( "com.atlassian.jira.rpc.soap.beans.RemoteTimeInfo@18702b7", jiraServerInfo.getServerTime() );
+    }
 }
