@@ -1,4 +1,5 @@
 <?xml version="1.0"?>
 <methodCall>
   <methodName>foo</methodName>
+  <params></params>
 </methodCall>
