@@ -100,17 +100,17 @@ public class RenderUtils
 
     private static void writeParams( XMLStreamWriter w, List<Object> params ) throws XmlRpcException, XMLStreamException
     {
+        w.writeStartElement( PARAMS );
         if ( params != null && !params.isEmpty() )
         {
-            w.writeStartElement( PARAMS );
             for ( Object object : params )
             {
                 w.writeStartElement( PARAM );
                 writeValue( w, object );
                 w.writeEndElement();
             }
-            w.writeEndElement();
         }
+        w.writeEndElement();
     }
 
     private static void writeValue( XMLStreamWriter w, Object object ) throws XMLStreamException, CoercionException
