@@ -20,73 +20,74 @@ public class ${simpleClassName}_Renderer implements Renderer<${simpleClassName}>
     public Object render( ${simpleClassName} object )
     {
         <% if (request == true) { %>
-        MethodCall ret = new MethodCall();
-        ret.setMethodName( "${methodName}" );
+        MethodCall methodCall = new MethodCall();
+        methodCall.setMethodName( "${methodName}" );
         <% } else if (response == true) { %>
-        MethodResponse ret = new MethodResponse();
-        <% } else if (structPart == true) { %>
-        Map<String, Object> ret = new HashMap<>();
+        MethodResponse methodResponse = new MethodResponse();
+        <% } %>
+
+        <% if (structPart == true) { %>
+        Map<String, Object> map = new HashMap<>();
             <% params.each { %>
                 <% if (it.converter != null) { %>
-        ret.put( "${it.key}", new ${it.converter}().render( object.${it.methodName}() ) );
+        map.put( "${it.key}", new ${it.converter}().render( object.${it.methodName}() ) );
                 <% } else if (it.actionClass == null) { %>
-        ret.put( "${it.key}", object.${it.methodName}() );
+        map.put( "${it.key}", object.${it.methodName}() );
                 <% } else { %>
-                    <% if (it.contains) { %>
-        List<Object> ${it.localListVariableName} = new ArrayList<>(  );
-        for ( ${it.elementClass} obj : object.${it.methodName}() )
+        if ( object.${it.methodName}() != null )
         {
-            ${it.localListVariableName}.add( new ${it.actionClass}().render( obj ) );
-        }
-        ret.put( "${it.key}", ${it.localListVariableName} );
+                    <% if (it.contains) { %>
+            List<Object> ${it.localListVariableName} = new ArrayList<>(  );
+            for ( ${it.elementClass} obj : object.${it.methodName}() )
+            {
+                ${it.localListVariableName}.add( new ${it.actionClass}().render( obj ) );
+            }
+            map.put( "${it.key}", ${it.localListVariableName} );
                     <% } else { %>
-        ret.put( "${it.key}", new ${it.actionClass}().render( object.${it.methodName}() ) );
+            map.put( "${it.key}", new ${it.actionClass}().render( object.${it.methodName}() ) );
                     <% } %>
+        }
                 <% } %>
             <% } %>
+        <% } else { %>
+        List<Object> list = new ArrayList<>();
+            <% params.each { %>
+                <% if (it.converter != null) { %>
+        list.add( new ${it.converter}().render( object.${it.methodName}() ) );
+                <% } else if (it.actionClass == null) { %>
+        list.add( object.${it.methodName}() );
+                <% } else { %>
+        if ( object.${it.methodName}() != null )
+        {
+                    <% if (it.contains) { %>
+            List<Object> ${it.localListVariableName} = new ArrayList<>(  );
+            for ( ${it.elementClass} obj : object.${it.methodName}() )
+            {
+                ${it.localListVariableName}.add( new ${it.actionClass}().render( obj ) );
+            }
+            list.add( ${it.localListVariableName} );
+                    <% } else { %>
+            list.add( new ${it.actionClass}().render( object.${it.methodName}() ) );
+                    <% } %>
+        }
+        else
+        {
+            list.add( null );
+        }
+                <% } %>
+            <% } %>
+        <% } %>        
+
+        <% if (request == true) { %>
+        methodCall.setParams( list );
+        return methodCall;
+        <% } else if (response == true) { %>
+        methodResponse.setParams( list );
+        return methodResponse;
         <% } else if (arrayPart == true) { %>
-        List<Object> ret = new ArrayList<>();
-            <% params.each { %>
-                <% if (it.converter != null) { %>
-        ret.add( new ${it.converter}().render( object.${it.methodName}() ) );
-                <% } else if (it.actionClass == null) { %>
-        ret.add( object.${it.methodName}() );
-                <% } else { %>
-                    <% if (it.contains) { %>
-        List<Object> ${it.localListVariableName} = new ArrayList<>(  );
-        for ( ${it.elementClass} obj : object.${it.methodName}() )
-        {
-            ${it.localListVariableName}.add( new ${it.actionClass}().render( obj ) );
-        }
-        ret.add( ${it.localListVariableName} );
-                    <% } else { %>
-        ret.add( new ${it.actionClass}().render( object.${it.methodName}() ) );
-                    <% } %>
-                <% } %>
-            <% } %>
+        return list;
+        <% } else { %>
+        return map;
         <% } %>
-        <% if (request == true || response == true) { %>
-        List<Object> params = new ArrayList<>();
-        ret.setParams( params );
-            <% params.each { %>
-                <% if (it.converter != null) { %>
-        params.add( new ${it.converter}().render( object.${it.methodName}() ) );
-                <% } else if (it.actionClass == null) { %>
-        params.add( object.${it.methodName}() );
-                <% } else { %>
-                    <% if (it.contains) { %>
-        List<Object> ${it.localListVariableName} = new ArrayList<>(  );
-        for ( ${it.elementClass} obj : object.${it.methodName}() )
-        {
-            ${it.localListVariableName}.add( new ${it.actionClass}().render( obj ) );
-        }
-        params.add( ${it.localListVariableName} );
-                    <% } else { %>
-        params.add( new ${it.actionClass}().render( object.${it.methodName}() ) );
-                    <% } %>
-                <% } %>
-            <% } %>
-        <% } %>
-        return ret;
     }
 }

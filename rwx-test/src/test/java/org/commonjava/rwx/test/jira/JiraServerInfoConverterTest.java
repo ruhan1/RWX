@@ -26,24 +26,24 @@ public class JiraServerInfoConverterTest
     @Test
     public void roundTrip_jiraServerInfoResponse() throws Exception
     {
-        String source = getXMLStringIgnoreFormat( "jiraServerInfoResponse" );
+        String source = getXMLString( "jiraServerInfoResponse" );
         JiraServerInfoResponse response = new RWXMapper().parse( new ByteArrayInputStream( source.getBytes() ),
                                                                  JiraServerInfoResponse.class );
 
         assertJiraServerInfo( response.getValue() );
 
         String rendered = new RWXMapper().render( response );
+        JiraServerInfoResponse renderedResponse =
+                        new RWXMapper().parse( new ByteArrayInputStream( rendered.getBytes() ),
+                                               JiraServerInfoResponse.class );
 
-        String sortedSource = splitAndSort( formalizeXMLString( source ) );
-        String sortedRendered = splitAndSort( formalizeXMLString( rendered ) );
-
-        assertEquals( sortedSource, sortedRendered );
+        assertJiraServerInfo( renderedResponse.getValue() );
     }
 
     @Test
     public void roundTrip_jiraServerInfoResponseVariantOne() throws Exception
     {
-        String source = getXMLStringIgnoreFormat( "jiraServerInfoResponse" );
+        String source = getXMLString( "jiraServerInfoResponse" );
         JiraServerInfoResponseVariantOne response =
                         new RWXMapper().parse( new ByteArrayInputStream( source.getBytes() ),
                                                JiraServerInfoResponseVariantOne.class );
@@ -51,11 +51,11 @@ public class JiraServerInfoConverterTest
         assertJiraServerInfo( response.getValue() );
 
         String rendered = new RWXMapper().render( response );
+        JiraServerInfoResponseVariantOne renderedResponse =
+                        new RWXMapper().parse( new ByteArrayInputStream( rendered.getBytes() ),
+                                               JiraServerInfoResponseVariantOne.class );
 
-        String sortedSource = splitAndSort( formalizeXMLString( source ) );
-        String sortedRendered = splitAndSort( formalizeXMLString( rendered ) );
-
-        assertEquals( sortedSource, sortedRendered );
+        assertJiraServerInfo( renderedResponse.getValue() );
     }
 
     private void assertJiraServerInfo( JiraServerInfo jiraServerInfo )
