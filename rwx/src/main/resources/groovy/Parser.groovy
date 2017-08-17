@@ -18,29 +18,31 @@ public class ${simpleClassName}_Parser implements Parser<${simpleClassName}>
     public ${simpleClassName} parse( Object object )
     {
         ${simpleClassName} ret = new ${simpleClassName}();
+        Object val;
 
         <% if (structPart == true) { %>
         Map<String, Object> map = (Map) object;
         <% params.each { %>
+        val = map.get( "${it.key}" );
+        if ( val != null )
+        {   
             <% if (it.converter != null) { %>
-        ret.${it.methodName}( new ${it.converter}().parse( map.get("${it.key}") ) );
+            ret.${it.methodName}( new ${it.converter}().parse( val ) );
             <% } else if (it.actionClass == null) { %>
-        ret.${it.methodName}((${it.type}) map.get("${it.key}"));
+            ret.${it.methodName}( (${it.type}) val );
             <% } else { %>
-        if ( map.get("${it.key}") != null )
-        {
                 <% if (it.contains) { %>
             List<${it.elementClass}> ${it.localListVariableName} = new ArrayList<>();
-            for ( Object obj : ( List<Object> ) map.get("${it.key}") )
+            for ( Object obj : ( List<Object> ) val )
             {
                 ${it.localListVariableName}.add( new ${it.actionClass}().parse( obj ) );
             }
             ret.${it.methodName}( ${it.localListVariableName} );
                 <% } else { %>
-            ret.${it.methodName}( new ${it.actionClass}().parse( map.get("${it.key}") ) );
+            ret.${it.methodName}( new ${it.actionClass}().parse( val ) );
                 <% } %>
-        }
             <% } %>
+        }
         <% } %>
         <% } else { %>
         <% if (arrayPart == true) { %>
@@ -49,25 +51,26 @@ public class ${simpleClassName}_Parser implements Parser<${simpleClassName}>
         List<Object> list = ((RpcObject) object).getParams();
         <% } %>
         <% params.eachWithIndex { it, idx -> %>
-            <% if (it.converter != null) { %>
-        ret.${it.methodName}( new ${it.converter}().parse( list.get(${idx}) ) );
-            <% } else if (it.actionClass == null) { %>
-        ret.${it.methodName}((${it.type}) list.get(${idx}));
-            <% } else { %>
-        if ( list.get(${idx}) != null )
+        val = list.get( ${idx} );
+        if ( val != null )
         {
+            <% if (it.converter != null) { %>
+            ret.${it.methodName}( new ${it.converter}().parse( val ) );
+            <% } else if (it.actionClass == null) { %>
+            ret.${it.methodName}( (${it.type}) val );
+            <% } else { %>
                 <% if (it.contains) { %>
             List<${it.elementClass}> ${it.localListVariableName} = new ArrayList<>();
-            for ( Object obj : ( List<Object> ) list.get(${idx}) )
+            for ( Object obj : ( List<Object> ) val )
             {
                 ${it.localListVariableName}.add( new ${it.actionClass}().parse( obj ) );
             }
             ret.${it.methodName}( ${it.localListVariableName} );
                 <% } else { %>
-            ret.${it.methodName}( new ${it.actionClass}().parse( list.get(${idx}) ) );
+            ret.${it.methodName}( new ${it.actionClass}().parse( val ) );
                 <% } %>
-        }
             <% } %>
+        }
         <% } %>
         <% } %>
         return ret;
