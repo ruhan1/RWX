@@ -19,12 +19,6 @@ import static junit.framework.TestCase.assertEquals;
 public class SimpleRWXMapperTest
                 extends AbstractTest
 {
-    @BeforeClass
-    public static void register()
-    {
-        Registry.setInstance( new org.commonjava.rwx.test.generated.Test_Registry() );
-    }
-
     @Test
     public void simpleRequestTest() throws Exception
     {

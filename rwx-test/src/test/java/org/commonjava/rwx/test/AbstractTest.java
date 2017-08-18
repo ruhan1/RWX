@@ -1,9 +1,10 @@
 package org.commonjava.rwx.test;
 
 import org.apache.commons.io.IOUtils;
+import org.commonjava.rwx.core.Registry;
+import org.commonjava.rwx.test.generated.Test_Registry;
 import org.junit.BeforeClass;
 
-import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -19,12 +20,10 @@ public abstract class AbstractTest
 {
     protected static final String DOC_PATH = "xml/";
 
-    private static XMLInputFactory factory;
-
     @BeforeClass
-    public static void initXmlFactory()
+    public static void register()
     {
-        factory = XMLInputFactory.newInstance();
+        Registry.setInstance( new Test_Registry() );
     }
 
     protected InputStream getXMLStream( final String name ) throws IOException, XMLStreamException
