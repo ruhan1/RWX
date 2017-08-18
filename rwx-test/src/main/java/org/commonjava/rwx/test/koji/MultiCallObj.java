@@ -17,6 +17,15 @@ public class MultiCallObj
     @DataKey( "params" )
     private List<Object> params;
 
+    public MultiCallObj()
+    {
+    }
+
+    public MultiCallObj( String methodName )
+    {
+        this.methodName = methodName;
+    }
+
     public String getMethodName()
     {
         return methodName;

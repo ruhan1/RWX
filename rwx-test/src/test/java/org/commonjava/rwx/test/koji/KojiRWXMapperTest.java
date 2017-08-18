@@ -1,18 +1,13 @@
 package org.commonjava.rwx.test.koji;
 
 import org.commonjava.rwx.api.RWXMapper;
-import org.commonjava.rwx.core.Registry;
 import org.commonjava.rwx.test.AbstractTest;
-import org.commonjava.rwx.test.generated.Test_Registry;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
 import java.util.List;
-import java.util.Map;
 
 import static junit.framework.TestCase.assertEquals;
-import static junit.framework.TestCase.assertTrue;
 
 /**
  * Created by ruhan on 8/2/17.
@@ -20,12 +15,6 @@ import static junit.framework.TestCase.assertTrue;
 public class KojiRWXMapperTest
                 extends AbstractTest
 {
-    @BeforeClass
-    public static void register()
-    {
-        Registry.setInstance( new Test_Registry() );
-    }
-
     @Test
     public void roundTrip_GetBuildByNVRObjRequest() throws Exception
     {
@@ -151,95 +140,6 @@ public class KojiRWXMapperTest
         assertEquals( "jb-cs-maven-candidate", tag1.getName() );
         assertEquals( "jb-fis-2.0-maven-imports", tag2.getName() );
         assertEquals( "jb-mm-7.0-maven-candidate", tag3.getName() );
-    }
-
-    @Test
-    public void roundTrip_MultiCallRequest() throws Exception
-    {
-        String source = getXMLString( "kojiMulticallRequest" );
-        MultiCallRequest parsed =
-                        new RWXMapper().parse( new ByteArrayInputStream( source.getBytes() ), MultiCallRequest.class );
-
-        assertMultiCallRequest( parsed );
-
-        MultiCallRequest rounded =
-                        new RWXMapper().parse( new ByteArrayInputStream( new RWXMapper().render( parsed ).getBytes() ),
-                                               MultiCallRequest.class );
-
-        assertMultiCallRequest( rounded );
-    }
-
-    private void assertMultiCallRequest( MultiCallRequest request )
-    {
-        List<MultiCallObj> multiObjs = request.getMultiCallObjs();
-
-        assertEquals( 2, multiObjs.size() );
-
-        MultiCallObj mObj1 = multiObjs.get( 0 );
-        MultiCallObj mObj2 = multiObjs.get( 1 );
-
-        assertEquals( "getBuild", mObj1.getMethodName() );
-        assertEquals( "listTags", mObj2.getMethodName() );
-
-        List<Object> mParams1 = mObj1.getParams();
-        List<Object> mParams2 = mObj2.getParams();
-
-        assertEquals( 1, mParams1.size() );
-        assertEquals( 1, mParams2.size() );
-
-        String nvr = "org.dashbuilder-dashbuilder-parent-metadata-0.4.0.Final-1";
-        assertEquals( nvr, mParams1.get( 0 ) );
-        assertEquals( nvr, mParams2.get( 0 ) );
-    }
-
-    @Test
-    public void roundTrip_MultiCallResponse() throws Exception
-    {
-        String source = getXMLString( "kojiMulticallResponse" );
-        MultiCallResponse parsed =
-                        new RWXMapper().parse( new ByteArrayInputStream( source.getBytes() ), MultiCallResponse.class );
-
-        assertMultiCallResponse( parsed );
-
-        MultiCallResponse rounded =
-                        new RWXMapper().parse( new ByteArrayInputStream( new RWXMapper().render( parsed ).getBytes() ),
-                                               MultiCallResponse.class );
-
-        assertMultiCallResponse( rounded );
-    }
-
-    private void assertMultiCallResponse( MultiCallResponse response )
-    {
-        List<MultiCallValueObj> valueObjs = response.getValueObjs();
-
-        assertEquals( 2, valueObjs.size() );
-
-        MultiCallValueObj valueObj1 = valueObjs.get( 0 );
-        MultiCallValueObj valueObj2 = valueObjs.get( 1 );
-
-        Object data1 = valueObj1.getData();
-        Object data2 = valueObj2.getData();
-
-        assertTrue( data1 instanceof Map );
-        assertTrue( data2 instanceof List );
-
-        Map<String, Object> data1Map = (Map) data1;
-
-        assertEquals( 48475, data1Map.get( "package_id" ) );
-        assertEquals( 513598, data1Map.get( "build_id" ) );
-        assertEquals( "org.dashbuilder-dashbuilder-parent-metadata", data1Map.get( "package_name" ) );
-
-        List<Object> data2List = (List) data2;
-
-        assertEquals( 4, data2List.size() );
-
-        Object data2_1 = data2List.get( 0 );
-
-        assertTrue( data2_1 instanceof Map );
-
-        Map<String, Object> data2_1Map = (Map) data2_1;
-        assertEquals( "jb-bxms-6.3-candidate", data2_1Map.get( "name" ) );
-        assertEquals( 8829, data2_1Map.get( "id" ) );
     }
 
 }

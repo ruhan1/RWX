@@ -17,12 +17,6 @@ import static junit.framework.TestCase.assertEquals;
 public class JiraServerInfoConverterTest
                 extends AbstractTest
 {
-    @BeforeClass
-    public static void register()
-    {
-        Registry.setInstance( new Test_Registry() );
-    }
-
     @Test
     public void roundTrip_jiraServerInfoResponse() throws Exception
     {
