@@ -1,9 +1,8 @@
 package org.commonjava.rwx.test.koji;
 
 import org.commonjava.rwx.api.RWXMapper;
-import org.commonjava.rwx.core.Parser;
 import org.commonjava.rwx.core.Registry;
-import org.commonjava.rwx.core.Renderer;
+import org.commonjava.rwx.error.XmlRpcException;
 import org.commonjava.rwx.test.AbstractTest;
 import org.junit.Test;
 
@@ -35,8 +34,7 @@ public class KojiMultiCallTest
         kojiNVR.setVersion( "1.0-Final" );
         kojiNVR.setRelease( "1" );
 
-        Renderer<KojiNVR> renderer_KojiNVR = Registry.getInstance().getRenderer( KojiNVR.class );
-        Object renderedKojiNVR = renderer_KojiNVR.render( kojiNVR );
+        Object renderedKojiNVR = Registry.getInstance().renderTo( kojiNVR );
 
         List params = new ArrayList<>(  );
         params.add( renderedKojiNVR );
@@ -130,7 +128,7 @@ public class KojiMultiCallTest
         assertMultiCallResponse( rounded );
     }
 
-    private void assertMultiCallResponse( MultiCallResponse response )
+    private void assertMultiCallResponse( MultiCallResponse response ) throws XmlRpcException
     {
         List<MultiCallValueObj> valueObjs = response.getValueObjs();
 
@@ -148,8 +146,7 @@ public class KojiMultiCallTest
         // a. verify response from getBuild call
 
         // if we know the type (KojiBuildInfo), parse the Map to it
-        Parser<KojiBuildInfo> parser_KojiBuildInfo = Registry.getInstance().getParser( KojiBuildInfo.class );
-        KojiBuildInfo kojiBuildInfo = parser_KojiBuildInfo.parse( data1 );
+        KojiBuildInfo kojiBuildInfo = Registry.getInstance().parseAs( data1, KojiBuildInfo.class );
         assertEquals( 48475, kojiBuildInfo.getPackageId() );
         assertEquals( 513598, kojiBuildInfo.getBuildId() );
         assertEquals( "org.dashbuilder-dashbuilder-parent-metadata", kojiBuildInfo.getPackageName() );
@@ -167,8 +164,7 @@ public class KojiMultiCallTest
         assertEquals( 4, data2List.size() );
 
         // if we know the type (KojiTagInfo) in the list, parse the element to it
-        Parser<KojiTagInfo> parser_KojiTagInfo = Registry.getInstance().getParser( KojiTagInfo.class );
-        KojiTagInfo kojiTagInfo = parser_KojiTagInfo.parse( data2List.get( 0 ) );
+        KojiTagInfo kojiTagInfo = Registry.getInstance().parseAs( data2List.get( 0 ), KojiTagInfo.class );
         assertEquals( "jb-bxms-6.3-candidate", kojiTagInfo.getName() );
         assertEquals( 8829, kojiTagInfo.getId() );
 
