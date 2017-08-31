@@ -28,12 +28,7 @@ public final class RWXMapper
      */
     public String render( Object obj ) throws XmlRpcException
     {
-        Renderer renderer = Registry.getInstance().getRenderer( obj.getClass() );
-        if ( renderer == null )
-        {
-            throw new XmlRpcException( "Renderer not found for " + obj.getClass() );
-        }
-        Object rpcObject = renderer.render( obj );
+        Object rpcObject = Registry.getInstance().renderTo( obj );
         return toXMLString( rpcObject );
     }
 
@@ -64,11 +59,6 @@ public final class RWXMapper
             throw new XmlRpcFaultException( (Fault) rpcObject );
         }
 
-        Parser parser = Registry.getInstance().getParser( type );
-        if ( parser == null )
-        {
-            throw new XmlRpcException( "Parser not found for " + type );
-        }
-        return (T) parser.parse( rpcObject );
+        return Registry.getInstance().parseAs( rpcObject, type );
     }
 }
