@@ -2,7 +2,7 @@ RWX XML-RPC Object-Binding API
 =======================================
 
 RWX is a set of APIs for dealing with XML-RPC interactions in Java. It offers
-an annotation-based object-binding API for interacting via Java objects.
+an annotation-based object-binding API for Java objects.
 
 It uses Java Annotation Processor API to generate parser / renderer Java source files
 according to RWX annotations. The top level RWXMapper uses those generated classes under the hook.
