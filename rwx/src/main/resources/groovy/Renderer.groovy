@@ -87,6 +87,7 @@ public class ${simpleClassName}_Renderer implements Renderer<${simpleClassName}>
         <% } else if (arrayPart == true) { %>
         return list;
         <% } else { %>
+        map.values().removeAll( java.util.Collections.singleton( null ) ); 
         return map;
         <% } %>
     }
