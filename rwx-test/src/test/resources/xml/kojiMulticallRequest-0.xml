@@ -22,33 +22,15 @@
                                                 <value>
                                                     <struct>
                                                         <member>
-                                                            <name>tagID</name>
-                                                            <value>
-                                                                <nil></nil>
-                                                            </value>
-                                                        </member>
-                                                        <member>
                                                             <name>release</name>
                                                             <value>
                                                                 <string>1</string>
                                                             </value>
                                                         </member>
                                                         <member>
-                                                            <name>packageID</name>
-                                                            <value>
-                                                                <nil></nil>
-                                                            </value>
-                                                        </member>
-                                                        <member>
                                                             <name>name</name>
                                                             <value>
                                                                 <string>test</string>
-                                                            </value>
-                                                        </member>
-                                                        <member>
-                                                            <name>userID</name>
-                                                            <value>
-                                                                <nil></nil>
                                                             </value>
                                                         </member>
                                                         <member>
