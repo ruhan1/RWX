@@ -27,6 +27,8 @@ public class XmlRpcConstants
 
     public static final String PARAM = "param";
 
+    public static final String NIL = "nil";
+
     public static final String DATETIME_FORMAT = "yyyyMMdd'T'HHmmss";
 
 }

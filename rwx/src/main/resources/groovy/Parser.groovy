@@ -2,6 +2,8 @@ package ${parserPackageName};
 
 import org.commonjava.rwx.core.Parser;
 import org.commonjava.rwx.model.RpcObject;
+import static org.commonjava.rwx.util.ParseUtils.nullifyNil;
+import static org.commonjava.rwx.util.ParseUtils.isNil;
 
 import ${qName};
 
@@ -26,10 +28,15 @@ public class ${simpleClassName}_Parser implements Parser<${simpleClassName}>
         val = map.get( "${it.key}" );
         if ( val != null )
         {   
+            val = nullifyNil( val );
             <% if (it.converter != null) { %>
             ret.${it.methodName}( new ${it.converter}().parse( val ) );
             <% } else if (it.actionClass == null) { %>
+                <% if (it.isPrimitive) { %>
+            if ( val != null ) { ret.${it.methodName}( (${it.type}) val ); }
+                <% } else { %>
             ret.${it.methodName}( (${it.type}) val );
+                <% } %>
             <% } else { %>
                 <% if (it.contains) { %>
             List<${it.elementClass}> ${it.localListVariableName} = new ArrayList<>();
@@ -52,7 +59,7 @@ public class ${simpleClassName}_Parser implements Parser<${simpleClassName}>
         <% } %>
         <% params.eachWithIndex { it, idx -> %>
         val = list.get( ${idx} );
-        if ( val != null )
+        if ( val != null && !isNil( val ) )
         {
             <% if (it.converter != null) { %>
             ret.${it.methodName}( new ${it.converter}().parse( val ) );
