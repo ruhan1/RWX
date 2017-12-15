@@ -52,15 +52,10 @@ public enum ValueType
         @Override
         public Object fromString( final String value ) throws CoercionException
         {
-            return null;
+            return Nil.NIL_VALUE;
         }
 
-        @Override
-        public String toString( final Object value )
-        {
-            return null;
-        }
-    }, Void.class, "nil" ),
+    }, Nil.class, "nil" ),
 
     INT( new ValueCoercion( "INT-to-String" )
     {

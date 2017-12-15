@@ -24,6 +24,7 @@ import javax.tools.StandardLocation;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -395,6 +396,8 @@ public class AnnoProcessor
 
         private String type;
 
+        private boolean isPrimitive;
+
         private String key;
 
         private String actionClass;
@@ -407,6 +410,11 @@ public class AnnoProcessor
 
         public Item()
         {
+        }
+
+        public boolean isPrimitive()
+        {
+            return isPrimitive;
         }
 
         public String getMethodName()
@@ -434,9 +442,22 @@ public class AnnoProcessor
             this.methodName = methodName;
         }
 
+        private static Set<String> primitives;
+
+        static
+        {
+            String[] p8 = { "byte", "short", "int", "long", "char", "float", "double", "boolean" };
+            primitives = new HashSet<>( p8.length );
+            for ( String primitive : p8 )
+            {
+                primitives.add( primitive );
+            }
+        }
+
         public void setType( String type )
         {
             this.type = type;
+            this.isPrimitive = primitives.contains( type );
         }
 
         public void setKey( String key )

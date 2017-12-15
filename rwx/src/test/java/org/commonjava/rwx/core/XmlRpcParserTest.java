@@ -4,6 +4,7 @@ import org.commonjava.rwx.error.XmlRpcException;
 import org.commonjava.rwx.model.Fault;
 import org.commonjava.rwx.model.MethodCall;
 import org.commonjava.rwx.model.MethodResponse;
+import org.commonjava.rwx.vocab.Nil;
 import org.junit.Test;
 
 import javax.xml.stream.XMLStreamException;
@@ -219,7 +220,7 @@ public class XmlRpcParserTest
         Map<String, Object> struct = (Map<String, Object>) p;
 
         assertTrue( struct.get( "package_name" ).equals( "org.dashbuilder-dashbuilder-parent-metadata" ) );
-        assertTrue( struct.get( "extra" ) == null );
+        assertTrue( struct.get( "extra" ) == Nil.NIL_VALUE );
         assertTrue( struct.get( "creation_time" ).equals( "2016-09-15 21:24:04.843726" ) );
         assertTrue( struct.get( "package_id" ).equals( 48475 ) );
         assertTrue( struct.get( "completion_ts" ).equals( Double.parseDouble( "1473974644.95959" ) ) );
@@ -241,7 +242,7 @@ public class XmlRpcParserTest
         List<Object> array1 = (List) array.get( 0 );
         Map<String, Object> struct = (Map) array1.get( 0 );
         assertEquals( "org.dashbuilder-dashbuilder-parent-metadata", struct.get( "package_name" ) );
-        assertEquals( null, struct.get( "extra" ) );
+        assertEquals( Nil.NIL_VALUE, struct.get( "extra" ) );
         assertEquals( 48475, struct.get( "package_id" ) );
         assertEquals( "0.4.0.Final", struct.get( "version" ) );
 
@@ -265,4 +266,19 @@ public class XmlRpcParserTest
         assertEquals( "jb-mm-7.0-maven-candidate", tag4.get( "name" ) );
     }
 
+    @Test
+    public void kojiGetBuildTypeNilResponseTest() throws Exception
+    {
+        final XmlRpcParser parser = new XmlRpcParser( getXMLStream( "kojiGetBuildTypeNilResponse" ) );
+        Object object = parser.parse();
+
+        MethodResponse response = (MethodResponse) object;
+
+        Object p = response.getParams().get( 0 );
+        assertTrue( p instanceof Map );
+
+        Map<String, Object> struct = (Map<String, Object>) p;
+
+        assertTrue( struct.get( "rpm" ) == Nil.NIL_VALUE );
+    }
 }

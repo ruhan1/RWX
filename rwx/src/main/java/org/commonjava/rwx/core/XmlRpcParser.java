@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static org.commonjava.rwx.vocab.Nil.NIL_VALUE;
 import static org.commonjava.rwx.vocab.XmlRpcConstants.*;
 
 /**
@@ -281,6 +282,11 @@ public class XmlRpcParser
                     ret = parseStruct( reader );
                     level--;
                 }
+                else if ( localName.equals( NIL ) )
+                {
+                    ret = parseNil( reader );
+                    level--;
+                }
                 else
                 {
                     ret = parsePrimitive( localName, reader ); // xml-rpc primitives, string, int, etc.
@@ -470,6 +476,23 @@ public class XmlRpcParser
         while ( level > 0 );
 
         return ret;
+    }
+
+    private Object parseNil( XMLStreamReader reader ) throws XMLStreamException, CoercionException
+    {
+        int level = 1;
+        do
+        {
+            int event = reader.next();
+            if ( event == XMLStreamConstants.END_ELEMENT )
+            {
+                logger.trace( "End </" + reader.getLocalName() + ">" );
+                level--;
+            }
+        }
+        while ( level > 0 );
+
+        return NIL_VALUE;
     }
 
 }
