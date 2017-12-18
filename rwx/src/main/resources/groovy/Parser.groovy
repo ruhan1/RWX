@@ -32,11 +32,7 @@ public class ${simpleClassName}_Parser implements Parser<${simpleClassName}>
             <% if (it.converter != null) { %>
             ret.${it.methodName}( new ${it.converter}().parse( val ) );
             <% } else if (it.actionClass == null) { %>
-                <% if (it.isPrimitive) { %>
-            if ( val != null ) { ret.${it.methodName}( (${it.type}) val ); }
-                <% } else { %>
-            ret.${it.methodName}( (${it.type}) val );
-                <% } %>
+            <% if (it.isPrimitive) { %>if ( val != null ) <% } %>ret.${it.methodName}( (${it.type}) val );
             <% } else { %>
                 <% if (it.contains) { %>
             List<${it.elementClass}> ${it.localListVariableName} = new ArrayList<>();
