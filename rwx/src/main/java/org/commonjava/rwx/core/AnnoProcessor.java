@@ -10,14 +10,17 @@ import org.commonjava.rwx.util.ProcessorUtils;
 
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.Filer;
+import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.RoundEnvironment;
 import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.MirroredTypeException;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
+import javax.lang.model.util.Types;
 import javax.tools.Diagnostic;
 import javax.tools.FileObject;
 import javax.tools.StandardLocation;
@@ -153,10 +156,12 @@ public class AnnoProcessor
         templateParams.put( "structPart", false );
         templateParams.put( "arrayPart", false );
 
+        String method = "set";
+
         StructPart structPart = typeElement.getAnnotation( StructPart.class );
         if ( structPart != null )
         {
-            handleStructPart( templateParams, typeElement, "set", ProcessorUtils::getParserClassName );
+            handleStructPart( templateParams, typeElement, method, ProcessorUtils::getParserClassName );
         }
         else
         {
@@ -165,7 +170,7 @@ public class AnnoProcessor
             {
                 templateParams.put( "arrayPart", true );
             }
-            handleArrayPart( templateParams, typeElement, "set", ProcessorUtils::getParserClassName );
+            handleArrayPart( templateParams, typeElement, method, ProcessorUtils::getParserClassName );
         }
 
         generateOutput( template, templateParams, parserClassName );
@@ -196,6 +201,8 @@ public class AnnoProcessor
         Request request = typeElement.getAnnotation( Request.class );
         Response response = typeElement.getAnnotation( Response.class );
 
+        String method = "get";
+
         if ( request != null || response != null )
         {
             if ( request != null )
@@ -207,20 +214,20 @@ public class AnnoProcessor
             {
                 templateParams.put( "response", true );
             }
-            handleArrayPart( templateParams, typeElement, "get", ProcessorUtils::getRendererClassName );
+            handleArrayPart( templateParams, typeElement, method, ProcessorUtils::getRendererClassName );
         }
 
         StructPart structPart = typeElement.getAnnotation( StructPart.class );
         if ( structPart != null )
         {
-            handleStructPart( templateParams, typeElement, "get", ProcessorUtils::getRendererClassName );
+            handleStructPart( templateParams, typeElement, method, ProcessorUtils::getRendererClassName );
         }
 
         ArrayPart arrayPart = typeElement.getAnnotation( ArrayPart.class );
         if ( arrayPart != null )
         {
             templateParams.put( "arrayPart", true );
-            handleArrayPart( templateParams, typeElement, "get", ProcessorUtils::getRendererClassName );
+            handleArrayPart( templateParams, typeElement, method, ProcessorUtils::getRendererClassName );
         }
 
         generateOutput( template, templateParams, rendererClassName );
@@ -230,13 +237,17 @@ public class AnnoProcessor
                                   Function<String, String> function )
     {
         Map<Integer, Object> paramsMap = new HashMap<>();
-        for ( Element e : typeElement.getEnclosedElements() )
+        List<TypeElement> typeElements = getAllTypeElements( typeElement );
+        for ( TypeElement t : typeElements )
         {
-            DataIndex dataIndex = e.getAnnotation( DataIndex.class );
-            if ( dataIndex != null )
+            for ( Element e : t.getEnclosedElements() )
             {
-                Item item = getItemObj( e, method, function );
-                paramsMap.put( dataIndex.value(), item );
+                DataIndex dataIndex = e.getAnnotation( DataIndex.class );
+                if ( dataIndex != null )
+                {
+                    Item item = getItemObj( e, method, function );
+                    paramsMap.put( dataIndex.value(), item );
+                }
             }
         }
         templateParams.put( "params", getList( paramsMap ) );
@@ -247,17 +258,61 @@ public class AnnoProcessor
     {
         templateParams.put( "structPart", true );
         List<Object> params = new ArrayList<>();
-        for ( Element e : typeElement.getEnclosedElements() )
+
+        List<TypeElement> typeElements = getAllTypeElements( typeElement );
+        for ( TypeElement t : typeElements )
         {
-            DataKey dataKey = e.getAnnotation( DataKey.class );
-            if ( dataKey != null )
+            for ( Element e : t.getEnclosedElements() )
             {
-                Item item = getItemObj( e, method, function );
-                item.setKey( dataKey.value() );
-                params.add( item );
+                DataKey dataKey = e.getAnnotation( DataKey.class );
+                if ( dataKey != null )
+                {
+                    Item item = getItemObj( e, method, function );
+                    item.setKey( dataKey.value() );
+                    params.add( item );
+                }
             }
         }
         templateParams.put( "params", params );
+    }
+
+    /**
+     * Get all type elements that this type is derived from.
+     * @param typeElement target
+     * @return all super type elements and itself
+     */
+    private List<TypeElement> getAllTypeElements( TypeElement typeElement )
+    {
+        List<TypeElement> ret = new ArrayList<>(  );
+
+        TypeElement cur = typeElement;
+        while ( cur != null )
+        {
+            ret.add( cur );
+            cur = getSuperType( cur );
+        }
+
+        return ret;
+    }
+
+    private TypeElement getSuperType( TypeElement typeElement )
+    {
+        TypeMirror superMirror = typeElement.getSuperclass();
+
+        String superClassName = superMirror.toString();
+
+        if ( "java.lang.Object".equals( superClassName ) )
+        {
+            return null;
+        }
+
+        TypeElement superClassElement = processingEnv.getElementUtils().getTypeElement( superClassName );
+        if ( superClassElement != null )
+        {
+            debug( "Get super type for " + typeElement + ", super=" + superClassElement );
+        }
+
+        return superClassElement;
     }
 
     private Item getItemObj( Element e, String method, Function<String, String> function )
