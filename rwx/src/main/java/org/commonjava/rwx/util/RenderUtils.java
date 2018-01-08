@@ -13,6 +13,7 @@ import java.io.StringWriter;
 import java.util.List;
 import java.util.Map;
 
+import static org.apache.commons.lang.StringUtils.isNotBlank;
 import static org.commonjava.rwx.vocab.XmlRpcConstants.*;
 
 /**
@@ -201,7 +202,11 @@ public class RenderUtils
         ValueType type = ValueType.safeTypeFor( object );
 
         w.writeStartElement( type.getPrimaryTag() );
-        w.writeCharacters( type.coercion().toString( object ) );
+        String chars = type.coercion().toString( object );
+        if ( isNotBlank( chars ) )
+        {
+            w.writeCharacters( chars );
+        }
         w.writeEndElement();
     }
 
