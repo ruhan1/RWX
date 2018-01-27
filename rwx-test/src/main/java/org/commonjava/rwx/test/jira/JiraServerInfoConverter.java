@@ -8,11 +8,11 @@ import java.util.Map;
 /**
  * Created by ruhan on 8/7/17.
  */
-public class JiraServerInfoConverter implements Converter<JiraServerInfo>
+public class JiraServerInfoConverter implements Converter<AbstractJiraServerInfo>
 {
 
     @Override
-    public JiraServerInfo parse( Object object )
+    public AbstractJiraServerInfo parse( Object object )
     {
         Map<String, Object> map = (Map) object;
         String version = (String) map.get( "version" );
@@ -29,15 +29,19 @@ public class JiraServerInfoConverter implements Converter<JiraServerInfo>
     }
 
     @Override
-    public Object render( JiraServerInfo value )
+    public Object render( AbstractJiraServerInfo value )
     {
         Map<String, Object> map = new HashMap<>();
-        map.put( "version", value.getVersion() );
-        map.put( "baseUrl", value.getBaseUrl() );
-        map.put( "buildDate", value.getBuildDate() );
-        map.put( "edition", value.getEdition() );
-        map.put( "serverTime", value.getServerTime() );
-        map.put( "buildNumber", value.getBuildNumber() );
+        if ( value instanceof JiraServerInfo )
+        {
+            JiraServerInfo jiraServerInfo = (JiraServerInfo) value;
+            map.put( "version", jiraServerInfo.getVersion() );
+            map.put( "baseUrl", jiraServerInfo.getBaseUrl() );
+            map.put( "buildDate", jiraServerInfo.getBuildDate() );
+            map.put( "edition", jiraServerInfo.getEdition() );
+            map.put( "serverTime", jiraServerInfo.getServerTime() );
+            map.put( "buildNumber", jiraServerInfo.getBuildNumber() );
+        }
         return map;
     }
 }

@@ -9,17 +9,17 @@ import org.commonjava.rwx.anno.Response;
 @Response
 public class JiraServerInfoResponseVariantOne
 {
-    public JiraServerInfo getValue()
+    public AbstractJiraServerInfo getValue()
     {
         return value;
     }
 
-    public void setValue( JiraServerInfo value )
+    public void setValue( AbstractJiraServerInfo value )
     {
         this.value = value;
     }
 
     @DataIndex( 0 )
-    private JiraServerInfo value; // no @Converter on field, but on class AbstractJiraServerInfo
+    private AbstractJiraServerInfo value; // no @Converter on field, but on class AbstractJiraServerInfo
 
 }

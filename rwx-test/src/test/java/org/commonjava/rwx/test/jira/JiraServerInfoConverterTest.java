@@ -24,14 +24,14 @@ public class JiraServerInfoConverterTest
         JiraServerInfoResponse response = new RWXMapper().parse( new ByteArrayInputStream( source.getBytes() ),
                                                                  JiraServerInfoResponse.class );
 
-        assertJiraServerInfo( response.getValue() );
+        assertJiraServerInfo( (JiraServerInfo) response.getValue() );
 
         String rendered = new RWXMapper().render( response );
         JiraServerInfoResponse renderedResponse =
                         new RWXMapper().parse( new ByteArrayInputStream( rendered.getBytes() ),
                                                JiraServerInfoResponse.class );
 
-        assertJiraServerInfo( renderedResponse.getValue() );
+        assertJiraServerInfo( (JiraServerInfo) renderedResponse.getValue() );
     }
 
     @Test
@@ -42,14 +42,14 @@ public class JiraServerInfoConverterTest
                         new RWXMapper().parse( new ByteArrayInputStream( source.getBytes() ),
                                                JiraServerInfoResponseVariantOne.class );
 
-        assertJiraServerInfo( response.getValue() );
+        assertJiraServerInfo( (JiraServerInfo) response.getValue() );
 
         String rendered = new RWXMapper().render( response );
         JiraServerInfoResponseVariantOne renderedResponse =
                         new RWXMapper().parse( new ByteArrayInputStream( rendered.getBytes() ),
                                                JiraServerInfoResponseVariantOne.class );
 
-        assertJiraServerInfo( renderedResponse.getValue() );
+        assertJiraServerInfo( (JiraServerInfo) renderedResponse.getValue() );
     }
 
     private void assertJiraServerInfo( JiraServerInfo jiraServerInfo )
