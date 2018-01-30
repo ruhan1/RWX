@@ -327,14 +327,7 @@ public class AnnoProcessor
 
         if (converter != null)
         {
-            try
-            {
-                Class<?> c = converter.value();
-            }
-            catch ( MirroredTypeException mte )
-            {
-                item.setConverter( mte.getTypeMirror().toString() );
-            }
+            item.setConverter( getConverterQName( converter ) );
         }
         else
         {
@@ -351,6 +344,19 @@ public class AnnoProcessor
             item.setActionClass( actionClass );
         }
         return item;
+    }
+
+    private String getConverterQName( Converter converter )
+    {
+        try
+        {
+            Class<?> c = converter.value();
+        }
+        catch ( MirroredTypeException mte )
+        {
+            return mte.getTypeMirror().toString();
+        }
+        return null;
     }
 
     private Converter getConverter( Element e )
@@ -394,7 +400,12 @@ public class AnnoProcessor
         {
             StructPart sPart = typeElement.getAnnotation( StructPart.class );
             ArrayPart aPart = typeElement.getAnnotation( ArrayPart.class );
-            if ( sPart != null || aPart != null )
+            Converter converter = getConverter( typeElement );
+            if ( converter != null )
+            {
+                actionClass = getConverterQName( converter );
+            }
+            else if ( sPart != null || aPart != null )
             {
                 actionClass = function.apply( type );
             }

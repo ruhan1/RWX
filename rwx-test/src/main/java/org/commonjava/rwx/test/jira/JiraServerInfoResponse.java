@@ -10,18 +10,18 @@ import org.commonjava.rwx.anno.Response;
 @Response
 public class JiraServerInfoResponse
 {
-    public JiraServerInfo getValue()
+    public AbstractJiraServerInfo getValue()
     {
         return value;
     }
 
-    public void setValue( JiraServerInfo value )
+    public void setValue( AbstractJiraServerInfo value )
     {
         this.value = value;
     }
 
     @Converter( JiraServerInfoConverter.class )
     @DataIndex( 0 )
-    private JiraServerInfo value;
+    private AbstractJiraServerInfo value;
 
 }
