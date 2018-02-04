@@ -44,6 +44,6 @@ public class XmlRpcConstants
 
     public static final String NIL = "nil";
 
-    public static final String DATETIME_FORMAT = "yyyyMMdd'T'HHmmss";
+    public static final String[] DATETIME_FORMAT = { "yyyyMMdd'T'HHmmss", "yyyyMMdd'T'HH:mm:ss" };
 
 }

@@ -169,16 +169,34 @@ public enum ValueType
     DATETIME( new ValueCoercion( "DATETIME-to-String (" + DATETIME_FORMAT + ")" )
     {
         @Override
-        public Object fromString( final String value ) throws CoercionException
+        public Object fromString( String value ) throws CoercionException
         {
-            try
+            if ( value == null )
             {
-                String val = value == null ? null : value.trim();
-                return val == null ? null : new SimpleDateFormat( DATETIME_FORMAT ).parse( value );
+                return null;
             }
-            catch ( final ParseException e )
+            value = value.trim();
+            Date obj = null;
+            ParseException exception = null;
+            for ( String format : DATETIME_FORMAT )
             {
-                throw new CoercionException( "Cannot parse date: '" + value + "'.", e );
+                try
+                {
+                    obj = new SimpleDateFormat( format ).parse( value );
+                    break;
+                }
+                catch ( final ParseException e )
+                {
+                    exception = e;
+                }
+            }
+            if ( obj != null )
+            {
+                return obj;
+            }
+            else
+            {
+                throw new CoercionException( "Cannot parse date: '" + value + "'.", exception );
             }
         }
 
@@ -187,7 +205,7 @@ public enum ValueType
         {
             try
             {
-                return value == null ? null : new SimpleDateFormat( DATETIME_FORMAT ).format( (Date) value );
+                return value == null ? null : new SimpleDateFormat( DATETIME_FORMAT[0] ).format( (Date) value );
             }
             catch ( final ClassCastException e )
             {
