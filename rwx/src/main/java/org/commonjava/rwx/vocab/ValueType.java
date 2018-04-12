@@ -89,6 +89,40 @@ public enum ValueType
         }
     }, Integer.class, "int", "i4" ),
 
+    LONG( new ValueCoercion( "LONG-to-String" )
+    {
+        @Override
+        public Object fromString( final String value ) throws CoercionException
+        {
+            try
+            {
+                String val = value == null ? null : value.trim();
+                return val == null || val.length() < 1 ? null : Long.parseLong( val );
+            }
+            catch ( final NumberFormatException e )
+            {
+                throw new CoercionException( e.getMessage(), e );
+            }
+        }
+
+        /**
+         * If the value is of type Integer, convert it to Long
+         */
+        @Override
+        public Object upgradeCast( Object value )
+        {
+            if ( value instanceof Long )
+            {
+                return value;
+            }
+            else if ( value instanceof Integer )
+            {
+                return new Long( (Integer) value );
+            }
+            throw new ClassCastException( "Can not cast " + value.getClass() + " to Long" );
+        }
+    }, Long.class, "i8" ),
+
     BOOLEAN( new ValueCoercion( "BOOLEAN-to-String" )
     {
         @Override
@@ -259,7 +293,7 @@ public enum ValueType
 
     private ValueCoercion coercion;
 
-    private ValueType( final ValueCoercion coercion, final Class<?> nativeType, final String... tags )
+    ValueType( final ValueCoercion coercion, final Class<?> nativeType, final String... tags )
     {
         this.coercion = coercion;
         this.nativeType = nativeType;
@@ -280,6 +314,20 @@ public enum ValueType
     {
         final ValueType type = typeFor( value );
         return type == null ? STRING : type;
+    }
+
+    public static ValueType typeFor( final Class clazz )
+    {
+        ValueType result = null;
+        for ( final ValueType vt : values() )
+        {
+            if ( vt.nativeType.equals( clazz ) )
+            {
+                result = vt;
+                break;
+            }
+        }
+        return result;
     }
 
     public static ValueType typeFor( final Object value )
@@ -331,4 +379,5 @@ public enum ValueType
     {
         return name();
     }
+
 }

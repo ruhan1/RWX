@@ -535,10 +535,22 @@ public class AnnoProcessor
             }
         }
 
+        // upgrade cast, e.g., cast Int value to Long because Koji may return int,i4, or i8 for a long field
+        private boolean isUpgradeCast;
+
+        public boolean isUpgradeCast()
+        {
+            return isUpgradeCast;
+        }
+
         public void setType( String type )
         {
             this.type = type;
             this.isPrimitive = primitives.contains( type );
+            if ( "long".equals( type ) || "java.lang.Long".equals( type ) )
+            {
+                isUpgradeCast = true;
+            }
         }
 
         public void setKey( String key )

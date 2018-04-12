@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<methodResponse>
+    <params>
+        <param>
+            <value>
+                <int>1000</int>
+            </value>
+        </param>
+        <param>
+            <value>
+                <i8>2000</i8>
+            </value>
+        </param>
+        <param>
+            <value>
+                <i8>3000</i8>
+            </value>
+        </param>
+    </params>
+</methodResponse>

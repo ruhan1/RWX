@@ -13,39 +13,40 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.commonjava.rwx.util;
+package org.commonjava.rwx.test.simple;
 
-import org.commonjava.rwx.error.CoercionException;
+import org.commonjava.rwx.anno.DataIndex;
+import org.commonjava.rwx.anno.Request;
 
-public abstract class ValueCoercion
+/**
+ * Created by ruhan on 4/9/18.
+ */
+@Request( method="foo" )
+public class I8Request
 {
+    @DataIndex( 0 )
+    private Integer intValue;
 
-    private String description;
+    @DataIndex( 1 )
+    private Long longValue;
 
-    protected ValueCoercion( String description )
+    public Integer getIntValue()
     {
-        this.description = description;
+        return intValue;
     }
 
-    public String getDescription()
+    public void setIntValue( Integer intValue )
     {
-        return description;
+        this.intValue = intValue;
     }
 
-    public abstract Object fromString( String value ) throws CoercionException;
-
-    public String toString( final Object value ) throws CoercionException
+    public Long getLongValue()
     {
-        return value == null ? null : String.valueOf( value );
+        return longValue;
     }
 
-    public String toString()
+    public void setLongValue( Long longValue )
     {
-        return getDescription();
-    }
-
-    public Object upgradeCast( Object value )
-    {
-        return value;
+        this.longValue = longValue;
     }
 }

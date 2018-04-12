@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<methodCall>
+    <methodName>foo</methodName>
+    <params>
+        <param>
+            <value>
+                <int>1000</int>
+            </value>
+        </param>
+        <param>
+            <value>
+                <i8>1000</i8>
+            </value>
+        </param>
+    </params>
+</methodCall>

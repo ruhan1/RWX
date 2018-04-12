@@ -4,6 +4,7 @@ import org.commonjava.rwx.core.Parser;
 import org.commonjava.rwx.model.RpcObject;
 import static org.commonjava.rwx.util.ParseUtils.nullifyNil;
 import static org.commonjava.rwx.util.ParseUtils.isNil;
+import static org.commonjava.rwx.util.ParseUtils.upgradeCast;
 
 import ${qName};
 
@@ -32,7 +33,7 @@ public class ${simpleClassName}_Parser implements Parser<${simpleClassName}>
             <% if (it.converter != null) { %>
             ret.${it.methodName}( new ${it.converter}().parse( val ) );
             <% } else if (it.actionClass == null) { %>
-            <% if (it.isPrimitive) { %>if ( val != null ) <% } %>ret.${it.methodName}( (${it.type}) val );
+            <% if (it.isPrimitive) { %>if ( val != null ) <% } %>ret.${it.methodName}( (${it.type}) <% if (it.isUpgradeCast) { %>upgradeCast( ${it.type}.class, val )<% } else { %>val<% } %> );
             <% } else { %>
                 <% if (it.contains) { %>
             List<${it.elementClass}> ${it.localListVariableName} = new ArrayList<>();
@@ -60,7 +61,7 @@ public class ${simpleClassName}_Parser implements Parser<${simpleClassName}>
             <% if (it.converter != null) { %>
             ret.${it.methodName}( new ${it.converter}().parse( val ) );
             <% } else if (it.actionClass == null) { %>
-            ret.${it.methodName}( (${it.type}) val );
+            ret.${it.methodName}( (${it.type}) <% if (it.isUpgradeCast) { %>upgradeCast( ${it.type}.class, val )<% } else { %>val<% } %> );
             <% } else { %>
                 <% if (it.contains) { %>
             List<${it.elementClass}> ${it.localListVariableName} = new ArrayList<>();
